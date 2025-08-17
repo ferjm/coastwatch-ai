@@ -70,7 +70,7 @@ export default function Login() {
         <div className="relative z-10 flex flex-col justify-center p-12 text-white">
           <div className="mb-8">
             <Play className="w-16 h-16 text-white/80 mb-4" />
-            <h1 className="text-4xl font-bold mb-4">
+            <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-white via-blue-100 to-purple-200 bg-clip-text text-transparent">
               Detección Inteligente de Plásticos Costeros
             </h1>
             <p className="text-lg text-white/90 mb-6">
@@ -97,10 +97,10 @@ export default function Login() {
       </div>
 
       {/* Right side - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gradient-to-br from-ocean-50 to-primary-50">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gradient-to-br from-neutral-50 to-secondary-50">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-primary-700">PlasticWatch</CardTitle>
+            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">PlasticWatch</CardTitle>
             <CardDescription>Accede a tu cuenta para continuar</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
