@@ -8,6 +8,7 @@ import "./lib/i18n";
 if (import.meta.env.DEV && !import.meta.env.VITE_API_URL) {
   import('./mocks/browser').then(({ worker }) => {
     worker.start({
+      serviceWorker: { url: '/mockServiceWorker.js' },
       onUnhandledRequest: 'bypass',
     });
   });
