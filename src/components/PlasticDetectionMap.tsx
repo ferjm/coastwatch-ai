@@ -19,6 +19,7 @@ import {
   Clock,
   Eye
 } from 'lucide-react';
+import ApiKeyManager from './maps/ApiKeyManager';
 
 // Detection data interface
 export interface MapDetection {
@@ -459,6 +460,7 @@ export function PlasticDetectionMap({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
+  const [keySource, setKeySource] = useState<'local' | 'supabase' | 'none'>('none');
 
   const addDebugInfo = (message: string) => {
     const timestamp = new Date().toLocaleTimeString();
@@ -468,14 +470,27 @@ export function PlasticDetectionMap({
   useEffect(() => {
     const fetchApiKey = async () => {
       try {
+        // 1) Intentar localStorage primero
+        const localKey = localStorage.getItem('gmaps_api_key');
+        if (localKey) {
+          addDebugInfo('🔐 API key encontrada en almacenamiento local');
+          addDebugInfo(`📝 Longitud de API key: ${localKey.length} caracteres`);
+          setApiKey(localKey);
+          setKeySource('local');
+          setIsLoading(false);
+          return;
+        }
+
+        // 2) Fallback a Supabase Edge Function
         addDebugInfo('🔄 Iniciando obtención de API key desde Supabase...');
         const key = await getGoogleMapsApiKey();
         
         if (key) {
-          addDebugInfo('✅ API key obtenida exitosamente');
+          addDebugInfo('✅ API key obtenida exitosamente desde Supabase');
           addDebugInfo(`📝 Longitud de API key: ${key.length} caracteres`);
           addDebugInfo(`🔑 Primeros 20 caracteres: ${key.substring(0, 20)}...`);
           setApiKey(key);
+          setKeySource('supabase');
         } else {
           addDebugInfo('❌ No se recibió API key de Supabase');
           setError('No API key received from Supabase');
@@ -493,6 +508,22 @@ export function PlasticDetectionMap({
 
     fetchApiKey();
   }, []);
+
+  const handleSaveLocalKey = (key: string) => {
+    localStorage.setItem('gmaps_api_key', key);
+    addDebugInfo('🔐 API key guardada localmente');
+    setApiKey(key);
+    setKeySource('local');
+    setError('');
+    setIsLoading(false);
+  };
+
+  const handleClearLocalKey = () => {
+    localStorage.removeItem('gmaps_api_key');
+    addDebugInfo('🧹 API key local eliminada');
+    setApiKey('');
+    setKeySource('none');
+  };
 
   // Debug Panel Component
   const DebugPanel = () => (
@@ -514,7 +545,7 @@ export function PlasticDetectionMap({
             <div className="bg-green-50 p-3 rounded">
               <div className="text-xs font-medium text-green-800">API Key</div>
               <div className="text-sm text-green-700">
-                {apiKey ? `✅ Presente (${apiKey.length} chars)` : '❌ No disponible'}
+                {apiKey ? `✅ Presente (${apiKey.length} chars) · Origen: ${keySource === 'local' ? 'Local' : 'Supabase'}` : '❌ No disponible'}
               </div>
             </div>
             <div className="bg-red-50 p-3 rounded">
@@ -545,6 +576,12 @@ export function PlasticDetectionMap({
   if (isLoading) {
     return (
       <div className="space-y-4">
+        <ApiKeyManager
+          currentKeyLength={apiKey?.length}
+          source={keySource}
+          onSave={handleSaveLocalKey}
+          onClear={handleClearLocalKey}
+        />
         <DebugPanel />
         <MapLoadingComponent />
       </div>
@@ -554,6 +591,12 @@ export function PlasticDetectionMap({
   if (error || !apiKey) {
     return (
       <div className="space-y-4">
+        <ApiKeyManager
+          currentKeyLength={apiKey?.length}
+          source={keySource}
+          onSave={handleSaveLocalKey}
+          onClear={handleClearLocalKey}
+        />
         <DebugPanel />
         <Card>
           <CardContent className="p-6">
@@ -567,9 +610,9 @@ export function PlasticDetectionMap({
               <div className="bg-yellow-50 border border-yellow-200 rounded p-4 text-left">
                 <div className="font-medium text-yellow-800 mb-2">Posibles soluciones:</div>
                 <ul className="text-sm text-yellow-700 space-y-1">
-                  <li>• Verifica que la API key esté configurada en Supabase secrets</li>
-                  <li>• Asegúrate de que la edge function esté desplegada</li>
-                  <li>• Revisa que tengas habilitadas las APIs necesarias en Google Cloud</li>
+                  <li>• Ingresar manualmente la API key arriba (se guarda localmente)</li>
+                  <li>• Verificar que la API key esté configurada en Supabase secrets</li>
+                  <li>• Asegurarte de que la edge function esté desplegada</li>
                 </ul>
               </div>
             </div>
@@ -581,6 +624,12 @@ export function PlasticDetectionMap({
 
   return (
     <div className="space-y-4">
+      <ApiKeyManager
+        currentKeyLength={apiKey?.length}
+        source={keySource}
+        onSave={handleSaveLocalKey}
+        onClear={handleClearLocalKey}
+      />
       <DebugPanel />
       <Wrapper 
         apiKey={apiKey}
