@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/stores/auth';
 import { Button } from '@/components/ui/button';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
@@ -11,12 +12,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
+import { LanguageSelector } from '@/components/LanguageSelector';
 
 interface AppLayoutProps {
   children: ReactNode;
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
+  const { t } = useTranslation();
   const { user, signOut } = useAuthStore();
   const { toast } = useToast();
 
@@ -24,13 +27,13 @@ export function AppLayout({ children }: AppLayoutProps) {
     try {
       await signOut();
       toast({
-        title: 'Sesión cerrada',
-        description: 'Has cerrado sesión correctamente.',
+        title: t('sessionClosed'),
+        description: t('signOutSuccess'),
       });
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: 'Error al cerrar sesión',
+        title: t('authError'),
+        description: t('signOutError'),
         variant: 'destructive',
       });
     }
@@ -47,6 +50,8 @@ export function AppLayout({ children }: AppLayoutProps) {
             <SidebarTrigger className="ml-2" />
             
             <div className="flex items-center gap-4">
+              <LanguageSelector />
+              
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="flex items-center gap-2">
@@ -57,7 +62,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="mr-2 h-4 w-4" />
-                    Cerrar Sesión
+                    {t('logout')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

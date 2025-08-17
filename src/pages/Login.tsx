@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,8 +9,10 @@ import { useAuthStore } from '@/stores/auth';
 import { useToast } from '@/hooks/use-toast';
 import { Play } from 'lucide-react';
 import heroVideoFrame from '@/assets/hero-video-frame.jpg';
+import { LanguageSelector } from '@/components/LanguageSelector';
 
 export default function Login() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -25,14 +28,14 @@ export default function Login() {
     try {
       await signIn(email, password);
       toast({
-        title: 'Bienvenido',
-        description: 'Has iniciado sesión correctamente.',
+        title: t('welcome'),
+        description: t('signInSuccess'),
       });
       navigate('/app/dashboard');
     } catch (error: any) {
       toast({
-        title: 'Error de autenticación',
-        description: error.message || 'Credenciales incorrectas',
+        title: t('authError'),
+        description: error.message || t('invalidCredentials'),
         variant: 'destructive',
       });
     } finally {
@@ -46,8 +49,8 @@ export default function Login() {
       await signInWithGoogle();
     } catch (error: any) {
       toast({
-        title: 'Error de autenticación',
-        description: error.message || 'Error al conectar con Google',
+        title: t('authError'),
+        description: error.message || t('googleAuthError'),
         variant: 'destructive',
       });
       setGoogleLoading(false);
@@ -56,8 +59,13 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex">
+      {/* Language selector */}
+      <div className="absolute top-4 right-4 z-20">
+        <LanguageSelector />
+      </div>
+      
       {/* Left side - Marketing Video */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-ocean-600 to-primary-600">
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-primary-600 to-secondary-600">
         <div className="absolute inset-0">
           <img 
             src={heroVideoFrame} 
@@ -71,26 +79,25 @@ export default function Login() {
           <div className="mb-8">
             <Play className="w-16 h-16 text-white/80 mb-4" />
             <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-white via-blue-100 to-purple-200 bg-clip-text text-transparent">
-              Detección Inteligente de Plásticos Costeros
+              {t('heroTitle')}
             </h1>
             <p className="text-lg text-white/90 mb-6">
-              Utilizamos inteligencia artificial y análisis de imágenes de dron para identificar 
-              y mapear residuos plásticos en zonas costeras con precisión.
+              {t('heroDescription')}
             </p>
           </div>
           
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
               <div className="w-2 h-2 bg-accent rounded-full" />
-              <span>Análisis automatizado con IA</span>
+              <span>{t('feature1')}</span>
             </div>
             <div className="flex items-center space-x-3">
               <div className="w-2 h-2 bg-success rounded-full" />
-              <span>Mapas de calor georreferenciados</span>
+              <span>{t('feature2')}</span>
             </div>
             <div className="flex items-center space-x-3">
               <div className="w-2 h-2 bg-warning rounded-full" />
-              <span>Sistema de revisión humana</span>
+              <span>{t('feature3')}</span>
             </div>
           </div>
         </div>
@@ -100,8 +107,8 @@ export default function Login() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gradient-to-br from-neutral-50 to-secondary-50">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">PlasticWatch</CardTitle>
-            <CardDescription>Accede a tu cuenta para continuar</CardDescription>
+            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">{t('appName')}</CardTitle>
+            <CardDescription>{t('signInSubtitle')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <Button 
@@ -110,7 +117,7 @@ export default function Login() {
               variant="outline"
               className="w-full"
             >
-              {googleLoading ? 'Conectando...' : 'Continuar con Google'}
+              {googleLoading ? t('connecting') : t('signInWithGoogle')}
             </Button>
             
             <div className="relative">
@@ -118,13 +125,13 @@ export default function Login() {
                 <span className="w-full border-t" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">O continúa con</span>
+                <span className="bg-background px-2 text-muted-foreground">{t('signInWithEmail')}</span>
               </div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('email')}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -135,7 +142,7 @@ export default function Login() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Contraseña</Label>
+                <Label htmlFor="password">{t('password')}</Label>
                 <Input
                   id="password"
                   type="password"
@@ -145,7 +152,7 @@ export default function Login() {
                 />
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+                {loading ? t('signingIn') : t('login')}
               </Button>
             </form>
             
@@ -154,14 +161,14 @@ export default function Login() {
                 to="/register" 
                 className="text-sm text-primary-600 hover:text-primary-700"
               >
-                ¿No tienes cuenta? Regístrate
+                {t('noAccount')}
               </Link>
               <br />
               <Link 
                 to="/reset-password" 
                 className="text-sm text-neutral-500 hover:text-neutral-600"
               >
-                ¿Olvidaste tu contraseña?
+                {t('forgotPassword')}
               </Link>
             </div>
           </CardContent>
