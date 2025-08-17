@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,6 +9,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Register() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -21,8 +23,8 @@ export default function Register() {
     
     if (password !== confirmPassword) {
       toast({
-        title: 'Error',
-        description: 'Las contraseñas no coinciden',
+        title: t('authError'),
+        description: t('passwordsDontMatch'),
         variant: 'destructive',
       });
       return;
@@ -33,14 +35,14 @@ export default function Register() {
     try {
       await signUp(email, password);
       toast({
-        title: 'Registro exitoso',
-        description: 'Revisa tu email para confirmar tu cuenta.',
+        title: t('registrationSuccess'),
+        description: t('checkEmailConfirm'),
       });
       navigate('/login');
     } catch (error: any) {
       toast({
-        title: 'Error de registro',
-        description: error.message || 'Error al crear la cuenta',
+        title: t('registrationError'),
+        description: error.message || t('accountCreationError'),
         variant: 'destructive',
       });
     } finally {
@@ -52,24 +54,24 @@ export default function Register() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-ocean-50 to-primary-50 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-primary-700">Crear Cuenta</CardTitle>
-          <CardDescription>Regístrate en PlasticWatch</CardDescription>
+          <CardTitle className="text-2xl font-bold text-primary-700">{t('createAccount')}</CardTitle>
+          <CardDescription>{t('registerIn')} {t('appName')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('email')}</Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="tu@email.com"
+                placeholder={t('emailPlaceholder')}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Contraseña</Label>
+              <Label htmlFor="password">{t('password')}</Label>
               <Input
                 id="password"
                 type="password"
@@ -79,7 +81,7 @@ export default function Register() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirm-password">Confirmar Contraseña</Label>
+              <Label htmlFor="confirm-password">{t('confirmPassword')}</Label>
               <Input
                 id="confirm-password"
                 type="password"
@@ -89,7 +91,7 @@ export default function Register() {
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
+              {loading ? t('creatingAccount') : t('createAccount')}
             </Button>
           </form>
           <div className="mt-4 text-center">
@@ -97,7 +99,7 @@ export default function Register() {
               to="/login" 
               className="text-sm text-primary-600 hover:text-primary-700"
             >
-              ¿Ya tienes cuenta? Inicia sesión
+              {t('hasAccount')}
             </Link>
           </div>
         </CardContent>

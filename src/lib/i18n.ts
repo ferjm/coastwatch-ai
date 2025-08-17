@@ -43,6 +43,15 @@ const resources = {
       "sessionClosed": "Sesión cerrada",
       "signOutSuccess": "Has cerrado sesión correctamente.",
       "signOutError": "Error al cerrar sesión",
+      "createAccount": "Crear Cuenta",
+      "registerIn": "Regístrate en",
+      "creatingAccount": "Creando cuenta...",
+      "passwordsDontMatch": "Las contraseñas no coinciden",
+      "registrationSuccess": "Registro exitoso",
+      "checkEmailConfirm": "Revisa tu email para confirmar tu cuenta.",
+      "registrationError": "Error de registro",
+      "accountCreationError": "Error al crear la cuenta",
+      "emailPlaceholder": "tu@email.com",
       
       // Marketing
       "heroTitle": "Detección Inteligente de Plásticos Costeros",
@@ -149,6 +158,15 @@ const resources = {
       "sessionClosed": "Session closed",
       "signOutSuccess": "You have successfully signed out.",
       "signOutError": "Error signing out",
+      "createAccount": "Create Account",
+      "registerIn": "Sign up for",
+      "creatingAccount": "Creating account...",
+      "passwordsDontMatch": "Passwords don't match",
+      "registrationSuccess": "Registration successful",
+      "checkEmailConfirm": "Check your email to confirm your account.",
+      "registrationError": "Registration error",
+      "accountCreationError": "Error creating account",
+      "emailPlaceholder": "your@email.com",
       
       // Marketing
       "heroTitle": "Smart Coastal Plastic Detection",
@@ -255,6 +273,15 @@ const resources = {
       "sessionClosed": "Sessão encerrada",
       "signOutSuccess": "Você saiu com sucesso.",
       "signOutError": "Erro ao sair",
+      "createAccount": "Criar Conta",
+      "registerIn": "Cadastre-se no",
+      "creatingAccount": "Criando conta...",
+      "passwordsDontMatch": "As senhas não coincidem",
+      "registrationSuccess": "Registro bem-sucedido",
+      "checkEmailConfirm": "Verifique seu email para confirmar sua conta.",
+      "registrationError": "Erro de registro",
+      "accountCreationError": "Erro ao criar conta",
+      "emailPlaceholder": "seu@email.com",
       
       // Marketing
       "heroTitle": "Detecção Inteligente de Plásticos Costeiros",
