@@ -1,17 +1,20 @@
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function Models() {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-foreground">Modelos de IA</h1>
+      <h1 className="text-3xl font-bold text-foreground">{t('aiModels')}</h1>
       
       <Card>
         <CardHeader>
-          <CardTitle>Modelos de Detección</CardTitle>
+          <CardTitle>{t('detectionModels')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <p className="text-muted-foreground">Gestión de modelos próximamente...</p>
+            <p className="text-muted-foreground">{t('modelsPlaceholder')}</p>
           </div>
         </CardContent>
       </Card>
