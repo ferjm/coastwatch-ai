@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/auth';
 import { Button } from '@/components/ui/button';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
@@ -20,16 +21,19 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const { t } = useTranslation();
-  const { user, signOut } = useAuthStore();
+  const navigate = useNavigate();
+  const { user, signOut, setUser } = useAuthStore();
   const { toast } = useToast();
 
   const handleSignOut = async () => {
     try {
-      await signOut();
+      // Clear user state and redirect to login
+      setUser(null);
       toast({
         title: t('sessionClosed'),
         description: t('signOutSuccess'),
       });
+      navigate('/');
     } catch (error: any) {
       toast({
         title: t('authError'),
