@@ -454,146 +454,44 @@ export function PlasticDetectionMap({
   onDetectionClick,
   className 
 }: PlasticMapProps) {
-  const { t } = useTranslation();
+  const [apiKey, setApiKey] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Temporary solution: Show a configuration message instead of trying to load the map
+  useEffect(() => {
+    const fetchApiKey = async () => {
+      try {
+        const key = await getGoogleMapsApiKey();
+        console.log('API key fetched successfully');
+        setApiKey(key);
+      } catch (error) {
+        console.error('Failed to fetch Google Maps API key:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchApiKey();
+  }, []);
+
+  if (isLoading) {
+    return <MapLoadingComponent />;
+  }
+
+  if (!apiKey) {
+    return <MapErrorComponent />;
+  }
+
   return (
-    <div className="space-y-4">
-      {/* Controls Mock */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MapIcon className="h-5 w-5" />
-            {t('plasticDetections')} (4 {t('detectionsFound')})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="space-y-2">
-              <Label>{t('mapView')}</Label>
-              <Select defaultValue="roadmap" disabled>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="roadmap">
-                    <div className="flex items-center gap-2">
-                      <MapIcon className="h-4 w-4" />
-                      {t('mapView')}
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>{t('filterByType')}</Label>
-              <Select defaultValue="all" disabled>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('allTypes')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="heatmap-toggle">{t('detectionDensity')}</Label>
-              <div className="flex items-center space-x-2">
-                <Switch id="heatmap-toggle" disabled />
-                <Label htmlFor="heatmap-toggle" className="text-sm">
-                  {t('showHeatmap')}
-                </Label>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>{t('navigation')}</Label>
-              <Button variant="outline" className="w-full" disabled>
-                <ZoomIn className="h-4 w-4 mr-2" />
-                {t('zoomToDetections')}
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Map Configuration Message */}
-      <Card>
-        <CardContent className="p-0">
-          <div className="w-full h-96 md:h-[500px] bg-gradient-to-br from-blue-50 to-green-50 border-2 border-dashed border-blue-200 rounded-lg flex items-center justify-center">
-            <div className="text-center p-8 max-w-2xl">
-              <div className="mb-4">
-                <MapIcon className="h-16 w-16 text-blue-500 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                  Mapa de Detecciones de Plástico
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  El mapa mostrará las ubicaciones de las detecciones de plástico en tiempo real
-                </p>
-              </div>
-              
-              <div className="bg-white p-4 rounded-lg border shadow-sm">
-                <h4 className="font-medium text-gray-800 mb-3">Configuración de Google Maps</h4>
-                <div className="text-sm text-gray-600 space-y-2 text-left">
-                  <p className="flex items-start gap-2">
-                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">1</span>
-                    Obtén tu API key de Google Cloud Console
-                  </p>
-                  <p className="flex items-start gap-2">
-                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">2</span>
-                    Habilita Maps JavaScript API y Places API
-                  </p>
-                  <p className="flex items-start gap-2">
-                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">3</span>
-                    Configura la clave en Supabase secrets como GOOGLE_MAPS_API_KEY
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <p className="text-sm text-yellow-800">
-                  <strong>Demo:</strong> Mientras tanto, aquí se muestran los controles y funcionalidades que tendrá el mapa interactivo.
-                </p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Detection Summary */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('recentDetections')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { type: 'Botellas', count: 2, confidence: 89, color: '#3B82F6' },
-              { type: 'Bolsas', count: 1, confidence: 76, color: '#10B981' },
-              { type: 'Redes', count: 1, confidence: 92, color: '#F59E0B' },
-              { type: 'Fragmentos', count: 1, confidence: 68, color: '#EF4444' }
-            ].map(item => (
-              <div key={item.type} className="flex items-center justify-between p-3 border rounded-lg">
-                <div className="flex items-center gap-2">
-                  <div 
-                    className="w-4 h-4 rounded-full"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  <span className="font-medium">{item.type}</span>
-                </div>
-                <div className="text-right">
-                  <div className="text-lg font-bold">{item.count}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {item.confidence}% {t('confidence')}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <Wrapper 
+      apiKey={apiKey}
+      render={render}
+      libraries={['visualization']}
+    >
+      <MapComponent 
+        detections={detections}
+        onDetectionClick={onDetectionClick}
+        className={className}
+      />
+    </Wrapper>
   );
 }
