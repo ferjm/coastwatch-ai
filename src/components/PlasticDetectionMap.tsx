@@ -454,26 +454,38 @@ export function PlasticDetectionMap({
   onDetectionClick,
   className 
 }: PlasticMapProps) {
+  const { t } = useTranslation();
   const [apiKey, setApiKey] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
+  const [debugInfo, setDebugInfo] = useState<string[]>([]);
+
+  const addDebugInfo = (message: string) => {
+    const timestamp = new Date().toLocaleTimeString();
+    setDebugInfo(prev => [...prev, `[${timestamp}] ${message}`]);
+  };
 
   useEffect(() => {
     const fetchApiKey = async () => {
       try {
-        console.log('Fetching Google Maps API key from Supabase...');
+        addDebugInfo('🔄 Iniciando obtención de API key desde Supabase...');
         const key = await getGoogleMapsApiKey();
-        console.log('API key result:', key ? 'Success' : 'Empty');
         
         if (key) {
+          addDebugInfo('✅ API key obtenida exitosamente');
+          addDebugInfo(`📝 Longitud de API key: ${key.length} caracteres`);
+          addDebugInfo(`🔑 Primeros 20 caracteres: ${key.substring(0, 20)}...`);
           setApiKey(key);
         } else {
+          addDebugInfo('❌ No se recibió API key de Supabase');
           setError('No API key received from Supabase');
         }
-      } catch (error) {
-        console.error('Error fetching API key:', error);
-        setError(`Error: ${error}`);
+      } catch (error: any) {
+        addDebugInfo(`💥 Error al obtener API key: ${error.message}`);
+        addDebugInfo(`🔍 Error completo: ${JSON.stringify(error)}`);
+        setError(`Error: ${error.message}`);
       } finally {
+        addDebugInfo('🏁 Proceso de obtención de API key completado');
         setIsLoading(false);
       }
     };
@@ -481,39 +493,105 @@ export function PlasticDetectionMap({
     fetchApiKey();
   }, []);
 
+  // Debug Panel Component
+  const DebugPanel = () => (
+    <Card className="mb-4">
+      <CardHeader>
+        <CardTitle className="text-sm font-medium text-orange-600">
+          🐛 Panel de Debugging - Google Maps API
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div className="bg-blue-50 p-3 rounded">
+              <div className="text-xs font-medium text-blue-800">Estado</div>
+              <div className="text-sm text-blue-700">
+                {isLoading ? '⏳ Cargando...' : apiKey ? '✅ Listo' : '❌ Error'}
+              </div>
+            </div>
+            <div className="bg-green-50 p-3 rounded">
+              <div className="text-xs font-medium text-green-800">API Key</div>
+              <div className="text-sm text-green-700">
+                {apiKey ? `✅ Presente (${apiKey.length} chars)` : '❌ No disponible'}
+              </div>
+            </div>
+            <div className="bg-red-50 p-3 rounded">
+              <div className="text-xs font-medium text-red-800">Error</div>
+              <div className="text-sm text-red-700">
+                {error || '✅ Sin errores'}
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gray-50 p-3 rounded max-h-32 overflow-y-auto">
+            <div className="text-xs font-medium text-gray-800 mb-2">Log de Debugging:</div>
+            {debugInfo.length === 0 ? (
+              <div className="text-xs text-gray-500">Sin logs aún...</div>
+            ) : (
+              debugInfo.map((log, index) => (
+                <div key={index} className="text-xs text-gray-600 font-mono mb-1">
+                  {log}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   if (isLoading) {
-    return <MapLoadingComponent />;
+    return (
+      <div className="space-y-4">
+        <DebugPanel />
+        <MapLoadingComponent />
+      </div>
+    );
   }
 
   if (error || !apiKey) {
-    console.log('Map error state:', { error, hasApiKey: !!apiKey });
     return (
-      <div className="w-full h-96 md:h-[500px] bg-red-50 border border-red-200 rounded-lg flex items-center justify-center">
-        <div className="text-center p-6">
-          <div className="text-red-600 mb-2">Error cargando Google Maps</div>
-          <p className="text-sm text-red-500 mb-4">
-            {error || 'No se pudo obtener la API key'}
-          </p>
-          <div className="text-xs text-gray-600 bg-gray-100 p-3 rounded">
-            <p>Revisa la consola para más detalles del error.</p>
-            <p>Verifica que la edge function esté desplegada correctamente.</p>
-          </div>
-        </div>
+      <div className="space-y-4">
+        <DebugPanel />
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center">
+              <div className="text-red-600 mb-2 text-lg font-semibold">
+                ❌ Error cargando Google Maps
+              </div>
+              <p className="text-red-500 mb-4">
+                {error || 'No se pudo obtener la API key'}
+              </p>
+              <div className="bg-yellow-50 border border-yellow-200 rounded p-4 text-left">
+                <div className="font-medium text-yellow-800 mb-2">Posibles soluciones:</div>
+                <ul className="text-sm text-yellow-700 space-y-1">
+                  <li>• Verifica que la API key esté configurada en Supabase secrets</li>
+                  <li>• Asegúrate de que la edge function esté desplegada</li>
+                  <li>• Revisa que tengas habilitadas las APIs necesarias en Google Cloud</li>
+                </ul>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <Wrapper 
-      apiKey={apiKey}
-      render={render}
-      libraries={['visualization']}
-    >
-      <MapComponent 
-        detections={detections}
-        onDetectionClick={onDetectionClick}
-        className={className}
-      />
-    </Wrapper>
+    <div className="space-y-4">
+      <DebugPanel />
+      <Wrapper 
+        apiKey={apiKey}
+        render={render}
+        libraries={['visualization']}
+      >
+        <MapComponent 
+          detections={detections}
+          onDetectionClick={onDetectionClick}
+          className={className}
+        />
+      </Wrapper>
+    </div>
   );
 }
