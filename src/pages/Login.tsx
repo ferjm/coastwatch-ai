@@ -7,8 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuthStore } from '@/stores/auth';
 import { useToast } from '@/hooks/use-toast';
-import { Play } from 'lucide-react';
-import heroVideoFrame from '@/assets/hero-video-frame.jpg';
+import coastalHeroImage from '@/assets/coastal-hero-image.jpg';
 import { LanguageSelector } from '@/components/LanguageSelector';
 
 export default function Login() {
@@ -66,8 +65,8 @@ export default function Login() {
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-primary-600 to-secondary-600">
         <div className="absolute inset-0">
           <img 
-            src={heroVideoFrame} 
-            alt="Coastal plastic detection" 
+            src={coastalHeroImage} 
+            alt="Coastal plastic detection"
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-ocean-900/20 to-primary-900/20" />
@@ -75,27 +74,17 @@ export default function Login() {
         
         <div className="relative z-10 flex flex-col justify-center p-12 text-white">
           <div className="mb-8">
-            <Play className="w-16 h-16 text-white/80 mb-4" />
             <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-white via-blue-100 to-purple-200 bg-clip-text text-transparent">
               {t('heroTitle')}
             </h1>
             <p className="text-lg text-white/90 mb-6">
               {t('heroDescription')}
             </p>
-          </div>
-          
-          <div className="space-y-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-accent rounded-full" />
-              <span>{t('feature1')}</span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-success rounded-full" />
-              <span>{t('feature2')}</span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-warning rounded-full" />
-              <span>{t('feature3')}</span>
+            
+            <div className="space-y-3 text-white/90">
+              <p>✓ {t('feature1')}</p>
+              <p>✓ {t('feature2')}</p>
+              <p>✓ {t('feature3')}</p>
             </div>
           </div>
         </div>
