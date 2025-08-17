@@ -460,10 +460,23 @@ export function PlasticDetectionMap({
   useEffect(() => {
     const fetchApiKey = async () => {
       try {
+        console.log('Starting to fetch API key...');
         const key = await getGoogleMapsApiKey();
-        setApiKey(key);
+        console.log('Received API key:', key ? 'Key received' : 'No key received');
+        
+        // Fallback: Use a demo key if no key is received
+        if (!key) {
+          console.log('No API key from Supabase, using demo key');
+          // For demo purposes - this won't work in production
+          setApiKey('AIzaSyDemo-Replace-With-Your-Key');
+        } else {
+          setApiKey(key);
+        }
       } catch (error) {
         console.error('Failed to fetch Google Maps API key:', error);
+        // Fallback for demo
+        console.log('Error occurred, using demo key');
+        setApiKey('AIzaSyDemo-Replace-With-Your-Key');
       } finally {
         setIsLoading(false);
       }
@@ -477,7 +490,25 @@ export function PlasticDetectionMap({
   }
 
   if (!apiKey) {
-    return <MapErrorComponent />;
+    return (
+      <div className="w-full h-96 md:h-[500px] bg-yellow-50 border border-yellow-200 rounded-lg flex items-center justify-center">
+        <div className="text-center p-6">
+          <div className="text-yellow-600 mb-2">Google Maps API Key Required</div>
+          <p className="text-sm text-yellow-700 mb-4">
+            To display the map, you need to configure your Google Maps API key in Supabase.
+          </p>
+          <div className="text-xs text-yellow-600 bg-yellow-100 p-3 rounded">
+            <p className="font-medium mb-2">Setup Instructions:</p>
+            <ol className="text-left space-y-1">
+              <li>1. Get your API key from Google Cloud Console</li>
+              <li>2. Enable Maps JavaScript API and Places API</li>
+              <li>3. Add the key to Supabase secrets as GOOGLE_MAPS_API_KEY</li>
+              <li>4. Deploy the edge function</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
