@@ -456,15 +456,23 @@ export function PlasticDetectionMap({
 }: PlasticMapProps) {
   const [apiKey, setApiKey] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
     const fetchApiKey = async () => {
       try {
+        console.log('Fetching Google Maps API key from Supabase...');
         const key = await getGoogleMapsApiKey();
-        console.log('API key fetched successfully');
-        setApiKey(key);
+        console.log('API key result:', key ? 'Success' : 'Empty');
+        
+        if (key) {
+          setApiKey(key);
+        } else {
+          setError('No API key received from Supabase');
+        }
       } catch (error) {
-        console.error('Failed to fetch Google Maps API key:', error);
+        console.error('Error fetching API key:', error);
+        setError(`Error: ${error}`);
       } finally {
         setIsLoading(false);
       }
@@ -477,8 +485,22 @@ export function PlasticDetectionMap({
     return <MapLoadingComponent />;
   }
 
-  if (!apiKey) {
-    return <MapErrorComponent />;
+  if (error || !apiKey) {
+    console.log('Map error state:', { error, hasApiKey: !!apiKey });
+    return (
+      <div className="w-full h-96 md:h-[500px] bg-red-50 border border-red-200 rounded-lg flex items-center justify-center">
+        <div className="text-center p-6">
+          <div className="text-red-600 mb-2">Error cargando Google Maps</div>
+          <p className="text-sm text-red-500 mb-4">
+            {error || 'No se pudo obtener la API key'}
+          </p>
+          <div className="text-xs text-gray-600 bg-gray-100 p-3 rounded">
+            <p>Revisa la consola para más detalles del error.</p>
+            <p>Verifica que la edge function esté desplegada correctamente.</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

@@ -12,12 +12,17 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Edge function called: get-google-maps-key');
     const googleMapsApiKey = Deno.env.get('GOOGLE_MAPS_API_KEY')
     
+    console.log('API key exists:', !!googleMapsApiKey);
+    
     if (!googleMapsApiKey) {
+      console.error('Google Maps API key not found in environment variables');
       throw new Error('Google Maps API key not configured')
     }
 
+    console.log('Returning API key successfully');
     return new Response(
       JSON.stringify({ apiKey: googleMapsApiKey }),
       {
