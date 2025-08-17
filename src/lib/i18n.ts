@@ -97,6 +97,28 @@ const resources = {
       "uploadError": "Error en la subida",
       "processingImages": "Procesando imágenes...",
       
+      // Inference Results
+      "recentUploads": "Subidas Recientes",
+      "inferenceResults": "Resultados de Inferencia",
+      "processingStatus": "Estado del Procesamiento",
+      "pendingInference": "Pendiente",
+      "processingInference": "Procesando",
+      "completedInference": "Completado",
+      "failed": "Fallido",
+      "detectionsFound": "detecciones encontradas",
+      "noDetections": "No se encontraron detecciones",
+      "confidence": "Confianza",
+      "viewDetails": "Ver Detalles",
+      "downloadResults": "Descargar Resultados",
+      "reprocess": "Reprocesar",
+      "deleteImage": "Eliminar Imagen",
+      "imageProcessed": "Imagen procesada",
+      "processingTime": "Tiempo de procesamiento",
+      "imageResolution": "Resolución",
+      "detectionClasses": "Clases detectadas",
+      "showBoundingBoxes": "Mostrar Bounding Boxes",
+      "hideBoundingBoxes": "Ocultar Bounding Boxes",
+      
       // Dashboard
       "totalImages": "Total Imágenes",
       "detections": "Detecciones",
@@ -115,8 +137,8 @@ const resources = {
       "nets": "Redes",
       "fragments": "Fragmentos",
       "others": "Otros",
-      "reviewed": "Revisadas",
-      "pending": "Pendientes",
+      "reviewedStatus": "Revisadas",
+      "pendingReview": "Pendientes",
       
       // Pages
       "uploadImages": "Subir Imágenes",
@@ -238,6 +260,28 @@ const resources = {
       "uploadError": "Upload error",
       "processingImages": "Processing images...",
       
+      // Inference Results
+      "recentUploads": "Recent Uploads",
+      "inferenceResults": "Inference Results",
+      "processingStatus": "Processing Status",
+      "pendingInference": "Pending",
+      "processingInference": "Processing",
+      "completedInference": "Completed",
+      "failed": "Failed",
+      "detectionsFound": "detections found",
+      "noDetections": "No detections found",
+      "confidence": "Confidence",
+      "viewDetails": "View Details",
+      "downloadResults": "Download Results",
+      "reprocess": "Reprocess",
+      "deleteImage": "Delete Image",
+      "imageProcessed": "Image processed",
+      "processingTime": "Processing time",
+      "imageResolution": "Resolution",
+      "detectionClasses": "Detected classes",
+      "showBoundingBoxes": "Show Bounding Boxes",
+      "hideBoundingBoxes": "Hide Bounding Boxes",
+      
       // Dashboard
       "totalImages": "Total Images",
       "detections": "Detections",
@@ -256,8 +300,8 @@ const resources = {
       "nets": "Nets",
       "fragments": "Fragments",
       "others": "Others",
-      "reviewed": "Reviewed",
-      "pending": "Pending",
+      "reviewedStatus": "Reviewed",
+      "pendingReview": "Pending",
       
       // Pages
       "uploadImages": "Upload Images",
@@ -379,6 +423,28 @@ const resources = {
       "uploadError": "Erro no envio",
       "processingImages": "Processando imagens...",
       
+      // Inference Results
+      "recentUploads": "Uploads Recentes",
+      "inferenceResults": "Resultados de Inferência",
+      "processingStatus": "Status do Processamento",
+      "pendingInference": "Pendente",
+      "processingInference": "Processando",
+      "completedInference": "Concluído",
+      "failed": "Falhou",
+      "detectionsFound": "detecções encontradas",
+      "noDetections": "Nenhuma detecção encontrada",
+      "confidence": "Confiança",
+      "viewDetails": "Ver Detalhes",
+      "downloadResults": "Baixar Resultados",
+      "reprocess": "Reprocessar",
+      "deleteImage": "Excluir Imagem",
+      "imageProcessed": "Imagem processada",
+      "processingTime": "Tempo de processamento",
+      "imageResolution": "Resolução",
+      "detectionClasses": "Classes detectadas",
+      "showBoundingBoxes": "Mostrar Bounding Boxes",
+      "hideBoundingBoxes": "Ocultar Bounding Boxes",
+      
       // Dashboard
       "totalImages": "Total de Imagens",
       "detections": "Detecções",
@@ -397,8 +463,8 @@ const resources = {
       "nets": "Redes",
       "fragments": "Fragmentos",
       "others": "Outros",
-      "reviewed": "Revisadas",
-      "pending": "Pendentes",
+      "reviewedStatus": "Revisadas",
+      "pendingReview": "Pendentes",
       
       // Pages
       "uploadImages": "Enviar Imagens",
