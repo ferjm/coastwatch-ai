@@ -582,7 +582,6 @@ export function PlasticDetectionMap({
           onSave={handleSaveLocalKey}
           onClear={handleClearLocalKey}
         />
-        <DebugPanel />
         <MapLoadingComponent />
       </div>
     );
@@ -597,7 +596,6 @@ export function PlasticDetectionMap({
           onSave={handleSaveLocalKey}
           onClear={handleClearLocalKey}
         />
-        <DebugPanel />
         <Card>
           <CardContent className="p-6">
             <div className="text-center">
@@ -630,7 +628,6 @@ export function PlasticDetectionMap({
         onSave={handleSaveLocalKey}
         onClear={handleClearLocalKey}
       />
-      <DebugPanel />
       <Wrapper 
         apiKey={apiKey}
         render={render}
