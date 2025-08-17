@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { 
   Home, 
   Upload, 
@@ -23,21 +24,22 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 
-const items = [
-  { title: 'Dashboard', url: '/app/dashboard', icon: Home },
-  { title: 'Subir Imágenes', url: '/app/uploads', icon: Upload },
-  { title: 'Mapa', url: '/app/map', icon: Map },
-  { title: 'Revisión', url: '/app/review', icon: CheckSquare },
-  { title: 'Áreas', url: '/app/areas', icon: Square },
-  { title: 'Vuelos', url: '/app/flights', icon: Plane },
-  { title: 'Modelos', url: '/app/models', icon: Brain },
-  { title: 'Trabajos', url: '/app/jobs', icon: ListTodo },
-  { title: 'Configuración', url: '/app/settings', icon: Settings },
-];
-
 export function AppSidebar() {
+  const { t } = useTranslation();
   const location = useLocation();
   const currentPath = location.pathname;
+
+  const items = [
+    { title: t('dashboard'), url: '/app/dashboard', icon: Home },
+    { title: t('uploads'), url: '/app/uploads', icon: Upload },
+    { title: t('map'), url: '/app/map', icon: Map },
+    { title: t('review'), url: '/app/review', icon: CheckSquare },
+    { title: t('areas'), url: '/app/areas', icon: Square },
+    { title: t('flights'), url: '/app/flights', icon: Plane },
+    { title: t('models'), url: '/app/models', icon: Brain },
+    { title: t('jobs'), url: '/app/jobs', icon: ListTodo },
+    { title: t('settings'), url: '/app/settings', icon: Settings },
+  ];
 
   const isActive = (path: string) => currentPath === path;
 
@@ -46,7 +48,7 @@ export function AppSidebar() {
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="text-primary-700 font-semibold">
-            PlasticWatch
+            {t('appName')}
           </SidebarGroupLabel>
 
           <SidebarGroupContent>
