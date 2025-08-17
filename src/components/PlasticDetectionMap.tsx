@@ -482,7 +482,8 @@ export function PlasticDetectionMap({
         }
       } catch (error: any) {
         addDebugInfo(`💥 Error al obtener API key: ${error.message}`);
-        addDebugInfo(`🔍 Error completo: ${JSON.stringify(error)}`);
+        addDebugInfo(`🔍 Tipo de error: ${error.constructor.name}`);
+        addDebugInfo(`📋 Error completo: ${JSON.stringify(error, null, 2)}`);
         setError(`Error: ${error.message}`);
       } finally {
         addDebugInfo('🏁 Proceso de obtención de API key completado');
