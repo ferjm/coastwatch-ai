@@ -107,7 +107,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 p-6 bg-neutral-50">
+          <main className="flex-1 p-6 bg-muted/30">
             {children}
           </main>
         </div>
