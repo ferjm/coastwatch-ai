@@ -111,30 +111,31 @@
   }
 
   .dark {
-    --background: var(--neutral-950);
-    --foreground: var(--neutral-50);
-    --card: var(--neutral-950);
-    --card-foreground: var(--neutral-50);
-    --popover: var(--neutral-950);
-    --popover-foreground: var(--neutral-50);
-    --primary: var(--primary-400);
-    --primary-foreground: var(--neutral-900);
-    --secondary: var(--neutral-800);
-    --secondary-foreground: var(--neutral-50);
-    --muted: var(--neutral-800);
-    --muted-foreground: var(--neutral-400);
-    --accent: var(--ocean-800);
-    --accent-foreground: var(--ocean-50);
-    --destructive: var(--error-600);
-    --destructive-foreground: var(--neutral-50);
-    --border: var(--neutral-800);
-    --input: var(--neutral-800);
-    --ring: var(--primary-400);
-    --chart-1: var(--primary-400);
-    --chart-2: var(--ocean-400);
-    --chart-3: var(--success-400);
-    --chart-4: var(--warning-400);
-    --chart-5: var(--error-400);
+    /* Modern dark theme with better contrast and warmer tones */
+    --background: 222 84% 4%; 
+    --foreground: 210 40% 98%;
+    --card: 222 84% 5%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 84% 5%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 222 84% 4%;
+    --secondary: 217 32% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 215 32% 12%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 216 34% 20%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 63% 58%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 217 32% 17%;
+    --input: 217 32% 17%;
+    --ring: 217 91% 60%;
+    --chart-1: 217 91% 60%;
+    --chart-2: 142 76% 45%;
+    --chart-3: 43 86% 55%;
+    --chart-4: 0 84% 60%;
+    --chart-5: 270 91% 65%;
   }
 }
 
