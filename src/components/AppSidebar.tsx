@@ -51,7 +51,7 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-primary-700 font-semibold">
+          <SidebarGroupLabel className="text-foreground font-bold text-lg">
             {t('appName')}
           </SidebarGroupLabel>
 
