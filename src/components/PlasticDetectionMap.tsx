@@ -39,9 +39,9 @@ interface PlasticMapProps {
   className?: string;
 }
 
-// Mock detection data for demonstration - Brazilian coast
+// Mock detection data for demonstration - Brazilian beaches and coastal areas
 const mockDetections: MapDetection[] = [
-  // Rio de Janeiro - Copacabana
+  // Copacabana Beach - Rio de Janeiro
   {
     id: '1',
     lat: -22.9707,
@@ -50,162 +50,169 @@ const mockDetections: MapDetection[] = [
     confidence: 0.92,
     imageUrl: '/placeholder.svg',
     detectedAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
-    description: 'Concentración alta de botellas plásticas en Copacabana'
+    description: 'Botellas plásticas arrastradas por la marea en Playa de Copacabana'
   },
+  // Ipanema Beach - Rio de Janeiro
   {
     id: '2',
-    lat: -22.9721,
-    lng: -43.1834,
-    type: 'Bolsas',
-    confidence: 0.87,
-    imageUrl: '/placeholder.svg',
-    detectedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-    description: 'Fragmentos de bolsas plásticas arrastradas por la marea'
-  },
-  {
-    id: '3',
-    lat: -22.9689,
-    lng: -43.1801,
-    type: 'Redes',
-    confidence: 0.95,
-    imageUrl: '/placeholder.svg',
-    detectedAt: new Date(Date.now() - 3 * 60 * 60 * 1000),
-    description: 'Red de pesca abandonada detectada cerca de las rocas'
-  },
-  
-  // Ipanema
-  {
-    id: '4',
     lat: -22.9845,
     lng: -43.2096,
     type: 'Fragmentos',
     confidence: 0.78,
     imageUrl: '/placeholder.svg',
-    detectedAt: new Date(Date.now() - 4 * 60 * 60 * 1000),
-    description: 'Microplásticos dispersos en zona de Ipanema'
+    detectedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
+    description: 'Microplásticos dispersos en las aguas de Playa de Ipanema'
   },
   {
-    id: '5',
+    id: '3',
     lat: -22.9831,
     lng: -43.2089,
+    type: 'Bolsas',
+    confidence: 0.87,
+    imageUrl: '/placeholder.svg',
+    detectedAt: new Date(Date.now() - 3 * 60 * 60 * 1000),
+    description: 'Bolsas plásticas entre las rocas del Arpoador'
+  },
+  
+  // Leblon Beach - Rio de Janeiro
+  {
+    id: '4',
+    lat: -22.9864,
+    lng: -43.2223,
+    type: 'Redes',
+    confidence: 0.95,
+    imageUrl: '/placeholder.svg',
+    detectedAt: new Date(Date.now() - 4 * 60 * 60 * 1000),
+    description: 'Red de pesca abandonada en Playa de Leblon'
+  },
+  
+  // Praia Vermelha - Rio de Janeiro  
+  {
+    id: '5',
+    lat: -22.9523,
+    lng: -43.1656,
     type: 'Botellas',
     confidence: 0.89,
     imageUrl: '/placeholder.svg',
     detectedAt: new Date(Date.now() - 5 * 60 * 60 * 1000),
-    description: 'Botellas de bebidas acumuladas en zona rocosa'
+    description: 'Botellas de vidrio y plástico en Praia Vermelha, Urca'
   },
   
-  // Santos - São Paulo coast
+  // Praia de Pitangueiras - Guarujá, SP
   {
     id: '6',
-    lat: -24.0058,
-    lng: -46.3142,
-    type: 'Bolsas',
-    confidence: 0.83,
-    imageUrl: '/placeholder.svg',
-    detectedAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
-    description: 'Bolsas plásticas en el puerto de Santos'
-  },
-  {
-    id: '7',
-    lat: -24.0089,
-    lng: -46.3178,
-    type: 'Contenedores',
-    confidence: 0.91,
-    imageUrl: '/placeholder.svg',
-    detectedAt: new Date(Date.now() - 7 * 60 * 60 * 1000),
-    description: 'Contenedores plásticos grandes cerca del puerto'
-  },
-  
-  // Guarujá
-  {
-    id: '8',
     lat: -24.0142,
     lng: -46.2567,
     type: 'Fragmentos',
     confidence: 0.76,
     imageUrl: '/placeholder.svg',
-    detectedAt: new Date(Date.now() - 8 * 60 * 60 * 1000),
-    description: 'Fragmentos pequeños de plástico en Praia de Pitangueiras'
+    detectedAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
+    description: 'Fragmentos de plástico en Praia de Pitangueiras, Guarujá'
   },
   {
-    id: '9',
+    id: '7',
     lat: -24.0167,
     lng: -46.2589,
+    type: 'Contenedores',
+    confidence: 0.91,
+    imageUrl: '/placeholder.svg',
+    detectedAt: new Date(Date.now() - 7 * 60 * 60 * 1000),
+    description: 'Envases de alimentos en zona de restaurantes playeros'
+  },
+  
+  // Praia das Astúrias - Guarujá, SP
+  {
+    id: '8',
+    lat: -24.0089,
+    lng: -46.2678,
     type: 'Redes',
     confidence: 0.88,
     imageUrl: '/placeholder.svg',
-    detectedAt: new Date(Date.now() - 9 * 60 * 60 * 1000),
-    description: 'Restos de redes de pesca en la costa de Guarujá'
+    detectedAt: new Date(Date.now() - 8 * 60 * 60 * 1000),
+    description: 'Restos de redes de pesca en Praia das Astúrias'
   },
   
-  // Florianópolis
+  // Praia de Joaquina - Florianópolis, SC
   {
-    id: '10',
-    lat: -27.5987,
-    lng: -48.5196,
+    id: '9',
+    lat: -27.6234,
+    lng: -48.4456,
     type: 'Botellas',
     confidence: 0.94,
     imageUrl: '/placeholder.svg',
-    detectedAt: new Date(Date.now() - 10 * 60 * 60 * 1000),
-    description: 'Acumulación de botellas en Praia de Joaquina'
+    detectedAt: new Date(Date.now() - 9 * 60 * 60 * 1000),
+    description: 'Botellas acumuladas tras eventos de surf en Joaquina'
   },
   {
-    id: '11',
-    lat: -27.6012,
-    lng: -48.5234,
+    id: '10',
+    lat: -27.6198,
+    lng: -48.4423,
     type: 'Bolsas',
     confidence: 0.82,
     imageUrl: '/placeholder.svg',
-    detectedAt: new Date(Date.now() - 11 * 60 * 60 * 1000),
-    description: 'Bolsas plásticas en zona de manglares'
+    detectedAt: new Date(Date.now() - 10 * 60 * 60 * 1000),
+    description: 'Bolsas de snacks dispersas en dunas de Joaquina'
   },
   
-  // Salvador - Bahía
+  // Praia Mole - Florianópolis, SC
+  {
+    id: '11',
+    lat: -27.6089,
+    lng: -48.4234,
+    type: 'Fragmentos',
+    confidence: 0.79,
+    imageUrl: '/placeholder.svg',
+    detectedAt: new Date(Date.now() - 11 * 60 * 60 * 1000),
+    description: 'Microplásticos en zona de surf de Praia Mole'
+  },
+  
+  // Praia do Flamengo - Salvador, BA
   {
     id: '12',
     lat: -12.9714,
     lng: -38.5014,
-    type: 'Fragmentos',
-    confidence: 0.79,
-    imageUrl: '/placeholder.svg',
-    detectedAt: new Date(Date.now() - 12 * 60 * 60 * 1000),
-    description: 'Microplásticos en Praia do Flamengo, Salvador'
-  },
-  {
-    id: '13',
-    lat: -12.9698,
-    lng: -38.4987,
     type: 'Contenedores',
     confidence: 0.86,
     imageUrl: '/placeholder.svg',
-    detectedAt: new Date(Date.now() - 13 * 60 * 60 * 1000),
-    description: 'Envases plásticos de alimentos en la costa'
+    detectedAt: new Date(Date.now() - 12 * 60 * 60 * 1000),
+    description: 'Envases de bebidas en Praia do Flamengo, Salvador'
   },
   
-  // Recife
+  // Praia de Stella Maris - Salvador, BA
+  {
+    id: '13',
+    lat: -12.9234,
+    lng: -38.4756,
+    type: 'Bolsas',
+    confidence: 0.83,
+    imageUrl: '/placeholder.svg',
+    detectedAt: new Date(Date.now() - 13 * 60 * 60 * 1000),
+    description: 'Bolsas plásticas en Praia de Stella Maris'
+  },
+  
+  // Praia de Boa Viagem - Recife, PE
   {
     id: '14',
-    lat: -8.0536,
-    lng: -34.8706,
+    lat: -8.1398,
+    lng: -34.9039,
     type: 'Redes',
     confidence: 0.93,
     imageUrl: '/placeholder.svg',
     detectedAt: new Date(Date.now() - 14 * 60 * 60 * 1000),
-    description: 'Red de pesca abandonada en arrecifes de Recife'
+    description: 'Redes de pesca en arrecifes de Boa Viagem'
   },
   {
     id: '15',
-    lat: -8.0567,
-    lng: -34.8734,
+    lat: -8.1423,
+    lng: -34.9067,
     type: 'Botellas',
     confidence: 0.85,
     imageUrl: '/placeholder.svg',
     detectedAt: new Date(Date.now() - 15 * 60 * 60 * 1000),
-    description: 'Botellas acumuladas en zona de manglares'
+    description: 'Botellas en zona hotelera de Boa Viagem'
   },
   
-  // Fortaleza
+  // Praia de Iracema - Fortaleza, CE
   {
     id: '16',
     lat: -3.7319,
@@ -214,83 +221,115 @@ const mockDetections: MapDetection[] = [
     confidence: 0.81,
     imageUrl: '/placeholder.svg',
     detectedAt: new Date(Date.now() - 16 * 60 * 60 * 1000),
-    description: 'Bolsas plásticas en Praia de Iracema'
+    description: 'Bolsas plásticas en Praia de Iracema tras eventos nocturnos'
   },
+  
+  // Praia do Futuro - Fortaleza, CE
   {
     id: '17',
-    lat: -3.7298,
-    lng: -38.5245,
+    lat: -3.7567,
+    lng: -38.4789,
     type: 'Fragmentos',
     confidence: 0.77,
     imageUrl: '/placeholder.svg',
     detectedAt: new Date(Date.now() - 17 * 60 * 60 * 1000),
-    description: 'Fragmentos de plástico dispersos por viento'
+    description: 'Fragmentos dispersos por viento en Praia do Futuro'
   },
   
-  // Porto Alegre - Área costera
+  // Praia da Ferradura - Búzios, RJ
   {
     id: '18',
-    lat: -30.1087,
-    lng: -51.2365,
-    type: 'Contenedores',
-    confidence: 0.88,
-    imageUrl: '/placeholder.svg',
-    detectedAt: new Date(Date.now() - 18 * 60 * 60 * 1000),
-    description: 'Envases plásticos en zona portuaria'
-  },
-  {
-    id: '19',
-    lat: -30.1134,
-    lng: -51.2398,
-    type: 'Redes',
-    confidence: 0.84,
-    imageUrl: '/placeholder.svg',
-    detectedAt: new Date(Date.now() - 19 * 60 * 60 * 1000),
-    description: 'Fragmentos de redes en delta del río'
-  },
-  
-  // Búzios - Costa norte de Rio
-  {
-    id: '20',
     lat: -22.7469,
     lng: -41.8819,
     type: 'Botellas',
     confidence: 0.90,
     imageUrl: '/placeholder.svg',
-    detectedAt: new Date(Date.now() - 20 * 60 * 60 * 1000),
-    description: 'Botellas en Praia da Ferradura, Búzios'
+    detectedAt: new Date(Date.now() - 18 * 60 * 60 * 1000),
+    description: 'Botellas en zona de fondeo de yates en Ferradura'
   },
+  
+  // Praia do Forno - Arraial do Cabo, RJ
+  {
+    id: '19',
+    lat: -22.9661,
+    lng: -42.0278,
+    type: 'Redes',
+    confidence: 0.92,
+    imageUrl: '/placeholder.svg',
+    detectedAt: new Date(Date.now() - 19 * 60 * 60 * 1000),
+    description: 'Red dañando coral en área protegida do Forno'
+  },
+  
+  // Praia dos Anjos - Arraial do Cabo, RJ
+  {
+    id: '20',
+    lat: -22.9689,
+    lng: -42.0298,
+    type: 'Contenedores',
+    confidence: 0.88,
+    imageUrl: '/placeholder.svg',
+    detectedAt: new Date(Date.now() - 20 * 60 * 60 * 1000),
+    description: 'Envases de pescadores en puerto de Anjos'
+  },
+  
+  // Praia Grande - Ubatuba, SP
   {
     id: '21',
-    lat: -22.7445,
-    lng: -41.8798,
+    lat: -23.4267,
+    lng: -45.0689,
     type: 'Fragmentos',
     confidence: 0.73,
     imageUrl: '/placeholder.svg',
     detectedAt: new Date(Date.now() - 21 * 60 * 60 * 1000),
-    description: 'Microplásticos en aguas cristalinas'
+    description: 'Microplásticos en zona de preservación de Ubatuba'
   },
   
-  // Arraial do Cabo
+  // Praia de Ponta Negra - Natal, RN
   {
     id: '22',
-    lat: -22.9661,
-    lng: -42.0278,
+    lat: -5.8839,
+    lng: -35.1856,
     type: 'Bolsas',
     confidence: 0.86,
     imageUrl: '/placeholder.svg',
     detectedAt: new Date(Date.now() - 22 * 60 * 60 * 1000),
-    description: 'Bolsas en Praia do Forno, área protegida'
+    description: 'Bolsas en dunas de Ponta Negra, Natal'
   },
+  
+  // Praia de Pipa - Rio Grande do Norte
   {
     id: '23',
-    lat: -22.9689,
-    lng: -42.0298,
+    lat: -6.2298,
+    lng: -35.0656,
     type: 'Redes',
-    confidence: 0.92,
+    confidence: 0.94,
     imageUrl: '/placeholder.svg',
     detectedAt: new Date(Date.now() - 23 * 60 * 60 * 1000),
-    description: 'Red de pesca dañando coral en área marina'
+    description: 'Redes fantasma afectando vida marina en Pipa'
+  },
+  
+  // Praia de Camboinhas - Niterói, RJ
+  {
+    id: '24',
+    lat: -22.9556,
+    lng: -43.0456,
+    type: 'Botellas',
+    confidence: 0.87,
+    imageUrl: '/placeholder.svg',
+    detectedAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+    description: 'Botellas en zona residencial de Camboinhas'
+  },
+  
+  // Praia de Itaúna - Saquarema, RJ
+  {
+    id: '25',
+    lat: -22.9234,
+    lng: -42.5678,
+    type: 'Fragmentos',
+    confidence: 0.80,
+    imageUrl: '/placeholder.svg',
+    detectedAt: new Date(Date.now() - 25 * 60 * 60 * 1000),
+    description: 'Fragmentos tras competencia de surf en Itaúna'
   }
 ];
 
