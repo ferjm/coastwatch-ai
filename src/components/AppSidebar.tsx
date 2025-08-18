@@ -42,7 +42,7 @@ export function AppSidebar() {
     { title: t('models'), url: '/app/models', icon: Brain },
     { title: t('jobs'), url: '/app/jobs', icon: ListTodo },
     { title: t('settings'), url: '/app/settings', icon: Settings },
-    ...(hasRole('admin') ? [{ title: 'Usuarios', url: '/app/users', icon: Users }] : []),
+    ...(hasRole('admin') ? [{ title: t('users'), url: '/app/users', icon: Users }] : []),
   ];
 
   const isActive = (path: string) => currentPath === path;

@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Trash2, UserPlus } from 'lucide-react';
+import { Search, UserPlus } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth';
 
 interface UserWithRole {
@@ -25,6 +26,9 @@ export default function UserManagement() {
   const { session } = useAuthStore();
   const [users, setUsers] = useState<UserWithRole[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [roleChanges, setRoleChanges] = useState<Record<string, string>>({});
 
   const fetchUsers = async () => {
     try {
@@ -76,6 +80,43 @@ export default function UserManagement() {
     fetchUsers();
   }, []);
 
+  // Filtered users based on search and role filter
+  const filteredUsers = useMemo(() => {
+    return users.filter(user => {
+      const matchesSearch = 
+        user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+      
+      return matchesSearch && matchesRole;
+    });
+  }, [users, searchTerm, roleFilter]);
+
+  const handleRoleChange = (userId: string, newRole: string) => {
+    setRoleChanges(prev => ({ ...prev, [userId]: newRole }));
+  };
+
+  const hasRoleChanged = (userId: string) => {
+    return roleChanges[userId] && roleChanges[userId] !== users.find(u => u.id === userId)?.role;
+  };
+
+  const assignRole = async (userId: string) => {
+    const newRole = roleChanges[userId];
+    if (!newRole) return;
+    
+    try {
+      await changeUserRole(userId, newRole as 'admin' | 'researcher' | 'viewer');
+      setRoleChanges(prev => {
+        const updated = { ...prev };
+        delete updated[userId];
+        return updated;
+      });
+    } catch (error) {
+      // Error handling is already in changeUserRole
+    }
+  };
+
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
       case 'admin':
@@ -126,8 +167,36 @@ export default function UserManagement() {
         </p>
       </div>
 
+      {/* Search and Filter Controls */}
+      <Card className="mb-6">
+        <CardContent className="p-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                placeholder={t('searchUsers')}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={roleFilter} onValueChange={setRoleFilter}>
+              <SelectTrigger className="w-full sm:w-48">
+                <SelectValue placeholder={t('filterByRole')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('allRoles')}</SelectItem>
+                <SelectItem value="admin">{t('administrator')}</SelectItem>
+                <SelectItem value="researcher">{t('researcher')}</SelectItem>
+                <SelectItem value="viewer">{t('viewer')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="grid gap-4">
-        {users.map((user) => (
+        {filteredUsers.map((user) => (
           <Card key={user.id}>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -140,8 +209,8 @@ export default function UserManagement() {
                         className="w-8 h-8 rounded-full object-cover"
                       />
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
-                        <span className="text-primary-700 font-semibold text-sm">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span className="text-primary font-semibold text-sm">
                           {user.full_name?.charAt(0)?.toUpperCase() || user.email.charAt(0).toUpperCase()}
                         </span>
                       </div>
@@ -156,8 +225,8 @@ export default function UserManagement() {
                   </CardDescription>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge variant={getRoleBadgeVariant(user.role)}>
-                    {getRoleLabel(user.role)}
+                  <Badge variant={getRoleBadgeVariant(roleChanges[user.id] || user.role)}>
+                    {getRoleLabel(roleChanges[user.id] || user.role)}
                   </Badge>
                 </div>
               </div>
@@ -165,8 +234,8 @@ export default function UserManagement() {
             <CardContent>
               <div className="flex items-center gap-2">
                 <Select
-                  onValueChange={(role) => changeUserRole(user.id, role as 'admin' | 'researcher' | 'viewer')}
-                  value={user.role}
+                  onValueChange={(role) => handleRoleChange(user.id, role)}
+                  value={roleChanges[user.id] || user.role}
                 >
                   <SelectTrigger className="w-48">
                     <SelectValue placeholder={t('assignRole')} />
@@ -177,19 +246,30 @@ export default function UserManagement() {
                     <SelectItem value="admin">{t('administrator')}</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button variant="outline" size="sm">
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  {t('assign')}
-                </Button>
+                {hasRoleChanged(user.id) && (
+                  <Button 
+                    variant="default" 
+                    size="sm"
+                    onClick={() => assignRole(user.id)}
+                  >
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    {t('assign')}
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
         ))}
 
-        {users.length === 0 && (
+        {filteredUsers.length === 0 && (
           <Card>
             <CardContent className="text-center py-8">
-              <p className="text-muted-foreground">{t('noUsersRegistered')}</p>
+              <p className="text-muted-foreground">
+                {searchTerm || roleFilter !== 'all' 
+                  ? t('noUsersFound') 
+                  : t('noUsersRegistered')
+                }
+              </p>
             </CardContent>
           </Card>
         )}

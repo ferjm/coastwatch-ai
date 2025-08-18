@@ -238,7 +238,20 @@ const resources = {
       "profileSaved": "Tus cambios se han guardado correctamente",
       "profileUpdateError": "Error al actualizar perfil",
       "profileSaveError": "No se pudo guardar el perfil",
-      "emailCannotChange": "El email no se puede cambiar desde aquí"
+      "emailCannotChange": "El email no se puede cambiar desde aquí",
+      "searchUsers": "Buscar usuarios...",
+      "filterByRole": "Filtrar por rol",
+      "allRoles": "Todos los roles",
+      "noUsersFound": "No se encontraron usuarios",
+      
+      // Theme
+      "toggleTheme": "Cambiar tema",
+      "lightTheme": "Claro",
+      "darkTheme": "Oscuro",
+      "systemTheme": "Sistema",
+      "themeSettings": "Configuración de Tema",
+      "appearance": "Apariencia",
+      "themeDescription": "Personaliza la apariencia de la aplicación"
     }
   },
   en: {
@@ -476,7 +489,20 @@ const resources = {
       "profileSaved": "Your changes have been saved successfully",
       "profileUpdateError": "Error updating profile",
       "profileSaveError": "Could not save profile",
-      "emailCannotChange": "Email cannot be changed from here"
+      "emailCannotChange": "Email cannot be changed from here",
+      "searchUsers": "Search users...",
+      "filterByRole": "Filter by role",
+      "allRoles": "All roles",
+      "noUsersFound": "No users found",
+      
+      // Theme
+      "toggleTheme": "Toggle theme",
+      "lightTheme": "Light",
+      "darkTheme": "Dark",
+      "systemTheme": "System",
+      "themeSettings": "Theme Settings",
+      "appearance": "Appearance",
+      "themeDescription": "Customize the appearance of the application"
     }
   },
   pt: {
