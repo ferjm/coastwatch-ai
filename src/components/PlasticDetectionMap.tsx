@@ -19,7 +19,7 @@ import {
   Clock,
   Eye
 } from 'lucide-react';
-import ApiKeyManager from './maps/ApiKeyManager';
+
 
 // Detection data interface
 export interface MapDetection {
@@ -460,7 +460,6 @@ export function PlasticDetectionMap({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
   const [debugInfo, setDebugInfo] = useState<string[]>([]);
-  const [keySource, setKeySource] = useState<'local' | 'supabase' | 'none'>('none');
 
   const addDebugInfo = (message: string) => {
     const timestamp = new Date().toLocaleTimeString();
@@ -470,18 +469,6 @@ export function PlasticDetectionMap({
   useEffect(() => {
     const fetchApiKey = async () => {
       try {
-        // 1) Intentar localStorage primero
-        const localKey = localStorage.getItem('gmaps_api_key');
-        if (localKey) {
-          addDebugInfo('🔐 API key encontrada en almacenamiento local');
-          addDebugInfo(`📝 Longitud de API key: ${localKey.length} caracteres`);
-          setApiKey(localKey);
-          setKeySource('local');
-          setIsLoading(false);
-          return;
-        }
-
-        // 2) Fallback a Supabase Edge Function
         addDebugInfo('🔄 Iniciando obtención de API key desde Supabase...');
         const key = await getGoogleMapsApiKey();
         
@@ -490,7 +477,6 @@ export function PlasticDetectionMap({
           addDebugInfo(`📝 Longitud de API key: ${key.length} caracteres`);
           addDebugInfo(`🔑 Primeros 20 caracteres: ${key.substring(0, 20)}...`);
           setApiKey(key);
-          setKeySource('supabase');
         } else {
           addDebugInfo('❌ No se recibió API key de Supabase');
           setError('No API key received from Supabase');
@@ -509,21 +495,6 @@ export function PlasticDetectionMap({
     fetchApiKey();
   }, []);
 
-  const handleSaveLocalKey = (key: string) => {
-    localStorage.setItem('gmaps_api_key', key);
-    addDebugInfo('🔐 API key guardada localmente');
-    setApiKey(key);
-    setKeySource('local');
-    setError('');
-    setIsLoading(false);
-  };
-
-  const handleClearLocalKey = () => {
-    localStorage.removeItem('gmaps_api_key');
-    addDebugInfo('🧹 API key local eliminada');
-    setApiKey('');
-    setKeySource('none');
-  };
 
   // Debug Panel Component
   const DebugPanel = () => (
@@ -545,7 +516,7 @@ export function PlasticDetectionMap({
             <div className="bg-green-50 p-3 rounded">
               <div className="text-xs font-medium text-green-800">API Key</div>
               <div className="text-sm text-green-700">
-                {apiKey ? `✅ Presente (${apiKey.length} chars) · Origen: ${keySource === 'local' ? 'Local' : 'Supabase'}` : '❌ No disponible'}
+                {apiKey ? `✅ Presente (${apiKey.length} chars) · Origen: Supabase` : '❌ No disponible'}
               </div>
             </div>
             <div className="bg-red-50 p-3 rounded">
@@ -574,71 +545,44 @@ export function PlasticDetectionMap({
   );
 
   if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <ApiKeyManager
-          currentKeyLength={apiKey?.length}
-          source={keySource}
-          onSave={handleSaveLocalKey}
-          onClear={handleClearLocalKey}
-        />
-        <MapLoadingComponent />
-      </div>
-    );
+    return <MapLoadingComponent />;
   }
 
   if (error || !apiKey) {
     return (
-      <div className="space-y-4">
-        <ApiKeyManager
-          currentKeyLength={apiKey?.length}
-          source={keySource}
-          onSave={handleSaveLocalKey}
-          onClear={handleClearLocalKey}
-        />
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center">
-              <div className="text-red-600 mb-2 text-lg font-semibold">
-                ❌ Error cargando Google Maps
-              </div>
-              <p className="text-red-500 mb-4">
-                {error || 'No se pudo obtener la API key'}
-              </p>
-              <div className="bg-yellow-50 border border-yellow-200 rounded p-4 text-left">
-                <div className="font-medium text-yellow-800 mb-2">Posibles soluciones:</div>
-                <ul className="text-sm text-yellow-700 space-y-1">
-                  <li>• Ingresar manualmente la API key arriba (se guarda localmente)</li>
-                  <li>• Verificar que la API key esté configurada en Supabase secrets</li>
-                  <li>• Asegurarte de que la edge function esté desplegada</li>
-                </ul>
-              </div>
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center">
+            <div className="text-red-600 mb-2 text-lg font-semibold">
+              ❌ Error cargando Google Maps
             </div>
-          </CardContent>
-        </Card>
-      </div>
+            <p className="text-red-500 mb-4">
+              {error || 'No se pudo obtener la API key'}
+            </p>
+            <div className="bg-yellow-50 border border-yellow-200 rounded p-4 text-left">
+              <div className="font-medium text-yellow-800 mb-2">Posibles soluciones:</div>
+              <ul className="text-sm text-yellow-700 space-y-1">
+                <li>• Verificar que la API key esté configurada en Supabase secrets</li>
+                <li>• Asegurarte de que la edge function esté desplegada</li>
+              </ul>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <ApiKeyManager
-        currentKeyLength={apiKey?.length}
-        source={keySource}
-        onSave={handleSaveLocalKey}
-        onClear={handleClearLocalKey}
+    <Wrapper 
+      apiKey={apiKey}
+      render={render}
+      libraries={['visualization']}
+    >
+      <MapComponent 
+        detections={detections}
+        onDetectionClick={onDetectionClick}
+        className={className}
       />
-      <Wrapper 
-        apiKey={apiKey}
-        render={render}
-        libraries={['visualization']}
-      >
-        <MapComponent 
-          detections={detections}
-          onDetectionClick={onDetectionClick}
-          className={className}
-        />
-      </Wrapper>
-    </div>
+    </Wrapper>
   );
 }
