@@ -15,6 +15,7 @@ export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, signInWithGoogle, user } = useAuthStore();
   const { toast } = useToast();
@@ -64,7 +65,7 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      await signUp(email, password);
+      await signUp(email, password, fullName);
       toast({
         title: t('registrationSuccess'),
         description: t('checkEmailConfirm'),
@@ -226,6 +227,17 @@ export default function Auth() {
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleSignUp} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="register-full-name">{t('fullName')}</Label>
+                      <Input
+                        id="register-full-name"
+                        type="text"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        placeholder={t('fullNamePlaceholder')}
+                        required
+                      />
+                    </div>
                     <div className="space-y-2">
                       <Label htmlFor="register-email">{t('email')}</Label>
                       <Input

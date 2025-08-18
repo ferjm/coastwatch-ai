@@ -12,6 +12,8 @@ import { useAuthStore } from '@/stores/auth';
 interface UserWithRole {
   id: string;
   email: string;
+  full_name: string | null;
+  avatar_url: string | null;
   role: string;
   created_at: string;
   last_sign_in_at: string | null;
@@ -26,27 +28,14 @@ export default function UserManagement() {
 
   const fetchUsers = async () => {
     try {
-      if (!session?.access_token) {
-        throw new Error('No authentication token');
+      // Call edge function to get users with emails using supabase client
+      const { data, error } = await supabase.functions.invoke('get-users-with-roles');
+
+      if (error) {
+        throw error;
       }
 
-      // Call edge function to get users with emails
-      const response = await fetch(
-        `https://sgotsbheftlbtedrmsiw.supabase.co/functions/v1/get-users-with-roles`,
-        {
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const usersData = await response.json();
-      setUsers(usersData);
+      setUsers(data || []);
     } catch (error: any) {
       toast({
         title: t('error'),
@@ -143,8 +132,24 @@ export default function UserManagement() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-lg">{user.email}</CardTitle>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    {user.avatar_url ? (
+                      <img 
+                        src={user.avatar_url} 
+                        alt="Avatar" 
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
+                        <span className="text-primary-700 font-semibold text-sm">
+                          {user.full_name?.charAt(0)?.toUpperCase() || user.email.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                    {user.full_name || user.email}
+                  </CardTitle>
                   <CardDescription>
+                    {user.full_name && <div>Email: {user.email}</div>}
                     {t('lastSignIn')}: {user.last_sign_in_at 
                       ? new Date(user.last_sign_in_at).toLocaleDateString() 
                       : t('never')}

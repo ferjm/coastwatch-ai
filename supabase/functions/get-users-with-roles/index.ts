@@ -54,7 +54,7 @@ serve(async (req) => {
       return new Response('Forbidden', { status: 403, headers: corsHeaders })
     }
 
-    // Get all users with their roles using admin client
+    // Get user roles and profiles using admin client
     const { data: usersData, error: usersError } = await supabaseAdmin.auth.admin.listUsers()
     
     if (usersError) {
@@ -65,8 +65,8 @@ serve(async (req) => {
       })
     }
 
-    // Get user roles
-    const { data: rolesData, error: rolesError } = await supabaseClient
+    // Get user roles using admin client
+    const { data: rolesData, error: rolesError } = await supabaseAdmin
       .from('user_roles')
       .select('user_id, role')
     
@@ -78,12 +78,29 @@ serve(async (req) => {
       })
     }
 
-    // Combine users with their roles
+    // Get user profiles using admin client
+    const { data: profilesData, error: profilesError } = await supabaseAdmin
+      .from('profiles')
+      .select('id, full_name, avatar_url')
+    
+    if (profilesError) {
+      console.error('Error fetching profiles:', profilesError)
+      return new Response(JSON.stringify({ error: profilesError.message }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    // Combine users with their roles and profiles
     const usersWithRoles = usersData.users.map(authUser => {
       const userRole = rolesData?.find(role => role.user_id === authUser.id)
+      const userProfile = profilesData?.find(profile => profile.id === authUser.id)
+      
       return {
         id: authUser.id,
         email: authUser.email,
+        full_name: userProfile?.full_name || null,
+        avatar_url: userProfile?.avatar_url || null,
         role: userRole?.role || 'no-role',
         created_at: authUser.created_at,
         last_sign_in_at: authUser.last_sign_in_at

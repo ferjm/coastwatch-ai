@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ProfileForm } from '@/components/ProfileForm';
 
 export default function Settings() {
   const { t } = useTranslation();
@@ -7,6 +8,8 @@ export default function Settings() {
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold text-foreground">{t('settings')}</h1>
+      
+      <ProfileForm />
       
       <Card>
         <CardHeader>
