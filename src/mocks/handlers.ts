@@ -83,7 +83,7 @@ export const handlers = [
       status: 'uploaded',
       hash: `sha256:${Math.random().toString(36).substring(7)}`,
       thumbUrl: `/api/images/${body.imageId}/thumb`,
-      gcsUri: `gs://plasticwatch-images/${body.imageId}.jpg`
+      gcsUri: `gs://ecos-images/${body.imageId}.jpg`
     };
 
     images.push(newImage);

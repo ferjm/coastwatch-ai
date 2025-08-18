@@ -6,7 +6,7 @@ const resources = {
   es: {
     translation: {
       // Common
-      "appName": "PlasticWatch by ECOS",
+      "appName": "ECOS",
       "loading": "Cargando...",
       "save": "Guardar",
       "cancel": "Cancelar",
@@ -257,7 +257,7 @@ const resources = {
   en: {
     translation: {
       // Common
-      "appName": "PlasticWatch by ECOS",
+      "appName": "ECOS",
       "loading": "Loading...",
       "save": "Save",
       "cancel": "Cancel",
@@ -508,7 +508,7 @@ const resources = {
   pt: {
     translation: {
       // Common
-      "appName": "PlasticWatch by ECOS",
+      "appName": "ECOS",
       "loading": "Carregando...",
       "save": "Salvar",
       "cancel": "Cancelar",

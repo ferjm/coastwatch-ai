@@ -11,13 +11,13 @@ export const createUUID = (): UUID => {
 export const mockUsers: User[] = [
   {
     id: 'user-1',
-    email: 'admin@plasticwatch.com',
+    email: 'admin@ecos.com',
     name: 'Admin User',
     role: 'admin'
   },
   {
     id: 'user-2',
-    email: 'reviewer@plasticwatch.com',
+    email: 'reviewer@ecos.com',
     name: 'Reviewer User',
     role: 'reviewer'
   }
@@ -114,7 +114,7 @@ export const mockImages: ImageItem[] = [
     status: 'done',
     hash: 'sha256:abc123...',
     thumbUrl: '/api/images/img-1/thumb',
-    gcsUri: 'gs://plasticwatch-images/img-1.jpg'
+    gcsUri: 'gs://ecos-images/img-1.jpg'
   },
   {
     id: 'img-2',
@@ -129,7 +129,7 @@ export const mockImages: ImageItem[] = [
     status: 'processing',
     hash: 'sha256:def456...',
     thumbUrl: '/api/images/img-2/thumb',
-    gcsUri: 'gs://plasticwatch-images/img-2.jpg'
+    gcsUri: 'gs://ecos-images/img-2.jpg'
   }
 ];
 
