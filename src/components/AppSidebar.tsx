@@ -10,7 +10,8 @@ import {
   Settings,
   BarChart3,
   ListTodo,
-  Users
+  Users,
+  Waves
 } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/stores/auth';
@@ -51,7 +52,8 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-foreground font-bold text-lg">
+          <SidebarGroupLabel className="text-foreground font-bold text-xl flex items-center gap-3 py-4">
+            <Waves className="h-6 w-6 text-primary" />
             {t('appName')}
           </SidebarGroupLabel>
 
