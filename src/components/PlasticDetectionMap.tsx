@@ -39,47 +39,258 @@ interface PlasticMapProps {
   className?: string;
 }
 
-// Mock detection data for demonstration
+// Mock detection data for demonstration - Brazilian coast
 const mockDetections: MapDetection[] = [
+  // Rio de Janeiro - Copacabana
   {
     id: '1',
-    lat: -12.0464,
-    lng: -77.0428,
+    lat: -22.9707,
+    lng: -43.1823,
     type: 'Botellas',
-    confidence: 0.89,
+    confidence: 0.92,
     imageUrl: '/placeholder.svg',
-    detectedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-    description: 'Múltiples botellas plásticas detectadas en la playa'
+    detectedAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
+    description: 'Concentración alta de botellas plásticas en Copacabana'
   },
   {
-    id: '2', 
-    lat: -12.0500,
-    lng: -77.0380,
+    id: '2',
+    lat: -22.9721,
+    lng: -43.1834,
     type: 'Bolsas',
-    confidence: 0.76,
+    confidence: 0.87,
     imageUrl: '/placeholder.svg',
-    detectedAt: new Date(Date.now() - 4 * 60 * 60 * 1000),
-    description: 'Fragmentos de bolsas plásticas'
+    detectedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
+    description: 'Fragmentos de bolsas plásticas arrastradas por la marea'
   },
   {
     id: '3',
-    lat: -12.0420,
-    lng: -77.0450,
+    lat: -22.9689,
+    lng: -43.1801,
+    type: 'Redes',
+    confidence: 0.95,
+    imageUrl: '/placeholder.svg',
+    detectedAt: new Date(Date.now() - 3 * 60 * 60 * 1000),
+    description: 'Red de pesca abandonada detectada cerca de las rocas'
+  },
+  
+  // Ipanema
+  {
+    id: '4',
+    lat: -22.9845,
+    lng: -43.2096,
+    type: 'Fragmentos',
+    confidence: 0.78,
+    imageUrl: '/placeholder.svg',
+    detectedAt: new Date(Date.now() - 4 * 60 * 60 * 1000),
+    description: 'Microplásticos dispersos en zona de Ipanema'
+  },
+  {
+    id: '5',
+    lat: -22.9831,
+    lng: -43.2089,
+    type: 'Botellas',
+    confidence: 0.89,
+    imageUrl: '/placeholder.svg',
+    detectedAt: new Date(Date.now() - 5 * 60 * 60 * 1000),
+    description: 'Botellas de bebidas acumuladas en zona rocosa'
+  },
+  
+  // Santos - São Paulo coast
+  {
+    id: '6',
+    lat: -24.0058,
+    lng: -46.3142,
+    type: 'Bolsas',
+    confidence: 0.83,
+    imageUrl: '/placeholder.svg',
+    detectedAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
+    description: 'Bolsas plásticas en el puerto de Santos'
+  },
+  {
+    id: '7',
+    lat: -24.0089,
+    lng: -46.3178,
+    type: 'Contenedores',
+    confidence: 0.91,
+    imageUrl: '/placeholder.svg',
+    detectedAt: new Date(Date.now() - 7 * 60 * 60 * 1000),
+    description: 'Contenedores plásticos grandes cerca del puerto'
+  },
+  
+  // Guarujá
+  {
+    id: '8',
+    lat: -24.0142,
+    lng: -46.2567,
+    type: 'Fragmentos',
+    confidence: 0.76,
+    imageUrl: '/placeholder.svg',
+    detectedAt: new Date(Date.now() - 8 * 60 * 60 * 1000),
+    description: 'Fragmentos pequeños de plástico en Praia de Pitangueiras'
+  },
+  {
+    id: '9',
+    lat: -24.0167,
+    lng: -46.2589,
+    type: 'Redes',
+    confidence: 0.88,
+    imageUrl: '/placeholder.svg',
+    detectedAt: new Date(Date.now() - 9 * 60 * 60 * 1000),
+    description: 'Restos de redes de pesca en la costa de Guarujá'
+  },
+  
+  // Florianópolis
+  {
+    id: '10',
+    lat: -27.5987,
+    lng: -48.5196,
+    type: 'Botellas',
+    confidence: 0.94,
+    imageUrl: '/placeholder.svg',
+    detectedAt: new Date(Date.now() - 10 * 60 * 60 * 1000),
+    description: 'Acumulación de botellas en Praia de Joaquina'
+  },
+  {
+    id: '11',
+    lat: -27.6012,
+    lng: -48.5234,
+    type: 'Bolsas',
+    confidence: 0.82,
+    imageUrl: '/placeholder.svg',
+    detectedAt: new Date(Date.now() - 11 * 60 * 60 * 1000),
+    description: 'Bolsas plásticas en zona de manglares'
+  },
+  
+  // Salvador - Bahía
+  {
+    id: '12',
+    lat: -12.9714,
+    lng: -38.5014,
+    type: 'Fragmentos',
+    confidence: 0.79,
+    imageUrl: '/placeholder.svg',
+    detectedAt: new Date(Date.now() - 12 * 60 * 60 * 1000),
+    description: 'Microplásticos en Praia do Flamengo, Salvador'
+  },
+  {
+    id: '13',
+    lat: -12.9698,
+    lng: -38.4987,
+    type: 'Contenedores',
+    confidence: 0.86,
+    imageUrl: '/placeholder.svg',
+    detectedAt: new Date(Date.now() - 13 * 60 * 60 * 1000),
+    description: 'Envases plásticos de alimentos en la costa'
+  },
+  
+  // Recife
+  {
+    id: '14',
+    lat: -8.0536,
+    lng: -34.8706,
+    type: 'Redes',
+    confidence: 0.93,
+    imageUrl: '/placeholder.svg',
+    detectedAt: new Date(Date.now() - 14 * 60 * 60 * 1000),
+    description: 'Red de pesca abandonada en arrecifes de Recife'
+  },
+  {
+    id: '15',
+    lat: -8.0567,
+    lng: -34.8734,
+    type: 'Botellas',
+    confidence: 0.85,
+    imageUrl: '/placeholder.svg',
+    detectedAt: new Date(Date.now() - 15 * 60 * 60 * 1000),
+    description: 'Botellas acumuladas en zona de manglares'
+  },
+  
+  // Fortaleza
+  {
+    id: '16',
+    lat: -3.7319,
+    lng: -38.5267,
+    type: 'Bolsas',
+    confidence: 0.81,
+    imageUrl: '/placeholder.svg',
+    detectedAt: new Date(Date.now() - 16 * 60 * 60 * 1000),
+    description: 'Bolsas plásticas en Praia de Iracema'
+  },
+  {
+    id: '17',
+    lat: -3.7298,
+    lng: -38.5245,
+    type: 'Fragmentos',
+    confidence: 0.77,
+    imageUrl: '/placeholder.svg',
+    detectedAt: new Date(Date.now() - 17 * 60 * 60 * 1000),
+    description: 'Fragmentos de plástico dispersos por viento'
+  },
+  
+  // Porto Alegre - Área costera
+  {
+    id: '18',
+    lat: -30.1087,
+    lng: -51.2365,
+    type: 'Contenedores',
+    confidence: 0.88,
+    imageUrl: '/placeholder.svg',
+    detectedAt: new Date(Date.now() - 18 * 60 * 60 * 1000),
+    description: 'Envases plásticos en zona portuaria'
+  },
+  {
+    id: '19',
+    lat: -30.1134,
+    lng: -51.2398,
+    type: 'Redes',
+    confidence: 0.84,
+    imageUrl: '/placeholder.svg',
+    detectedAt: new Date(Date.now() - 19 * 60 * 60 * 1000),
+    description: 'Fragmentos de redes en delta del río'
+  },
+  
+  // Búzios - Costa norte de Rio
+  {
+    id: '20',
+    lat: -22.7469,
+    lng: -41.8819,
+    type: 'Botellas',
+    confidence: 0.90,
+    imageUrl: '/placeholder.svg',
+    detectedAt: new Date(Date.now() - 20 * 60 * 60 * 1000),
+    description: 'Botellas en Praia da Ferradura, Búzios'
+  },
+  {
+    id: '21',
+    lat: -22.7445,
+    lng: -41.8798,
+    type: 'Fragmentos',
+    confidence: 0.73,
+    imageUrl: '/placeholder.svg',
+    detectedAt: new Date(Date.now() - 21 * 60 * 60 * 1000),
+    description: 'Microplásticos en aguas cristalinas'
+  },
+  
+  // Arraial do Cabo
+  {
+    id: '22',
+    lat: -22.9661,
+    lng: -42.0278,
+    type: 'Bolsas',
+    confidence: 0.86,
+    imageUrl: '/placeholder.svg',
+    detectedAt: new Date(Date.now() - 22 * 60 * 60 * 1000),
+    description: 'Bolsas en Praia do Forno, área protegida'
+  },
+  {
+    id: '23',
+    lat: -22.9689,
+    lng: -42.0298,
     type: 'Redes',
     confidence: 0.92,
     imageUrl: '/placeholder.svg',
-    detectedAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
-    description: 'Red de pesca abandonada'
-  },
-  {
-    id: '4',
-    lat: -12.0480,
-    lng: -77.0400,
-    type: 'Fragmentos',
-    confidence: 0.68,
-    imageUrl: '/placeholder.svg',
-    detectedAt: new Date(Date.now() - 8 * 60 * 60 * 1000),
-    description: 'Fragmentos pequeños de plástico'
+    detectedAt: new Date(Date.now() - 23 * 60 * 60 * 1000),
+    description: 'Red de pesca dañando coral en área marina'
   }
 ];
 
@@ -111,7 +322,8 @@ function MapComponent({
       'Bolsas': '#10B981', 
       'Redes': '#F59E0B',
       'Fragmentos': '#EF4444',
-      'Otros': '#8B5CF6'
+      'Contenedores': '#8B5CF6',
+      'Otros': '#6B7280'
     };
     return colors[type] || '#6B7280';
   };
@@ -121,8 +333,8 @@ function MapComponent({
     if (!mapRef.current || map) return;
 
     const newMap = new google.maps.Map(mapRef.current, {
-      center: { lat: -12.0464, lng: -77.0428 }, // Lima, Peru coast
-      zoom: 13,
+      center: { lat: -22.9707, lng: -43.1823 }, // Rio de Janeiro - Copacabana
+      zoom: 7,
       mapTypeId: mapType as google.maps.MapTypeId,
       styles: [
         {
