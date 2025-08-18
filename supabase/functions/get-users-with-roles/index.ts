@@ -43,14 +43,20 @@ serve(async (req) => {
       return new Response('Unauthorized', { status: 401, headers: corsHeaders })
     }
 
-    // Check if user has admin role
-    const { data: userRoles } = await supabaseClient
+    // Check if user has admin role using admin client
+    const { data: userRoles, error: roleError } = await supabaseAdmin
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id)
       .single()
 
+    if (roleError) {
+      console.error('Error checking user role:', roleError)
+      return new Response('Forbidden', { status: 403, headers: corsHeaders })
+    }
+
     if (!userRoles || userRoles.role !== 'admin') {
+      console.error('User is not admin. Role:', userRoles?.role)
       return new Response('Forbidden', { status: 403, headers: corsHeaders })
     }
 
