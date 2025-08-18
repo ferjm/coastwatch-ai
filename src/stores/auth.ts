@@ -76,7 +76,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const { data, error } = await supabase
       .from('user_roles')
       .select('role')
-      .eq('user_id', user.id);
+      .eq('user_id', user.id)
+      .single();
 
     if (error) {
       console.error('Error fetching user roles:', error);
@@ -84,8 +85,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       return;
     }
 
-    const roles = data?.map(r => r.role) || [];
-    set({ userRoles: roles });
+    // Since roles are now mutually exclusive, we only have one role
+    const role = data?.role || '';
+    set({ userRoles: role ? [role] : [] });
   },
 
   hasRole: (role: string) => {

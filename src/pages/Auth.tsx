@@ -34,14 +34,14 @@ export default function Auth() {
     try {
       await signIn(email, password);
       toast({
-        title: t('loginSuccess'),
-        description: t('welcomeBack'),
+        title: t('signInSuccess'),
+        description: t('welcome'),
       });
       navigate('/app/dashboard');
     } catch (error: any) {
       toast({
-        title: t('loginError'),
-        description: error.message || t('loginFailed'),
+        title: t('authError'),
+        description: error.message || t('invalidCredentials'),
         variant: 'destructive',
       });
     } finally {
@@ -86,8 +86,8 @@ export default function Auth() {
       await signInWithGoogle();
     } catch (error: any) {
       toast({
-        title: t('loginError'),
-        description: error.message || t('googleSignInError'),
+        title: t('authError'),
+        description: error.message || t('googleAuthError'),
         variant: 'destructive',
       });
     }
@@ -130,35 +130,35 @@ export default function Auth() {
 
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Iniciar Sesión</TabsTrigger>
-              <TabsTrigger value="register">Registrarse</TabsTrigger>
+              <TabsTrigger value="login">{t('login')}</TabsTrigger>
+              <TabsTrigger value="register">{t('register')}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="login">
               <Card>
                 <CardHeader className="text-center">
                   <CardTitle className="text-2xl font-bold text-primary-700">
-                    Bienvenido
+                    {t('welcomeAuth')}
                   </CardTitle>
                   <CardDescription>
-                    Ingresa tus credenciales para acceder al sistema
+                    {t('signInDescription')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleSignIn} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="login-email">Email</Label>
+                      <Label htmlFor="login-email">{t('email')}</Label>
                       <Input
                         id="login-email"
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="tu@email.com"
+                        placeholder={t('emailPlaceholder')}
                         required
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="login-password">Contraseña</Label>
+                      <Label htmlFor="login-password">{t('password')}</Label>
                       <Input
                         id="login-password"
                         type="password"
@@ -168,7 +168,7 @@ export default function Auth() {
                       />
                     </div>
                     <Button type="submit" className="w-full" disabled={loading}>
-                      {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+                      {loading ? t('signingIn') : t('login')}
                     </Button>
                   </form>
 
@@ -179,7 +179,7 @@ export default function Auth() {
                       </div>
                       <div className="relative flex justify-center text-xs uppercase">
                         <span className="bg-background px-2 text-muted-foreground">
-                          O continuar con
+                          {t('orContinueWith')}
                         </span>
                       </div>
                     </div>
@@ -218,27 +218,27 @@ export default function Auth() {
               <Card>
                 <CardHeader className="text-center">
                   <CardTitle className="text-2xl font-bold text-primary-700">
-                    Crear Cuenta
+                    {t('createAccountTitle')}
                   </CardTitle>
                   <CardDescription>
-                    Registrarte como nuevo usuario del sistema
+                    {t('createAccountDescription')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleSignUp} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="register-email">Email</Label>
+                      <Label htmlFor="register-email">{t('email')}</Label>
                       <Input
                         id="register-email"
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="tu@email.com"
+                        placeholder={t('emailPlaceholder')}
                         required
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="register-password">Contraseña</Label>
+                      <Label htmlFor="register-password">{t('password')}</Label>
                       <Input
                         id="register-password"
                         type="password"
@@ -248,7 +248,7 @@ export default function Auth() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="confirm-password">Confirmar Contraseña</Label>
+                      <Label htmlFor="confirm-password">{t('confirmPassword')}</Label>
                       <Input
                         id="confirm-password"
                         type="password"
@@ -258,13 +258,13 @@ export default function Auth() {
                       />
                     </div>
                     <Button type="submit" className="w-full" disabled={loading}>
-                      {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
+                      {loading ? t('creatingAccount') : t('createAccount')}
                     </Button>
                   </form>
                   
                   <div className="mt-4 text-center text-sm text-muted-foreground">
-                    Los nuevos usuarios se registran como <strong>Visualizadores</strong> por defecto.
-                    Un administrador puede asignar permisos adicionales.
+                    {t('newUsersRegisterAs')} <strong>{t('viewer')}</strong> {t('byDefault')}
+                    {t('adminCanAssign')}
                   </div>
                 </CardContent>
               </Card>
@@ -276,7 +276,7 @@ export default function Auth() {
               to="/" 
               className="text-sm text-primary-600 hover:text-primary-700"
             >
-              ← Volver al inicio
+              {t('backToHome')}
             </Link>
           </div>
         </div>

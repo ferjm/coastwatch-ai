@@ -187,6 +187,39 @@ const resources = {
       "jobsPlaceholder": "Cola de trabajos próximamente...",
       "systemConfiguration": "Configuración del Sistema",
       "configPlaceholder": "Configuración próximamente...",
+      
+      // Auth forms
+      "welcomeAuth": "Bienvenido",
+      "signInDescription": "Ingresa tus credenciales para acceder al sistema",
+      "createAccountTitle": "Crear Cuenta",
+      "createAccountDescription": "Registrarte como nuevo usuario del sistema",
+      "orContinueWith": "O continuar con",
+      "backToHome": "← Volver al inicio",
+      "newUsersRegisterAs": "Los nuevos usuarios se registran como",
+      "byDefault": "por defecto.",
+      "adminCanAssign": "Un administrador puede asignar permisos adicionales.",
+      
+      // User management
+      "userManagement": "Gestión de Usuarios",
+      "manageUsersDescription": "Administra los roles y permisos de los usuarios del sistema",
+      "noUsersRegistered": "No hay usuarios registrados",
+      "assignRole": "Asignar rol...",
+      "assign": "Asignar",
+      "administrator": "Administrador",
+      "researcher": "Investigador",
+      "viewer": "Visualizador",
+      "roleAssignedSuccess": "Rol asignado correctamente",
+      "roleRemovedSuccess": "Rol removido correctamente",
+      "errorAssigningRole": "No se pudo asignar el rol",
+      "errorRemovingRole": "No se pudo remover el rol",
+      "errorLoadingUsers": "No se pudieron cargar los usuarios",
+      "accessDenied": "Acceso Denegado",
+      "noPermissions": "No tienes permisos para acceder a esta página.",
+      "users": "Usuarios",
+      "lastSignIn": "Último acceso",
+      "never": "Nunca",
+      "role": "Rol",
+      "assignedSuccessfully": "asignado correctamente"
     }
   },
   en: {
@@ -373,6 +406,39 @@ const resources = {
       "jobsPlaceholder": "Job queue coming soon...",
       "systemConfiguration": "System Configuration",
       "configPlaceholder": "Configuration coming soon...",
+      
+      // Auth forms
+      "welcomeAuth": "Welcome",
+      "signInDescription": "Enter your credentials to access the system",
+      "createAccountTitle": "Create Account",
+      "createAccountDescription": "Register as a new system user",
+      "orContinueWith": "Or continue with",
+      "backToHome": "← Back to home",
+      "newUsersRegisterAs": "New users register as",
+      "byDefault": "by default.",
+      "adminCanAssign": "An administrator can assign additional permissions.",
+      
+      // User management
+      "userManagement": "User Management",
+      "manageUsersDescription": "Manage user roles and permissions in the system",
+      "noUsersRegistered": "No users registered",
+      "assignRole": "Assign role...",
+      "assign": "Assign",
+      "administrator": "Administrator",
+      "researcher": "Researcher",
+      "viewer": "Viewer",
+      "roleAssignedSuccess": "Role assigned successfully",
+      "roleRemovedSuccess": "Role removed successfully",
+      "errorAssigningRole": "Could not assign role",
+      "errorRemovingRole": "Could not remove role",
+      "errorLoadingUsers": "Could not load users",
+      "accessDenied": "Access Denied",
+      "noPermissions": "You don't have permissions to access this page.",
+      "users": "Users",
+      "lastSignIn": "Last sign in",
+      "never": "Never",
+      "role": "Role",
+      "assignedSuccessfully": "assigned successfully"
     }
   },
   pt: {
