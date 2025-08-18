@@ -9,9 +9,11 @@ import {
   Brain, 
   Settings,
   BarChart3,
-  ListTodo
+  ListTodo,
+  Users
 } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
+import { useAuthStore } from '@/stores/auth';
 import {
   Sidebar,
   SidebarContent,
@@ -28,6 +30,7 @@ export function AppSidebar() {
   const { t } = useTranslation();
   const location = useLocation();
   const currentPath = location.pathname;
+  const { hasRole } = useAuthStore();
 
   const items = [
     { title: t('dashboard'), url: '/app/dashboard', icon: Home },
@@ -39,6 +42,7 @@ export function AppSidebar() {
     { title: t('models'), url: '/app/models', icon: Brain },
     { title: t('jobs'), url: '/app/jobs', icon: ListTodo },
     { title: t('settings'), url: '/app/settings', icon: Settings },
+    ...(hasRole('admin') ? [{ title: 'Usuarios', url: '/app/users', icon: Users }] : []),
   ];
 
   const isActive = (path: string) => currentPath === path;

@@ -11,6 +11,7 @@ import { AppLayout } from "@/components/AppLayout";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
 // App pages
@@ -23,6 +24,7 @@ import Flights from "./pages/app/Flights";
 import Models from "./pages/app/Models";
 import Jobs from "./pages/app/Jobs";
 import Settings from "./pages/app/Settings";
+import UserManagement from "./pages/UserManagement";
 
 const queryClient = new QueryClient();
 
@@ -35,8 +37,10 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             {/* Public routes */}
-            <Route path="/" element={<Login />} />
+            <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/auth" element={<Auth />} />
             
             {/* Protected app routes */}
             <Route path="/app/*" element={
@@ -52,6 +56,11 @@ const App = () => (
                     <Route path="models" element={<Models />} />
                     <Route path="jobs" element={<Jobs />} />
                     <Route path="settings" element={<Settings />} />
+                    <Route path="users" element={
+                      <ProtectedRoute requiredRole="admin">
+                        <UserManagement />
+                      </ProtectedRoute>
+                    } />
                   </Routes>
                 </AppLayout>
               </ProtectedRoute>

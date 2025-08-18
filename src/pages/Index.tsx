@@ -11,8 +11,8 @@ const Index = () => {
           Detección de residuos plásticos en zonas costeras usando inteligencia artificial y análisis de imágenes de dron.
         </p>
         <div className="flex gap-4 justify-center">
-          <a href="/login" className="bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors">
-            Acceder al Dashboard
+          <a href="/auth" className="bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors">
+            Acceder al Sistema
           </a>
           <button className="border border-ocean-600 text-ocean-600 px-8 py-3 rounded-lg font-semibold hover:bg-ocean-50 transition-colors">
             Conocer Más

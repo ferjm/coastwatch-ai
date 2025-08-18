@@ -7,25 +7,40 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const { setUser, setLoading } = useAuthStore();
+  const { setUser, setSession, setLoading, fetchUserRoles } = useAuthStore();
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    // Listen for auth changes
+    // Set up auth state listener FIRST
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      
+      // Fetch user roles after authentication changes
+      if (session?.user) {
+        setTimeout(() => {
+          fetchUserRoles();
+        }, 0);
+      }
+    });
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+      
+      if (session?.user) {
+        setTimeout(() => {
+          fetchUserRoles();
+        }, 0);
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, [setUser, setLoading]);
+  }, [setUser, setSession, setLoading, fetchUserRoles]);
 
   return <>{children}</>;
 }
