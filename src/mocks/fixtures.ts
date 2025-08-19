@@ -140,7 +140,6 @@ export const mockDetections: Detection[] = [
   {
     id: 'det-1',
     imageId: 'img-1',
-    class: 'plastic_bottle',
     score: 0.924,
     bbox: { x: 1200, y: 800, w: 150, h: 200 },
     geomPoint: {
@@ -156,7 +155,6 @@ export const mockDetections: Detection[] = [
   {
     id: 'det-2',
     imageId: 'img-1',
-    class: 'bag',
     score: 0.856,
     bbox: { x: 2000, y: 1200, w: 300, h: 180 },
     geomPoint: {
@@ -170,7 +168,6 @@ export const mockDetections: Detection[] = [
   {
     id: 'det-3',
     imageId: 'img-1',
-    class: 'fragment',
     score: 0.743,
     bbox: { x: 800, y: 600, w: 80, h: 120 },
     geomPoint: {
@@ -204,14 +201,12 @@ export const mockJobs: Job[] = [
 ];
 
 export const generateRandomDetections = (imageId: UUID, count: number = Math.floor(Math.random() * 5) + 1): Detection[] => {
-  const classes: Detection['class'][] = ['plastic_bottle', 'bag', 'net', 'fragment', 'other'];
   const detections: Detection[] = [];
 
   for (let i = 0; i < count; i++) {
     detections.push({
       id: createUUID(),
       imageId,
-      class: classes[Math.floor(Math.random() * classes.length)],
       score: 0.6 + Math.random() * 0.35, // 0.6 to 0.95
       bbox: {
         x: Math.floor(Math.random() * 3000),

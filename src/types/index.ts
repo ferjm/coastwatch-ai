@@ -37,7 +37,6 @@ export type ImageItem = {
 export type Detection = {
   id: UUID;
   imageId: UUID;
-  class: 'plastic_bottle' | 'bag' | 'net' | 'fragment' | 'other';
   score: number; // 0..1
   bbox: { x: number; y: number; w: number; h: number }; // pixels
   geomPoint?: GeoJSON.Point; // opcional en mock

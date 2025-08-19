@@ -228,9 +228,7 @@ export const handlers = [
 
     let filteredDetections = detections.filter(det => det.score >= minScore);
     
-    if (classFilter) {
-      filteredDetections = filteredDetections.filter(det => det.class === classFilter);
-    }
+    // Note: No class filtering since we removed detection types
 
     return HttpResponse.json({
       success: true,
@@ -458,7 +456,6 @@ export const handlers = [
           geometry: det.geomPoint!,
           properties: {
             id: det.id,
-            class: det.class,
             score: det.score,
             reviewerLabel: det.reviewerLabel,
             reviewedAt: det.reviewedAt

@@ -11,52 +11,48 @@ import { CheckCircle, AlertTriangle, Filter } from 'lucide-react';
 
 // Enhanced mock data with verification status
 const mockDetectionsWithStatus: (MapDetection & { verified: boolean; reviewedAt?: string })[] = [
-  {
-    id: '1',
-    lat: 40.7128,
-    lng: -74.0060,
-    type: 'plastic_bottle',
-    confidence: 0.95,
-    imageUrl: '/placeholder.svg',
-    detectedAt: new Date(Date.now() - 3600000),
-    description: 'Plastic bottle detected with high confidence',
-    verified: true,
-    reviewedAt: new Date(Date.now() - 1800000).toISOString()
-  },
-  {
-    id: '2',
-    lat: 40.7589,
-    lng: -73.9851,
-    type: 'bag',
-    confidence: 0.87,
-    imageUrl: '/placeholder.svg',
-    detectedAt: new Date(Date.now() - 7200000),
-    description: 'Plastic bag identified in coastal area',
-    verified: false
-  },
-  {
-    id: '3',
-    lat: 40.6892,
-    lng: -74.0445,
-    type: 'fragment',
-    confidence: 0.72,
-    imageUrl: '/placeholder.svg',
-    detectedAt: new Date(Date.now() - 10800000),
-    description: 'Plastic fragment with medium confidence',
-    verified: true,
-    reviewedAt: new Date(Date.now() - 3600000).toISOString()
-  },
-  {
-    id: '4',
-    lat: 40.7831,
-    lng: -73.9712,
-    type: 'net',
-    confidence: 0.91,
-    imageUrl: '/placeholder.svg',
-    detectedAt: new Date(Date.now() - 14400000),
-    description: 'Fishing net detected',
-    verified: false
-  }
+    {
+      id: '1',
+      lat: 40.7128,
+      lng: -74.0060,
+      confidence: 0.95,
+      imageUrl: '/placeholder.svg',
+      detectedAt: new Date(Date.now() - 3600000),
+      description: 'Plástico detectado con alta confianza',
+      verified: true,
+      reviewedAt: new Date(Date.now() - 1800000).toISOString()
+    },
+    {
+      id: '2',
+      lat: 40.7589,
+      lng: -73.9851,
+      confidence: 0.87,
+      imageUrl: '/placeholder.svg',
+      detectedAt: new Date(Date.now() - 7200000),
+      description: 'Plástico identificado en área costera',
+      verified: false
+    },
+    {
+      id: '3',
+      lat: 40.6892,
+      lng: -74.0445,
+      confidence: 0.72,
+      imageUrl: '/placeholder.svg',
+      detectedAt: new Date(Date.now() - 10800000),
+      description: 'Fragmento de plástico con confianza media',
+      verified: true,
+      reviewedAt: new Date(Date.now() - 3600000).toISOString()
+    },
+    {
+      id: '4',
+      lat: 40.7831,
+      lng: -73.9712,
+      confidence: 0.91,
+      imageUrl: '/placeholder.svg',
+      detectedAt: new Date(Date.now() - 14400000),
+      description: 'Plástico detectado',
+      verified: false
+    }
 ];
 
 export default function MapView() {
@@ -81,7 +77,7 @@ export default function MapView() {
     const verificationStatus = enhancedDetection?.verified ? t('verified') : t('pendingReview');
     
     toast({
-      title: `${detection.type} - ${verificationStatus}`,
+      title: `Plástico - ${verificationStatus}`,
       description: `${t('confidence')}: ${Math.round(detection.confidence * 100)}% - ${detection.description}`,
     });
   };

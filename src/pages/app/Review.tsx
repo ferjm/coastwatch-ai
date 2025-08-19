@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ImageItem, Detection } from '@/types';
 import { 
@@ -15,7 +17,9 @@ import {
   Edit,
   MousePointer,
   Trash2,
-  Plus
+  Plus,
+  Filter,
+  AlertTriangle
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -35,7 +39,6 @@ const mockReviewImages: (ImageItem & { detections: Detection[] })[] = [
       {
         id: 'd1',
         imageId: '1',
-        class: 'plastic_bottle',
         score: 0.95,
         bbox: { x: 100, y: 150, w: 80, h: 120 },
         reviewerLabel: 'pending',
@@ -44,7 +47,6 @@ const mockReviewImages: (ImageItem & { detections: Detection[] })[] = [
       {
         id: 'd2',
         imageId: '1',
-        class: 'bag',
         score: 0.87,
         bbox: { x: 300, y: 200, w: 60, h: 90 },
         reviewerLabel: 'pending',
@@ -66,7 +68,6 @@ const mockReviewImages: (ImageItem & { detections: Detection[] })[] = [
       {
         id: 'd3',
         imageId: '2',
-        class: 'fragment',
         score: 0.72,
         bbox: { x: 200, y: 100, w: 40, h: 50 },
         reviewerLabel: 'pending',
@@ -83,6 +84,8 @@ export default function Review() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedImage, setSelectedImage] = useState<(typeof mockReviewImages)[0] | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [showVerifiedOnly, setShowVerifiedOnly] = useState(false);
+  const [showUnverifiedOnly, setShowUnverifiedOnly] = useState(false);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -187,8 +190,22 @@ export default function Review() {
     setIsEditMode(false);
   };
 
-  const pendingImages = images.filter(img => img.status === 'processed');
-  const reviewedImages = images.filter(img => img.status === 'reviewed');
+  // Filter images based on verification status
+  const filteredImages = images.filter(image => {
+    if (showVerifiedOnly && !showUnverifiedOnly) {
+      return image.detections.some(d => d.verified);
+    }
+    if (showUnverifiedOnly && !showVerifiedOnly) {
+      return image.detections.some(d => !d.verified);
+    }
+    return true; // Show all if both or neither are selected
+  });
+
+  const pendingImages = filteredImages.filter(img => img.status === 'processed');
+  const reviewedImages = filteredImages.filter(img => img.status === 'reviewed');
+  
+  const verifiedCount = images.filter(img => img.detections.some(d => d.verified)).length;
+  const unverifiedCount = images.filter(img => img.detections.some(d => !d.verified)).length;
 
   const GridView = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -212,7 +229,7 @@ export default function Review() {
             {/* Detection overlay */}
             <div className="absolute inset-0">
               {image.detections.map((detection) => (
-                <div
+                 <div
                   key={detection.id}
                   className="absolute border-2 border-primary bg-primary/20"
                   style={{
@@ -223,7 +240,7 @@ export default function Review() {
                   }}
                 >
                   <Badge className="absolute -top-6 -left-1 text-xs">
-                    {detection.class} ({Math.round(detection.score * 100)}%)
+                    Plástico ({Math.round(detection.score * 100)}%)
                   </Badge>
                 </div>
               ))}
@@ -281,7 +298,7 @@ export default function Review() {
             <div className="flex items-center gap-2">
               {image.detections.map((detection) => (
                 <Badge key={detection.id} variant="outline">
-                  {detection.class} ({Math.round(detection.score * 100)}%)
+                  Plástico ({Math.round(detection.score * 100)}%)
                 </Badge>
               ))}
             </div>
@@ -324,7 +341,7 @@ export default function Review() {
       </div>
 
       {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -337,12 +354,24 @@ export default function Review() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t('reviewed')}
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              {t('verified')}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-success">{reviewedImages.length}</div>
+            <div className="text-2xl font-bold text-green-600">{verifiedCount}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-orange-600" />
+              {t('pendingVerification')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-600">{unverifiedCount}</div>
           </CardContent>
         </Card>
         <Card>
@@ -358,6 +387,76 @@ export default function Review() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Filter Controls */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            {t('filterDetections')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row gap-6">
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="show-verified"
+                checked={showVerifiedOnly}
+                onCheckedChange={(checked) => {
+                  setShowVerifiedOnly(checked);
+                  if (checked) setShowUnverifiedOnly(false);
+                }}
+              />
+              <Label htmlFor="show-verified" className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                {t('showVerifiedOnly')}
+              </Label>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="show-unverified"
+                checked={showUnverifiedOnly}
+                onCheckedChange={(checked) => {
+                  setShowUnverifiedOnly(checked);
+                  if (checked) setShowVerifiedOnly(false);
+                }}
+              />
+              <Label htmlFor="show-unverified" className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-orange-600" />
+                {t('showUnverifiedOnly')}
+              </Label>
+            </div>
+
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowVerifiedOnly(false);
+                setShowUnverifiedOnly(false);
+              }}
+              disabled={!showVerifiedOnly && !showUnverifiedOnly}
+            >
+              {t('showAll')}
+            </Button>
+          </div>
+          
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Badge variant="secondary">
+              {t('showing')} {filteredImages.length} {t('of')} {images.length} {t('images')}
+            </Badge>
+            {showVerifiedOnly && (
+              <Badge variant="outline" className="text-green-600 border-green-600">
+                {t('verifiedOnly')}
+              </Badge>
+            )}
+            {showUnverifiedOnly && (
+              <Badge variant="outline" className="text-orange-600 border-orange-600">
+                {t('unverifiedOnly')}
+              </Badge>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Selection Controls */}
       {selectedImages.size > 0 && (
@@ -453,8 +552,8 @@ export default function Review() {
                       height: `${(detection.bbox.h / selectedImage.heightPx) * 100}%`
                     }}
                   >
-                    <Badge className="absolute -top-6 -left-1">
-                      {detection.class} ({Math.round(detection.score * 100)}%)
+                   <Badge className="absolute -top-6 -left-1">
+                      Plástico ({Math.round(detection.score * 100)}%)
                     </Badge>
                     
                     {isEditMode && (
@@ -488,12 +587,12 @@ export default function Review() {
                   <h4 className="font-medium mb-2">{t('detections')}</h4>
                   <div className="space-y-2">
                     {selectedImage.detections.map((detection) => (
-                      <div key={detection.id} className="p-2 bg-muted rounded">
-                        <div className="flex items-center justify-between">
-                          <Badge variant="outline">{detection.class}</Badge>
-                          <span className="text-sm">{Math.round(detection.score * 100)}%</span>
-                        </div>
-                      </div>
+        <div key={detection.id} className="p-2 bg-muted rounded">
+          <div className="flex items-center justify-between">
+            <Badge variant="outline">Plástico</Badge>
+            <span className="text-sm">{Math.round(detection.score * 100)}%</span>
+          </div>
+        </div>
                     ))}
                   </div>
                   
