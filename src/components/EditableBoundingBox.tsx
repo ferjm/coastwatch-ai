@@ -157,7 +157,7 @@ export function EditableBoundingBox({
         <img 
           src={imageUrl}
           alt="Detection"
-          className="w-full h-auto"
+          className="w-full h-auto block"
         />
         {/* Editable bounding boxes overlay */}
         {boxes.map((box) => (
@@ -166,35 +166,35 @@ export function EditableBoundingBox({
             <div
               className={`absolute border-2 transition-colors ${
                 editable 
-                  ? 'border-primary hover:border-primary/80 cursor-move' 
-                  : 'border-blue-500'
-              } ${editable ? 'bg-primary/10 hover:bg-primary/15' : 'bg-blue-500/10'}`}
+                  ? 'border-red-500 hover:border-red-400 cursor-move bg-red-500/20 hover:bg-red-500/30' 
+                  : 'border-blue-500 bg-blue-500/20'
+              }`}
               style={{
                 left: `${box.x}px`,
                 top: `${box.y}px`,
                 width: `${box.width}px`,
                 height: `${box.height}px`,
               }}
-              onMouseDown={(e) => handleMouseDown(e, box.id, 'drag')}
+              onMouseDown={editable ? (e) => handleMouseDown(e, box.id, 'drag') : undefined}
             >
               {/* Resize handles - only show when editable */}
               {editable && (
                 <>
                   {/* Corner handles */}
                   <div
-                    className="absolute w-3 h-3 bg-primary border border-primary-foreground cursor-nw-resize -top-1 -left-1"
+                    className="absolute w-3 h-3 bg-red-500 border border-white cursor-nw-resize -top-1 -left-1"
                     onMouseDown={(e) => handleMouseDown(e, box.id, 'resize', 'top-left')}
                   />
                   <div
-                    className="absolute w-3 h-3 bg-primary border border-primary-foreground cursor-ne-resize -top-1 -right-1"
+                    className="absolute w-3 h-3 bg-red-500 border border-white cursor-ne-resize -top-1 -right-1"
                     onMouseDown={(e) => handleMouseDown(e, box.id, 'resize', 'top-right')}
                   />
                   <div
-                    className="absolute w-3 h-3 bg-primary border border-primary-foreground cursor-sw-resize -bottom-1 -left-1"
+                    className="absolute w-3 h-3 bg-red-500 border border-white cursor-sw-resize -bottom-1 -left-1"
                     onMouseDown={(e) => handleMouseDown(e, box.id, 'resize', 'bottom-left')}
                   />
                   <div
-                    className="absolute w-3 h-3 bg-primary border border-primary-foreground cursor-se-resize -bottom-1 -right-1"
+                    className="absolute w-3 h-3 bg-red-500 border border-white cursor-se-resize -bottom-1 -right-1"
                     onMouseDown={(e) => handleMouseDown(e, box.id, 'resize', 'bottom-right')}
                   />
                   
@@ -221,14 +221,14 @@ export function EditableBoundingBox({
             
             {/* Label */}
             <div
-              className={`absolute px-2 py-1 text-xs font-medium rounded shadow-sm ${
+              className={`absolute px-2 py-1 text-xs font-semibold rounded shadow-lg z-10 ${
                 editable 
-                  ? 'bg-primary text-primary-foreground cursor-pointer hover:bg-primary/90' 
+                  ? 'bg-red-500 text-white cursor-pointer hover:bg-red-600' 
                   : 'bg-blue-500 text-white'
               }`}
               style={{
                 left: `${box.x}px`,
-                top: `${box.y - 28}px`,
+                top: `${box.y - 32}px`,
                 minWidth: '60px',
               }}
               onClick={() => editable && setEditingLabel(box.id)}
@@ -236,7 +236,7 @@ export function EditableBoundingBox({
               {editingLabel === box.id ? (
                 <input
                   type="text"
-                  className="bg-transparent border-none outline-none text-xs w-full"
+                  className="bg-transparent border-none outline-none text-xs w-full text-white placeholder-red-200"
                   defaultValue={box.label || `Plástico ${Math.round(box.confidence * 100)}%`}
                   autoFocus
                   onBlur={(e) => handleLabelEdit(box.id, e.target.value)}

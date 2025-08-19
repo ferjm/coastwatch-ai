@@ -15,6 +15,7 @@ interface BoundingBox {
   height: number;
   confidence: number;
   id: string;
+  label?: string;
 }
 
 interface DetectionImageViewerProps {
@@ -38,27 +39,32 @@ export function DetectionImageViewer({
   const [isOpen, setIsOpen] = useState(false);
   const [boundingBoxes, setBoundingBoxes] = useState<BoundingBox[]>([]);
 
-  // Mock bounding boxes for demo
+  // Use bounding boxes from detection data or create default ones
   useEffect(() => {
-    const defaultBoxes: BoundingBox[] = detection.boundingBoxes || [
-      {
-        id: '1',
-        x: 120,
-        y: 80,
-        width: 180,
-        height: 120,
-        confidence: detection.confidence
-      },
-      {
-        id: '2',
-        x: 350,
-        y: 200,
-        width: 140,
-        height: 90,
-        confidence: detection.confidence * 0.9
-      }
-    ];
-    setBoundingBoxes(defaultBoxes);
+    if (detection.boundingBoxes && detection.boundingBoxes.length > 0) {
+      setBoundingBoxes(detection.boundingBoxes);
+    } else {
+      // Fallback to default boxes only if none provided
+      const defaultBoxes: BoundingBox[] = [
+        {
+          id: '1',
+          x: 120,
+          y: 80,
+          width: 180,
+          height: 120,
+          confidence: detection.confidence
+        },
+        {
+          id: '2',
+          x: 350,
+          y: 200,
+          width: 140,
+          height: 90,
+          confidence: detection.confidence * 0.9
+        }
+      ];
+      setBoundingBoxes(defaultBoxes);
+    }
   }, [detection]);
 
   const handleVerify = () => {
