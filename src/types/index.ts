@@ -26,9 +26,12 @@ export type ImageItem = {
   altM?: number;
   widthPx: number;
   heightPx: number;
-  status: 'uploaded' | 'queued' | 'processing' | 'done' | 'failed';
+  status: 'uploaded' | 'queued' | 'processing' | 'processed' | 'reviewed' | 'failed';
   hash: string;
   thumbUrl?: string;
+  uploadedAt: string;
+  processedAt?: string;
+  reviewedAt?: string;
 };
 
 export type Detection = {
@@ -39,9 +42,10 @@ export type Detection = {
   bbox: { x: number; y: number; w: number; h: number }; // pixels
   geomPoint?: GeoJSON.Point; // opcional en mock
   uncertaintyM?: number;
-  reviewerLabel?: 'accepted' | 'rejected';
+  reviewerLabel?: 'accepted' | 'rejected' | 'pending';
   reviewerId?: UUID;
   reviewedAt?: string;
+  verified: boolean;
 };
 
 export type ModelInfo = {

@@ -83,7 +83,8 @@ export const handlers = [
       status: 'uploaded',
       hash: `sha256:${Math.random().toString(36).substring(7)}`,
       thumbUrl: `/api/images/${body.imageId}/thumb`,
-      gcsUri: `gs://ecos-images/${body.imageId}.jpg`
+      gcsUri: `gs://ecos-images/${body.imageId}.jpg`,
+      uploadedAt: new Date().toISOString()
     };
 
     images.push(newImage);
@@ -164,7 +165,7 @@ export const handlers = [
             // Update image status and generate detections
             const finalImgIndex = images.findIndex(img => img.id === body.imageId);
             if (finalImgIndex !== -1) {
-              images[finalImgIndex] = { ...images[finalImgIndex], status: 'done' };
+              images[finalImgIndex] = { ...images[finalImgIndex], status: 'processed', processedAt: new Date().toISOString() };
               
               // Generate random detections for this image
               const newDetections = generateRandomDetections(body.imageId);

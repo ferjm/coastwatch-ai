@@ -111,10 +111,12 @@ export const mockImages: ImageItem[] = [
     altM: 120,
     widthPx: 4000,
     heightPx: 3000,
-    status: 'done',
+    status: 'processed',
     hash: 'sha256:abc123...',
     thumbUrl: '/api/images/img-1/thumb',
-    gcsUri: 'gs://ecos-images/img-1.jpg'
+    gcsUri: 'gs://ecos-images/img-1.jpg',
+    uploadedAt: '2024-01-25T09:00:00Z',
+    processedAt: '2024-01-25T09:15:00Z'
   },
   {
     id: 'img-2',
@@ -129,7 +131,8 @@ export const mockImages: ImageItem[] = [
     status: 'processing',
     hash: 'sha256:def456...',
     thumbUrl: '/api/images/img-2/thumb',
-    gcsUri: 'gs://ecos-images/img-2.jpg'
+    gcsUri: 'gs://ecos-images/img-2.jpg',
+    uploadedAt: '2024-01-25T09:05:00Z'
   }
 ];
 
@@ -147,7 +150,8 @@ export const mockDetections: Detection[] = [
     uncertaintyM: 2.5,
     reviewerLabel: 'accepted',
     reviewerId: 'user-2',
-    reviewedAt: '2024-01-25T14:30:00Z'
+    reviewedAt: '2024-01-25T14:30:00Z',
+    verified: true
   },
   {
     id: 'det-2',
@@ -159,7 +163,9 @@ export const mockDetections: Detection[] = [
       type: 'Point',
       coordinates: [3.1754, 42.2653]
     },
-    uncertaintyM: 3.1
+    uncertaintyM: 3.1,
+    reviewerLabel: 'pending',
+    verified: false
   },
   {
     id: 'det-3',
@@ -174,7 +180,8 @@ export const mockDetections: Detection[] = [
     uncertaintyM: 4.2,
     reviewerLabel: 'rejected',
     reviewerId: 'user-2',
-    reviewedAt: '2024-01-25T14:32:00Z'
+    reviewedAt: '2024-01-25T14:32:00Z',
+    verified: false
   }
 ];
 
@@ -219,7 +226,9 @@ export const generateRandomDetections = (imageId: UUID, count: number = Math.flo
           42.25 + Math.random() * 0.05  // Random latitude
         ]
       },
-      uncertaintyM: 1 + Math.random() * 5
+      uncertaintyM: 1 + Math.random() * 5,
+      reviewerLabel: 'pending',
+      verified: false
     });
   }
 
