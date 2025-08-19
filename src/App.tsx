@@ -12,16 +12,12 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import { RootRedirect } from "./components/RootRedirect";
 
 // App pages
-import Dashboard from "./pages/app/Dashboard";
 import Uploads from "./pages/app/Uploads";
 import MapView from "./pages/app/MapView";
 import Review from "./pages/app/Review";
-import Areas from "./pages/app/Areas";
-import Flights from "./pages/app/Flights";
-import Models from "./pages/app/Models";
-import Jobs from "./pages/app/Jobs";
 import Settings from "./pages/app/Settings";
 import UserManagement from "./pages/UserManagement";
 
@@ -35,8 +31,10 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            {/* Root redirect */}
+            <Route path="/" element={<RootRedirect />} />
+            
             {/* Public routes */}
-            <Route path="/" element={<Auth />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/auth" element={<Auth />} />
@@ -46,14 +44,10 @@ const App = () => (
               <ProtectedRoute>
                 <AppLayout>
                   <Routes>
-                    <Route path="dashboard" element={<Dashboard />} />
-                    <Route path="uploads" element={<Uploads />} />
+                    <Route index element={<MapView />} />
                     <Route path="map" element={<MapView />} />
+                    <Route path="uploads" element={<Uploads />} />
                     <Route path="review" element={<Review />} />
-                    <Route path="areas" element={<Areas />} />
-                    <Route path="flights" element={<Flights />} />
-                    <Route path="models" element={<Models />} />
-                    <Route path="jobs" element={<Jobs />} />
                     <Route path="settings" element={<Settings />} />
                     <Route path="users" element={
                       <ProtectedRoute requiredRole="admin">

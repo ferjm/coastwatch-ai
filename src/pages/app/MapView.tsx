@@ -58,19 +58,6 @@ const mockDetectionsWithStatus: (MapDetection & { verified: boolean; reviewedAt?
 export default function MapView() {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const [showVerifiedOnly, setShowVerifiedOnly] = useState(false);
-  const [showUnverifiedOnly, setShowUnverifiedOnly] = useState(false);
-
-  // Filter detections based on verification status
-  const filteredDetections = mockDetectionsWithStatus.filter(detection => {
-    if (showVerifiedOnly && !showUnverifiedOnly) {
-      return detection.verified;
-    }
-    if (showUnverifiedOnly && !showVerifiedOnly) {
-      return !detection.verified;
-    }
-    return true; // Show all if both or neither are selected
-  });
 
   const handleDetectionClick = (detection: MapDetection) => {
     const enhancedDetection = mockDetectionsWithStatus.find(d => d.id === detection.id);
@@ -144,80 +131,10 @@ export default function MapView() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Filter Controls */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            {t('filterDetections')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col sm:flex-row gap-6">
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="show-verified"
-                checked={showVerifiedOnly}
-                onCheckedChange={(checked) => {
-                  setShowVerifiedOnly(checked);
-                  if (checked) setShowUnverifiedOnly(false);
-                }}
-              />
-              <Label htmlFor="show-verified" className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                {t('showVerifiedOnly')}
-              </Label>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="show-unverified"
-                checked={showUnverifiedOnly}
-                onCheckedChange={(checked) => {
-                  setShowUnverifiedOnly(checked);
-                  if (checked) setShowVerifiedOnly(false);
-                }}
-              />
-              <Label htmlFor="show-unverified" className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-orange-600" />
-                {t('showUnverifiedOnly')}
-              </Label>
-            </div>
-
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowVerifiedOnly(false);
-                setShowUnverifiedOnly(false);
-              }}
-              disabled={!showVerifiedOnly && !showUnverifiedOnly}
-            >
-              {t('showAll')}
-            </Button>
-          </div>
-          
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Badge variant="secondary">
-              {t('showing')} {filteredDetections.length} {t('of')} {mockDetectionsWithStatus.length} {t('detections')}
-            </Badge>
-            {showVerifiedOnly && (
-              <Badge variant="outline" className="text-green-600 border-green-600">
-                {t('verifiedOnly')}
-              </Badge>
-            )}
-            {showUnverifiedOnly && (
-              <Badge variant="outline" className="text-orange-600 border-orange-600">
-                {t('unverifiedOnly')}
-              </Badge>
-            )}
-          </div>
-        </CardContent>
-      </Card>
       
       {/* Map */}
       <PlasticDetectionMap 
-        detections={filteredDetections}
+        detections={mockDetectionsWithStatus}
         onDetectionClick={handleDetectionClick}
       />
     </div>

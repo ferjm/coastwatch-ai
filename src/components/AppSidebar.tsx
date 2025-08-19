@@ -1,15 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { 
-  Home, 
   Upload, 
   Map, 
   CheckSquare, 
-  Square, 
-  Plane, 
-  Brain, 
   Settings,
-  BarChart3,
-  ListTodo,
   Users,
   Waves
 } from 'lucide-react';
@@ -34,14 +28,9 @@ export function AppSidebar() {
   const { hasRole } = useAuthStore();
 
   const items = [
-    { title: t('dashboard'), url: '/app/dashboard', icon: Home },
-    { title: t('uploads'), url: '/app/uploads', icon: Upload },
     { title: t('map'), url: '/app/map', icon: Map },
+    { title: t('uploads'), url: '/app/uploads', icon: Upload },
     { title: t('review'), url: '/app/review', icon: CheckSquare },
-    { title: t('areas'), url: '/app/areas', icon: Square },
-    { title: t('flights'), url: '/app/flights', icon: Plane },
-    { title: t('models'), url: '/app/models', icon: Brain },
-    { title: t('jobs'), url: '/app/jobs', icon: ListTodo },
     { title: t('settings'), url: '/app/settings', icon: Settings },
     ...(hasRole('admin') ? [{ title: t('users'), url: '/app/users', icon: Users }] : []),
   ];
