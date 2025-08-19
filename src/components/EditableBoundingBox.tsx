@@ -25,8 +25,6 @@ export function EditableBoundingBox({
   editable = false,
   onBoundingBoxChange
 }: EditableBoundingBoxProps) {
-  console.log('EditableBoundingBox - Props received:', { imageUrl, boundingBoxes, showDirectly, editable });
-  
   const containerRef = useRef<HTMLDivElement>(null);
   const [boxes, setBoxes] = useState<BoundingBox[]>(boundingBoxes);
   const [dragState, setDragState] = useState<{
@@ -49,7 +47,6 @@ export function EditableBoundingBox({
   const [editingLabel, setEditingLabel] = useState<string | null>(null);
   
   useEffect(() => {
-    console.log('EditableBoundingBox - Updating boxes with:', boundingBoxes);
     setBoxes(boundingBoxes);
   }, [boundingBoxes]);
   
@@ -155,157 +152,155 @@ export function EditableBoundingBox({
   };
 
   if (showDirectly) {
-    console.log('EditableBoundingBox - Rendering directly with boxes:', boxes);
-    
     return (
       <div className="relative w-full bg-background rounded-lg overflow-hidden">
         <img 
           src={imageUrl}
           alt="Detection"
           className="w-full h-auto block"
-          onLoad={() => console.log('EditableBoundingBox - Image loaded:', imageUrl)}
         />
         
-        {/* Elegant bounding boxes overlay with proper scaling */}
-        {boxes.map((box, index) => {
-          console.log(`EditableBoundingBox - Rendering box ${index + 1}:`, box);
-          return (
-            <div key={box.id} className="absolute" style={{ pointerEvents: 'none' }}>
-              {/* Main bounding box - Roboflow style */}
-              <div
-                className={`absolute border-2 transition-all duration-200 ${
-                  editable 
-                    ? 'border-cyan-400 hover:border-cyan-300 bg-cyan-400/10 hover:bg-cyan-400/15' 
-                    : 'border-emerald-400 bg-emerald-400/10'
-                }`}
-                style={{
-                  left: `${(box.x / 800) * 100}%`,
-                  top: `${(box.y / 600) * 100}%`,
-                  width: `${(box.width / 800) * 100}%`,
-                  height: `${(box.height / 600) * 100}%`,
-                  boxShadow: editable ? '0 0 0 1px rgba(34, 211, 238, 0.3)' : '0 0 0 1px rgba(52, 211, 153, 0.3)',
-                  pointerEvents: editable ? 'auto' : 'none'
-                }}
-                onMouseDown={editable ? (e) => {
-                  console.log('Box mousedown:', box.id);
-                  handleMouseDown(e, box.id, 'drag');
-                } : undefined}
-              >
-                {/* Resize handles - subtle and elegant */}
-                {editable && (
-                  <>
-                    {/* Corner handles */}
-                    <div
-                      className="absolute w-2 h-2 bg-cyan-400 border border-white cursor-nw-resize -top-1 -left-1 opacity-80 hover:opacity-100"
-                      onMouseDown={(e) => {
-                        e.stopPropagation();
-                        console.log('Resize handle mousedown:', box.id, 'top-left');
-                        handleMouseDown(e, box.id, 'resize', 'top-left');
-                      }}
-                    />
-                    <div
-                      className="absolute w-2 h-2 bg-cyan-400 border border-white cursor-ne-resize -top-1 -right-1 opacity-80 hover:opacity-100"
-                      onMouseDown={(e) => {
-                        e.stopPropagation();
-                        handleMouseDown(e, box.id, 'resize', 'top-right');
-                      }}
-                    />
-                    <div
-                      className="absolute w-2 h-2 bg-cyan-400 border border-white cursor-sw-resize -bottom-1 -left-1 opacity-80 hover:opacity-100"
-                      onMouseDown={(e) => {
-                        e.stopPropagation();
-                        handleMouseDown(e, box.id, 'resize', 'bottom-left');
-                      }}
-                    />
-                    <div
-                      className="absolute w-2 h-2 bg-cyan-400 border border-white cursor-se-resize -bottom-1 -right-1 opacity-80 hover:opacity-100"
-                      onMouseDown={(e) => {
-                        e.stopPropagation();
-                        handleMouseDown(e, box.id, 'resize', 'bottom-right');
-                      }}
-                    />
-                    
-                    {/* Edge handles */}
-                    <div
-                      className="absolute w-full h-1 cursor-n-resize -top-0.5 left-0 opacity-0 hover:opacity-50 bg-cyan-400"
-                      onMouseDown={(e) => {
-                        e.stopPropagation();
-                        handleMouseDown(e, box.id, 'resize', 'top');
-                      }}
-                    />
-                    <div
-                      className="absolute w-full h-1 cursor-s-resize -bottom-0.5 left-0 opacity-0 hover:opacity-50 bg-cyan-400"
-                      onMouseDown={(e) => {
-                        e.stopPropagation();
-                        handleMouseDown(e, box.id, 'resize', 'bottom');
-                      }}
-                    />
-                    <div
-                      className="absolute w-1 h-full cursor-w-resize -left-0.5 top-0 opacity-0 hover:opacity-50 bg-cyan-400"
-                      onMouseDown={(e) => {
-                        e.stopPropagation();
-                        handleMouseDown(e, box.id, 'resize', 'left');
-                      }}
-                    />
-                    <div
-                      className="absolute w-1 h-full cursor-e-resize -right-0.5 top-0 opacity-0 hover:opacity-50 bg-cyan-400"
-                      onMouseDown={(e) => {
-                        e.stopPropagation();
-                        handleMouseDown(e, box.id, 'resize', 'right');
-                      }}
-                    />
-                  </>
-                )}
-              </div>
-              
-              {/* Label - Roboflow style */}
-              <div
-                className={`absolute px-2 py-1 text-xs font-medium rounded shadow-sm border backdrop-blur-sm ${
-                  editable 
-                    ? 'bg-cyan-500/90 text-white border-cyan-400 cursor-pointer hover:bg-cyan-500' 
-                    : 'bg-emerald-500/90 text-white border-emerald-400'
-                }`}
-                style={{
-                  left: `${(box.x / 800) * 100}%`,
-                  top: `${((box.y - 24) / 600) * 100}%`,
-                  minWidth: '64px',
-                  pointerEvents: editable ? 'auto' : 'none'
-                }}
-                onClick={() => {
-                  console.log('Label clicked:', box.id);
-                  editable && setEditingLabel(box.id);
-                }}
-              >
-                {editingLabel === box.id ? (
-                  <input
-                    type="text"
-                    className="bg-transparent border-none outline-none text-xs w-full text-white placeholder-cyan-200"
-                    defaultValue={box.label || `Object ${Math.round(box.confidence * 100)}%`}
-                    autoFocus
-                    onBlur={(e) => {
-                      console.log('Label edit blur:', e.target.value);
-                      handleLabelEdit(box.id, e.target.value);
+        {/* Roboflow-style bounding boxes */}
+        {boxes.map((box, index) => (
+          <div key={box.id} className="absolute" style={{ pointerEvents: 'none' }}>
+            {/* Main bounding box */}
+            <div
+              className={`absolute border-2 transition-all duration-200 ${
+                editable 
+                  ? 'border-cyan-400 hover:border-cyan-300 bg-cyan-400/10 hover:bg-cyan-400/15 cursor-move' 
+                  : 'border-emerald-400 bg-emerald-400/10'
+              }`}
+              style={{
+                left: `${(box.x / 800) * 100}%`,
+                top: `${(box.y / 600) * 100}%`,
+                width: `${(box.width / 800) * 100}%`,
+                height: `${(box.height / 600) * 100}%`,
+                boxShadow: editable 
+                  ? '0 0 0 1px rgba(34, 211, 238, 0.3), 0 4px 12px rgba(34, 211, 238, 0.15)' 
+                  : '0 0 0 1px rgba(52, 211, 153, 0.3), 0 4px 12px rgba(52, 211, 153, 0.15)',
+                pointerEvents: editable ? 'auto' : 'none'
+              }}
+              onMouseDown={editable ? (e) => {
+                e.preventDefault();
+                handleMouseDown(e, box.id, 'drag');
+              } : undefined}
+            >
+              {/* Resize handles - only when editable */}
+              {editable && (
+                <>
+                  {/* Corner handles */}
+                  <div
+                    className="absolute w-2 h-2 bg-cyan-400 border border-white cursor-nw-resize -top-1 -left-1 opacity-80 hover:opacity-100 transition-opacity"
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      handleMouseDown(e, box.id, 'resize', 'top-left');
                     }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        console.log('Label edit enter:', e.currentTarget.value);
-                        handleLabelEdit(box.id, e.currentTarget.value);
-                      } else if (e.key === 'Escape') {
-                        console.log('Label edit escape');
-                        setEditingLabel(null);
-                      }
-                    }}
-                    onClick={(e) => e.stopPropagation()}
                   />
-                ) : (
-                  <span className="block truncate">
-                    {box.label || `Object ${Math.round(box.confidence * 100)}%`}
-                  </span>
-                )}
-              </div>
+                  <div
+                    className="absolute w-2 h-2 bg-cyan-400 border border-white cursor-ne-resize -top-1 -right-1 opacity-80 hover:opacity-100 transition-opacity"
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      handleMouseDown(e, box.id, 'resize', 'top-right');
+                    }}
+                  />
+                  <div
+                    className="absolute w-2 h-2 bg-cyan-400 border border-white cursor-sw-resize -bottom-1 -left-1 opacity-80 hover:opacity-100 transition-opacity"
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      handleMouseDown(e, box.id, 'resize', 'bottom-left');
+                    }}
+                  />
+                  <div
+                    className="absolute w-2 h-2 bg-cyan-400 border border-white cursor-se-resize -bottom-1 -right-1 opacity-80 hover:opacity-100 transition-opacity"
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      handleMouseDown(e, box.id, 'resize', 'bottom-right');
+                    }}
+                  />
+                  
+                  {/* Edge handles */}
+                  <div
+                    className="absolute w-full h-1 cursor-n-resize -top-0.5 left-0 opacity-0 hover:opacity-30 bg-cyan-400 transition-opacity"
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      handleMouseDown(e, box.id, 'resize', 'top');
+                    }}
+                  />
+                  <div
+                    className="absolute w-full h-1 cursor-s-resize -bottom-0.5 left-0 opacity-0 hover:opacity-30 bg-cyan-400 transition-opacity"
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      handleMouseDown(e, box.id, 'resize', 'bottom');
+                    }}
+                  />
+                  <div
+                    className="absolute w-1 h-full cursor-w-resize -left-0.5 top-0 opacity-0 hover:opacity-30 bg-cyan-400 transition-opacity"
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      handleMouseDown(e, box.id, 'resize', 'left');
+                    }}
+                  />
+                  <div
+                    className="absolute w-1 h-full cursor-e-resize -right-0.5 top-0 opacity-0 hover:opacity-30 bg-cyan-400 transition-opacity"
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      handleMouseDown(e, box.id, 'resize', 'right');
+                    }}
+                  />
+                </>
+              )}
             </div>
-          );
-        })}
+            
+            {/* Label - Roboflow style */}
+            <div
+              className={`absolute px-2 py-1 text-xs font-medium rounded shadow-lg border backdrop-blur-sm transition-all duration-200 ${
+                editable 
+                  ? 'bg-cyan-500/90 text-white border-cyan-400/50 cursor-pointer hover:bg-cyan-500 hover:shadow-xl' 
+                  : 'bg-emerald-500/90 text-white border-emerald-400/50'
+              }`}
+              style={{
+                left: `${(box.x / 800) * 100}%`,
+                top: `${((box.y - 28) / 600) * 100}%`,
+                minWidth: '64px',
+                pointerEvents: editable ? 'auto' : 'none',
+                transform: 'translateY(-100%)'
+              }}
+              onClick={() => {
+                if (editable) setEditingLabel(box.id);
+              }}
+            >
+              {editingLabel === box.id ? (
+                <input
+                  type="text"
+                  className="bg-transparent border-none outline-none text-xs w-full text-white placeholder-cyan-200"
+                  defaultValue={box.label || `Object ${Math.round(box.confidence * 100)}%`}
+                  autoFocus
+                  onBlur={(e) => handleLabelEdit(box.id, e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleLabelEdit(box.id, e.currentTarget.value);
+                    } else if (e.key === 'Escape') {
+                      setEditingLabel(null);
+                    }
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              ) : (
+                <span className="block truncate">
+                  {box.label || `Object ${Math.round(box.confidence * 100)}%`}
+                </span>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
     );
   }

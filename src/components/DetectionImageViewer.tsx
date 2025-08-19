@@ -41,35 +41,30 @@ export function DetectionImageViewer({
 
   // Use bounding boxes from detection data or create default ones
   useEffect(() => {
-    console.log('DetectionImageViewer - Detection data:', detection);
-    console.log('DetectionImageViewer - Bounding boxes from detection:', detection.boundingBoxes);
-    
     if (detection.boundingBoxes && detection.boundingBoxes.length > 0) {
-      console.log('DetectionImageViewer - Using detection bounding boxes:', detection.boundingBoxes);
       setBoundingBoxes(detection.boundingBoxes);
     } else {
       // Fallback to default boxes only if none provided
       const defaultBoxes: BoundingBox[] = [
         {
           id: 'default-1',
-          x: 50,
-          y: 50,
-          width: 100,
-          height: 80,
+          x: 100,
+          y: 80,
+          width: 150,
+          height: 100,
           confidence: detection.confidence,
-          label: 'Test Box 1'
+          label: 'Plastic Object'
         },
         {
           id: 'default-2',
-          x: 200,
-          y: 150,
+          x: 300,
+          y: 180,
           width: 120,
-          height: 90,
+          height: 80,
           confidence: detection.confidence * 0.9,
-          label: 'Test Box 2'
+          label: 'Debris'
         }
       ];
-      console.log('DetectionImageViewer - Using default bounding boxes:', defaultBoxes);
       setBoundingBoxes(defaultBoxes);
     }
   }, [detection]);
