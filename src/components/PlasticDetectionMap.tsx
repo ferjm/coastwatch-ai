@@ -393,19 +393,7 @@ function MapComponent({
     const newMap = new google.maps.Map(mapRef.current, {
       center: { lat: -22.9707, lng: -43.1823 }, // Rio de Janeiro - Copacabana
       zoom: 7,
-      mapTypeId: mapType as google.maps.MapTypeId,
-      styles: [
-        {
-          featureType: 'water',
-          elementType: 'geometry',
-          stylers: [{ color: '#193441' }]
-        },
-        {
-          featureType: 'landscape',
-          elementType: 'geometry',
-          stylers: [{ color: '#2c5530' }]
-        }
-      ]
+      mapTypeId: mapType as google.maps.MapTypeId
     });
 
     setMap(newMap);
