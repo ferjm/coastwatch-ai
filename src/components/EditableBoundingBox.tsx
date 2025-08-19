@@ -158,7 +158,7 @@ export function EditableBoundingBox({
     console.log('EditableBoundingBox - Rendering directly with boxes:', boxes);
     
     return (
-      <div className="relative w-full bg-gray-100 border-4 border-green-500 rounded-lg overflow-visible">
+      <div className="relative w-full bg-background rounded-lg overflow-hidden">
         <img 
           src={imageUrl}
           alt="Detection"
@@ -166,76 +166,110 @@ export function EditableBoundingBox({
           onLoad={() => console.log('EditableBoundingBox - Image loaded:', imageUrl)}
         />
         
-        {/* SUPER VISIBLE DEBUG INFO */}
-        <div className="absolute top-4 left-4 bg-yellow-400 text-black p-3 text-lg font-bold rounded z-50 border-2 border-black">
-          📦 BOXES: {boxes.length} | EDITABLE: {editable ? '✅' : '❌'}
-        </div>
-        
-        {/* GUARANTEED VISIBLE TEST BOX */}
-        <div 
-          className="absolute top-20 left-20 w-32 h-24 bg-red-500 border-4 border-yellow-400 z-40 flex items-center justify-center text-white font-bold"
-        >
-          TEST BOX
-        </div>
-        
-        {/* ACTUAL BOUNDING BOXES */}
+        {/* Elegant bounding boxes overlay with proper scaling */}
         {boxes.map((box, index) => {
           console.log(`EditableBoundingBox - Rendering box ${index + 1}:`, box);
           return (
-            <div key={box.id} className="absolute">
-              {/* Main bounding box with MAXIMUM visibility */}
+            <div key={box.id} className="absolute" style={{ pointerEvents: 'none' }}>
+              {/* Main bounding box - Roboflow style */}
               <div
-                className="absolute border-8 border-red-500 bg-red-500/50 z-30"
+                className={`absolute border-2 transition-all duration-200 ${
+                  editable 
+                    ? 'border-cyan-400 hover:border-cyan-300 bg-cyan-400/10 hover:bg-cyan-400/15' 
+                    : 'border-emerald-400 bg-emerald-400/10'
+                }`}
                 style={{
-                  left: `${box.x}px`,
-                  top: `${box.y}px`,
-                  width: `${box.width}px`,
-                  height: `${box.height}px`,
-                  boxShadow: '0 0 20px red',
+                  left: `${(box.x / 800) * 100}%`,
+                  top: `${(box.y / 600) * 100}%`,
+                  width: `${(box.width / 800) * 100}%`,
+                  height: `${(box.height / 600) * 100}%`,
+                  boxShadow: editable ? '0 0 0 1px rgba(34, 211, 238, 0.3)' : '0 0 0 1px rgba(52, 211, 153, 0.3)',
+                  pointerEvents: editable ? 'auto' : 'none'
                 }}
                 onMouseDown={editable ? (e) => {
                   console.log('Box mousedown:', box.id);
                   handleMouseDown(e, box.id, 'drag');
                 } : undefined}
               >
-                {/* Box number in center */}
-                <div className="absolute inset-0 flex items-center justify-center text-white text-2xl font-bold bg-black/50">
-                  {index + 1}
-                </div>
-                
-                {/* Resize handles - HUGE and visible */}
+                {/* Resize handles - subtle and elegant */}
                 {editable && (
                   <>
+                    {/* Corner handles */}
                     <div
-                      className="absolute w-6 h-6 bg-yellow-400 border-4 border-red-600 cursor-nw-resize -top-3 -left-3 z-50"
+                      className="absolute w-2 h-2 bg-cyan-400 border border-white cursor-nw-resize -top-1 -left-1 opacity-80 hover:opacity-100"
                       onMouseDown={(e) => {
+                        e.stopPropagation();
                         console.log('Resize handle mousedown:', box.id, 'top-left');
                         handleMouseDown(e, box.id, 'resize', 'top-left');
                       }}
                     />
                     <div
-                      className="absolute w-6 h-6 bg-yellow-400 border-4 border-red-600 cursor-ne-resize -top-3 -right-3 z-50"
-                      onMouseDown={(e) => handleMouseDown(e, box.id, 'resize', 'top-right')}
+                      className="absolute w-2 h-2 bg-cyan-400 border border-white cursor-ne-resize -top-1 -right-1 opacity-80 hover:opacity-100"
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        handleMouseDown(e, box.id, 'resize', 'top-right');
+                      }}
                     />
                     <div
-                      className="absolute w-6 h-6 bg-yellow-400 border-4 border-red-600 cursor-sw-resize -bottom-3 -left-3 z-50"
-                      onMouseDown={(e) => handleMouseDown(e, box.id, 'resize', 'bottom-left')}
+                      className="absolute w-2 h-2 bg-cyan-400 border border-white cursor-sw-resize -bottom-1 -left-1 opacity-80 hover:opacity-100"
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        handleMouseDown(e, box.id, 'resize', 'bottom-left');
+                      }}
                     />
                     <div
-                      className="absolute w-6 h-6 bg-yellow-400 border-4 border-red-600 cursor-se-resize -bottom-3 -right-3 z-50"
-                      onMouseDown={(e) => handleMouseDown(e, box.id, 'resize', 'bottom-right')}
+                      className="absolute w-2 h-2 bg-cyan-400 border border-white cursor-se-resize -bottom-1 -right-1 opacity-80 hover:opacity-100"
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        handleMouseDown(e, box.id, 'resize', 'bottom-right');
+                      }}
+                    />
+                    
+                    {/* Edge handles */}
+                    <div
+                      className="absolute w-full h-1 cursor-n-resize -top-0.5 left-0 opacity-0 hover:opacity-50 bg-cyan-400"
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        handleMouseDown(e, box.id, 'resize', 'top');
+                      }}
+                    />
+                    <div
+                      className="absolute w-full h-1 cursor-s-resize -bottom-0.5 left-0 opacity-0 hover:opacity-50 bg-cyan-400"
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        handleMouseDown(e, box.id, 'resize', 'bottom');
+                      }}
+                    />
+                    <div
+                      className="absolute w-1 h-full cursor-w-resize -left-0.5 top-0 opacity-0 hover:opacity-50 bg-cyan-400"
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        handleMouseDown(e, box.id, 'resize', 'left');
+                      }}
+                    />
+                    <div
+                      className="absolute w-1 h-full cursor-e-resize -right-0.5 top-0 opacity-0 hover:opacity-50 bg-cyan-400"
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        handleMouseDown(e, box.id, 'resize', 'right');
+                      }}
                     />
                   </>
                 )}
               </div>
               
-              {/* Label - SUPER visible */}
+              {/* Label - Roboflow style */}
               <div
-                className="absolute px-3 py-2 text-sm font-bold rounded-lg shadow-2xl bg-blue-600 text-white border-4 border-white z-40"
+                className={`absolute px-2 py-1 text-xs font-medium rounded shadow-sm border backdrop-blur-sm ${
+                  editable 
+                    ? 'bg-cyan-500/90 text-white border-cyan-400 cursor-pointer hover:bg-cyan-500' 
+                    : 'bg-emerald-500/90 text-white border-emerald-400'
+                }`}
                 style={{
-                  left: `${box.x}px`,
-                  top: `${box.y - 40}px`,
-                  minWidth: '120px',
+                  left: `${(box.x / 800) * 100}%`,
+                  top: `${((box.y - 24) / 600) * 100}%`,
+                  minWidth: '64px',
+                  pointerEvents: editable ? 'auto' : 'none'
                 }}
                 onClick={() => {
                   console.log('Label clicked:', box.id);
@@ -245,8 +279,8 @@ export function EditableBoundingBox({
                 {editingLabel === box.id ? (
                   <input
                     type="text"
-                    className="bg-blue-700 border-2 border-white outline-none text-sm w-full text-white"
-                    defaultValue={box.label || `Plástico ${Math.round(box.confidence * 100)}%`}
+                    className="bg-transparent border-none outline-none text-xs w-full text-white placeholder-cyan-200"
+                    defaultValue={box.label || `Object ${Math.round(box.confidence * 100)}%`}
                     autoFocus
                     onBlur={(e) => {
                       console.log('Label edit blur:', e.target.value);
@@ -264,7 +298,9 @@ export function EditableBoundingBox({
                     onClick={(e) => e.stopPropagation()}
                   />
                 ) : (
-                  box.label || `Plástico ${Math.round(box.confidence * 100)}%`
+                  <span className="block truncate">
+                    {box.label || `Object ${Math.round(box.confidence * 100)}%`}
+                  </span>
                 )}
               </div>
             </div>

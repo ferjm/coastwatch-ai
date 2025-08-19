@@ -55,21 +55,21 @@ const unverifiedDetections: Detection[] = [
     boundingBoxes: [
       {
         id: 'bb1-1',
-        x: 120,
-        y: 80,
-        width: 180,
+        x: 150,
+        y: 100,
+        width: 200,
         height: 120,
         confidence: 0.85,
-        label: 'Botella plástica'
+        label: 'bottle'
       },
       {
         id: 'bb1-2',
-        x: 350,
+        x: 400,
         y: 200,
-        width: 140,
+        width: 150,
         height: 90,
         confidence: 0.78,
-        label: 'Fragmento plástico'
+        label: 'plastic_bag'
       }
     ]
   },
@@ -85,30 +85,30 @@ const unverifiedDetections: Detection[] = [
     boundingBoxes: [
       {
         id: 'bb2-1',
-        x: 200,
-        y: 100,
-        width: 160,
+        x: 100,
+        y: 80,
+        width: 180,
         height: 140,
         confidence: 0.91,
-        label: 'Bolsa plástica'
+        label: 'debris'
       },
       {
         id: 'bb2-2',
-        x: 400,
-        y: 250,
+        x: 350,
+        y: 180,
         width: 120,
         height: 80,
         confidence: 0.73,
-        label: 'Envoltorio'
+        label: 'wrapper'
       },
       {
         id: 'bb2-3',
-        x: 80,
+        x: 200,
         y: 300,
         width: 100,
         height: 60,
         confidence: 0.82,
-        label: 'Tapa plástica'
+        label: 'cap'
       }
     ]
   },
