@@ -166,10 +166,10 @@ const resources = {
       "reviewedStatus": "Revisadas",
       "pending": "Pendientes",
       
-      // Pages
-      "uploadImages": "Subir Imágenes",
+      // Pages  
       "uploadArea": "Área de Carga",
       "uploadPlaceholder": "Funcionalidad de carga de imágenes próximamente...",
+      "exampleImages": "Imágenes de Ejemplo",
       "detectionMap": "Mapa de Detecciones",
       "geospatialView": "Visualización Geoespacial",
       "mapsPlaceholder": "Integración de Google Maps próximamente...",
@@ -296,6 +296,10 @@ const resources = {
       "languageSettings": "Configuración de Idioma",
       "languageDescription": "Selecciona el idioma de la aplicación",
       "selectLanguage": "Seleccionar idioma",
+      "keyboardShortcuts": "Atajos de Teclado",
+      "navigate": "navegar",
+      "detection": "Detección",
+      "plastic": "Plástico",
       
       // Jobs & Processing
       "processingQueue": "Cola de Procesamiento",
@@ -378,6 +382,7 @@ const resources = {
       "users": "Users",
       
       // Upload page
+      "uploadImages": "Upload Images",
       "dragDropImages": "Drag and drop images here",
       "orClickToSelect": "or click to select files",
       "supportedFormats": "Supported formats: JPG, PNG, TIFF, WEBP",
@@ -402,6 +407,7 @@ const resources = {
       "uploadSuccess": "Upload successful",
       "uploadError": "Upload error",
       "processingImages": "Processing images...",
+      "exampleImages": "Example Images",
       
       // Inference Results
       "recentUploads": "Recent Uploads",
@@ -472,10 +478,8 @@ const resources = {
       "pending": "Pending",
       
       // Pages
-      "uploadImages": "Upload Images",
-      "uploadArea": "Upload Area",
+      "uploadArea": "Upload Area", 
       "uploadPlaceholder": "Image upload functionality coming soon...",
-      "detectionMap": "Detection Map",
       "geospatialView": "Geospatial Visualization",
       "mapsPlaceholder": "Google Maps integration coming soon...",
       "detectionReview": "Detection Review",
@@ -601,6 +605,10 @@ const resources = {
       "languageSettings": "Language Settings",
       "languageDescription": "Select the application language",
       "selectLanguage": "Select language",
+      "keyboardShortcuts": "Keyboard Shortcuts",
+      "navigate": "navigate",
+      "detection": "Detection",
+      "plastic": "Plastic",
       
       // Jobs & Processing
       "processingQueue": "Processing Queue",
@@ -694,6 +702,15 @@ const resources = {
       "coordinates": "Coordenadas",
       "verified": "Verificado",
       "showVerifiedOnly": "Mostrar Apenas Verificadas",
+      "uploadImages": "Enviar Imagens",
+      "exampleImages": "Imagens de Exemplo",
+      "keyboardShortcuts": "Atalhos de Teclado",
+      "navigate": "navegar",
+      "detection": "Detecção",
+      "plastic": "Plástico",
+      "detectionMap": "Mapa de Detecções",
+      "totalDetections": "Total de Detecções",
+      "verificationRate": "Taxa de Verificação",
       
       // Settings
       "languageSettings": "Configurações de Idioma",

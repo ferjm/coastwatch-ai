@@ -5,6 +5,11 @@ import { ImageUpload, UploadFile } from '@/components/ImageUpload';
 import { InferenceResults, ProcessedImage, Detection } from '@/components/InferenceResults';
 import { useToast } from '@/hooks/use-toast';
 
+// Import example images
+import plasticBeach1 from '@/assets/plastic-beach-1.jpg';
+import plasticBeach2 from '@/assets/plastic-beach-2.jpg';
+import plasticBeach3 from '@/assets/plastic-beach-3.jpg';
+
 // Mock data for demonstration
 const mockProcessedImages: ProcessedImage[] = [
   {
@@ -14,7 +19,7 @@ const mockProcessedImages: ProcessedImage[] = [
     uploadedAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
     status: 'completed',
     progress: 100,
-    imageUrl: '/placeholder.svg', // Would be actual image URL
+    imageUrl: plasticBeach1, // Example image
     processingTime: 45,
     resolution: { width: 1920, height: 1080 },
     detections: [
@@ -45,7 +50,7 @@ const mockProcessedImages: ProcessedImage[] = [
     uploadedAt: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
     status: 'processing',
     progress: 65,
-    imageUrl: '/placeholder.svg',
+    imageUrl: plasticBeach2,
     resolution: { width: 2048, height: 1536 },
     detections: []
   },
@@ -56,7 +61,7 @@ const mockProcessedImages: ProcessedImage[] = [
     uploadedAt: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
     status: 'completed',
     progress: 100,
-    imageUrl: '/placeholder.svg',
+    imageUrl: plasticBeach3,
     processingTime: 32,
     resolution: { width: 1600, height: 1200 },
     detections: [
@@ -75,7 +80,7 @@ const mockProcessedImages: ProcessedImage[] = [
     uploadedAt: new Date(Date.now() - 8 * 60 * 60 * 1000), // 8 hours ago
     status: 'failed',
     progress: 0,
-    imageUrl: '/placeholder.svg',
+    imageUrl: plasticBeach1,
     detections: [],
     error: 'Error en el procesamiento: imagen corrupta'
   }

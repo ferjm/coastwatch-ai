@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -41,7 +41,7 @@ const unverifiedDetections: Detection[] = [
     confidence: 0.85,
     imageUrl: plasticBeach1,
     detectedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-    description: 'Residuos plásticos arrastrados por las olas en Copacabana',
+    description: 'Residuos plásticos en la playa',
     verified: false
   },
   {
@@ -51,7 +51,7 @@ const unverifiedDetections: Detection[] = [
     confidence: 0.91,
     imageUrl: plasticBeach2,
     detectedAt: new Date(Date.now() - 4 * 60 * 60 * 1000),
-    description: 'Bolsas plásticas entre las rocas del Arpoador',
+    description: 'Bolsas plásticas entre rocas',
     verified: false
   },
   {
@@ -189,6 +189,39 @@ export default function Review() {
     setCurrentIndex(index);
     setViewMode('single');
   };
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (viewMode === 'single' && detections.length > 0) {
+        switch (event.key) {
+          case 'ArrowRight':
+            event.preventDefault();
+            nextDetection();
+            break;
+          case 'ArrowLeft':
+            event.preventDefault();
+            previousDetection();
+            break;
+          case 'v':
+          case 'V':
+            event.preventDefault();
+            handleVerify(currentDetection.id);
+            break;
+          case 'r':
+          case 'R':
+            event.preventDefault();
+            handleReject(currentDetection.id);
+            break;
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [viewMode, detections, currentDetection, handleVerify, handleReject, nextDetection, previousDetection]);
 
   const resetQueue = () => {
     setDetections(unverifiedDetections);
@@ -329,7 +362,7 @@ export default function Review() {
                       variant="default"
                     >
                       <CheckCircle className="h-4 w-4 mr-2" />
-                      Verificar
+                      {t('verify')}
                     </Button>
                     <Button 
                       onClick={() => handleReject(currentDetection.id)}
@@ -337,7 +370,7 @@ export default function Review() {
                       variant="destructive"
                     >
                       <XCircle className="h-4 w-4 mr-2" />
-                      Rechazar
+                      {t('reject')}
                     </Button>
                   </div>
                 </div>
@@ -345,40 +378,39 @@ export default function Review() {
                 {/* Detection details */}
                 <div className="space-y-4">
                   <div>
-                    <h3 className="font-semibold mb-2">Información de la Detección</h3>
+                    <h3 className="font-semibold mb-2">{t('detectionInfo')}</h3>
                     <div className="space-y-3 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Confianza:</span>
+                        <span className="text-muted-foreground">{t('confidence')}:</span>
                         <Badge variant="outline">
                           {Math.round(currentDetection.confidence * 100)}%
                         </Badge>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Coordenadas:</span>
+                        <span className="text-muted-foreground">{t('coordinates')}:</span>
                         <span>{currentDetection.lat.toFixed(4)}, {currentDetection.lng.toFixed(4)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Detectado:</span>
+                        <span className="text-muted-foreground">{t('detected')}:</span>
                         <span>{currentDetection.detectedAt.toLocaleDateString()}</span>
                       </div>
-                      <div>
-                        <span className="text-muted-foreground">Descripción:</span>
-                        <p className="mt-1">{currentDetection.description}</p>
-                      </div>
+                    </div>
+                    <div className="mt-4 p-2 bg-muted rounded text-xs text-muted-foreground">
+                      {t('keyboardShortcuts')}: ← → {t('navigate')}, V {t('verify')}, R {t('reject')}
                     </div>
                   </div>
 
                   <div>
-                    <h3 className="font-semibold mb-2">Objetos Detectados</h3>
+                    <h3 className="font-semibold mb-2">{t('detectedObjects')}</h3>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between p-2 bg-muted rounded">
-                        <span className="text-sm">Plástico #1</span>
+                        <span className="text-sm">{t('plastic')} #1</span>
                         <Badge variant="outline" className="text-xs">
                           {Math.round(currentDetection.confidence * 100)}%
                         </Badge>
                       </div>
                       <div className="flex items-center justify-between p-2 bg-muted rounded">
-                        <span className="text-sm">Plástico #2</span>
+                        <span className="text-sm">{t('plastic')} #2</span>
                         <Badge variant="outline" className="text-xs">
                           {Math.round(currentDetection.confidence * 0.9 * 100)}%
                         </Badge>
@@ -409,14 +441,11 @@ export default function Review() {
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                <span className="font-medium text-sm">Detección #{index + 1}</span>
+                <span className="font-medium text-sm">{t('detection')} #{index + 1}</span>
                 <Badge variant="outline" className="text-xs">
                   {Math.round(detection.confidence * 100)}%
                 </Badge>
                   </div>
-              <p className="text-xs text-muted-foreground line-clamp-2">
-                {detection.description}
-              </p>
               <div className="flex gap-1">
                 <Button 
                   size="sm" 

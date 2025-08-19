@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlasticDetectionMap, MapDetection } from '@/components/PlasticDetectionMap';
 import { Button } from '@/components/ui/button';
@@ -314,6 +315,7 @@ const mockDetectionsWithStatus: (MapDetection & { verified: boolean; reviewedAt?
 export default function MapView() {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleDetectionClick = (detection: MapDetection) => {
     const enhancedDetection = mockDetectionsWithStatus.find(d => d.id === detection.id);
@@ -335,19 +337,7 @@ export default function MapView() {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Filter className="h-4 w-4" />
-              {t('totalDetections')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{mockDetectionsWithStatus.length}</div>
-          </CardContent>
-        </Card>
-        
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -360,7 +350,10 @@ export default function MapView() {
           </CardContent>
         </Card>
         
-        <Card>
+        <Card 
+          className="cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => navigate('/app/review')}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-orange-600" />
