@@ -4,11 +4,30 @@ import { ProfileForm } from '@/components/ProfileForm';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { useTheme } from '@/hooks/use-theme';
-import { Monitor, Moon, Sun } from 'lucide-react';
+import { Monitor, Moon, Sun, Languages } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+
+const languages = [
+  { code: 'es', name: 'Español', flag: '🇪🇸' },
+  { code: 'en', name: 'English', flag: '🇺🇸' },
+  { code: 'pt', name: 'Português', flag: '🇧🇷' },
+];
 
 export default function Settings() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { theme, setTheme } = useTheme();
+
+  const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
+
+  const changeLanguage = (langCode: string) => {
+    i18n.changeLanguage(langCode);
+  };
 
   const themeOptions = [
     { value: 'light', label: t('lightTheme'), icon: Sun },
@@ -21,6 +40,39 @@ export default function Settings() {
       <h1 className="text-3xl font-bold text-foreground">{t('settings')}</h1>
       
       <ProfileForm />
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('languageSettings')}</CardTitle>
+          <CardDescription>{t('languageDescription')}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="language-select">{t('selectLanguage')}</Label>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="w-full justify-start">
+                  <Languages className="h-4 w-4 mr-2" />
+                  <span className="mr-2">{currentLanguage.flag}</span>
+                  {currentLanguage.name}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-full">
+                {languages.map((language) => (
+                  <DropdownMenuItem
+                    key={language.code}
+                    onClick={() => changeLanguage(language.code)}
+                    className={`cursor-pointer ${i18n.language === language.code ? 'bg-accent' : ''}`}
+                  >
+                    <span className="mr-2">{language.flag}</span>
+                    {language.name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </CardContent>
+      </Card>
       
       <Card>
         <CardHeader>
@@ -45,17 +97,6 @@ export default function Settings() {
                 ))}
               </SelectContent>
             </Select>
-          </div>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('systemConfiguration')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">{t('configPlaceholder')}</p>
           </div>
         </CardContent>
       </Card>

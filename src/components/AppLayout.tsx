@@ -73,11 +73,10 @@ export function AppLayout({ children }: AppLayoutProps) {
           <header className="h-14 flex items-center justify-between border-b bg-background px-4">
             <SidebarTrigger className="ml-2" />
             
-            <div className="flex items-center gap-4">
-              <ThemeToggle />
-              <LanguageSelector />
-              
-              <DropdownMenu>
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            
+            <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="flex items-center gap-3 h-10 px-3">
                     <Avatar className="h-8 w-8">

@@ -137,8 +137,8 @@ export default function Review() {
     }
     
     toast({
-      title: "Detección verificada",
-      description: "La detección ha sido marcada como verificada.",
+      title: t('detectionVerified'),
+      description: t('verificationSuccess'),
       variant: "default"
     });
   };
@@ -152,8 +152,8 @@ export default function Review() {
     }
     
     toast({
-      title: "Detección rechazada",
-      description: "La detección ha sido rechazada y eliminada de la cola.",
+      title: t('detectionRejected'),
+      description: t('rejectionSuccess'),
       variant: "default"
     });
   };
@@ -167,8 +167,8 @@ export default function Review() {
     }
     
     toast({
-      title: "Detección eliminada",
-      description: "La detección ha sido eliminada permanentemente.",
+      title: t('detectionDeleted'),
+      description: t('deletionSuccess'),
       variant: "destructive"
     });
   };
@@ -194,8 +194,8 @@ export default function Review() {
     setDetections(unverifiedDetections);
     setCurrentIndex(0);
     toast({
-      title: "Cola reiniciada",
-      description: "Se ha reiniciado la cola de revisión con todas las detecciones.",
+      title: t('queueReset'),
+      description: t('queueResetDescription'),
     });
   };
 
@@ -203,23 +203,23 @@ export default function Review() {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-foreground">Cola de Revisión</h1>
+          <h1 className="text-3xl font-bold text-foreground">{t('reviewQueue')}</h1>
           <Button onClick={resetQueue} variant="outline">
             <RotateCcw className="h-4 w-4 mr-2" />
-            Reiniciar Cola
+            {t('resetQueue')}
           </Button>
         </div>
         
         <Card className="text-center py-12">
           <CardContent>
             <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">¡Excelente trabajo!</h3>
+            <h3 className="text-xl font-semibold mb-2">{t('excellentWork')}</h3>
             <p className="text-muted-foreground mb-4">
-              No hay más detecciones pendientes de revisión.
+              {t('noMoreDetections')}
             </p>
             <Button onClick={resetQueue}>
               <RotateCcw className="h-4 w-4 mr-2" />
-              Reiniciar Cola para Demo
+              {t('resetQueueDemo')}
             </Button>
           </CardContent>
         </Card>
@@ -230,11 +230,11 @@ export default function Review() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-foreground">Cola de Revisión</h1>
+        <h1 className="text-3xl font-bold text-foreground">{t('reviewQueue')}</h1>
         <div className="flex items-center gap-2">
           <Badge variant="secondary" className="text-sm">
             <Clock className="h-4 w-4 mr-1" />
-            {detections.length} pendientes
+            {detections.length} {t('pending')}
           </Badge>
           <Button 
             variant="outline" 
@@ -244,12 +244,12 @@ export default function Review() {
             {viewMode === 'single' ? (
               <>
                 <LayoutGrid className="h-4 w-4 mr-2" />
-                Vista Cuadrícula
+                {t('gridView')}
               </>
             ) : (
               <>
                 <Grid3X3 className="h-4 w-4 mr-2" />
-                Vista Individual
+                {t('singleView')}
               </>
             )}
           </Button>
@@ -264,10 +264,10 @@ export default function Review() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-muted-foreground">
-                  Progreso de revisión
+                  {t('reviewProgress')}
                 </span>
                 <span className="text-sm font-medium">
-                  {currentIndex + 1} de {detections.length}
+                  {currentIndex + 1} {t('of')} {detections.length}
                 </span>
               </div>
               <div className="w-full bg-secondary rounded-full h-2">
@@ -284,9 +284,9 @@ export default function Review() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
-                  Detección #{currentIndex + 1}
+                  {t('detectionInfo')} #{currentIndex + 1}
                   <Badge variant="outline">
-                    {Math.round(currentDetection.confidence * 100)}% confianza
+                    {Math.round(currentDetection.confidence * 100)}% {t('confidence')}
                   </Badge>
                 </CardTitle>
                 <div className="flex items-center gap-2">
@@ -318,6 +318,7 @@ export default function Review() {
                     onVerify={handleVerify}
                     onReject={handleReject}
                     onDelete={handleDelete}
+                    showDirectly={true}
                   />
                   
                   {/* Quick actions */}
@@ -408,39 +409,39 @@ export default function Review() {
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-sm">Detección #{index + 1}</span>
-                    <Badge variant="outline" className="text-xs">
-                      {Math.round(detection.confidence * 100)}%
-                    </Badge>
+                <span className="font-medium text-sm">Detección #{index + 1}</span>
+                <Badge variant="outline" className="text-xs">
+                  {Math.round(detection.confidence * 100)}%
+                </Badge>
                   </div>
-                  <p className="text-xs text-muted-foreground line-clamp-2">
-                    {detection.description}
-                  </p>
-                  <div className="flex gap-1">
-                    <Button 
-                      size="sm" 
-                      className="flex-1 text-xs h-8"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleVerify(detection.id);
-                      }}
-                    >
-                      <CheckCircle className="h-3 w-3 mr-1" />
-                      Verificar
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="destructive" 
-                      className="flex-1 text-xs h-8"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleReject(detection.id);
-                      }}
-                    >
-                      <XCircle className="h-3 w-3 mr-1" />
-                      Rechazar
-                    </Button>
-                  </div>
+              <p className="text-xs text-muted-foreground line-clamp-2">
+                {detection.description}
+              </p>
+              <div className="flex gap-1">
+                <Button 
+                  size="sm" 
+                  className="flex-1 text-xs h-8"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleVerify(detection.id);
+                  }}
+                >
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                  {t('verify')}
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="destructive" 
+                  className="flex-1 text-xs h-8"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleReject(detection.id);
+                  }}
+                >
+                  <XCircle className="h-3 w-3 mr-1" />
+                  {t('reject')}
+                </Button>
+              </div>
                 </div>
               </CardContent>
             </Card>
