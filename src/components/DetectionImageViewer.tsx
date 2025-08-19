@@ -23,9 +23,17 @@ interface DetectionImageViewerProps {
   onReject?: (id: string) => void;
   onDelete?: (id: string) => void;
   showDirectly?: boolean;
+  editable?: boolean;
 }
 
-export function DetectionImageViewer({ detection, onVerify, onReject, onDelete, showDirectly = false }: DetectionImageViewerProps) {
+export function DetectionImageViewer({ 
+  detection, 
+  onVerify, 
+  onReject, 
+  onDelete, 
+  showDirectly = false,
+  editable = false 
+}: DetectionImageViewerProps) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [boundingBoxes, setBoundingBoxes] = useState<BoundingBox[]>([]);
@@ -79,6 +87,7 @@ export function DetectionImageViewer({ detection, onVerify, onReject, onDelete, 
         boundingBoxes={boundingBoxes}
         onBoundingBoxChange={handleBoundingBoxChange}
         showDirectly={true}
+        editable={editable}
       />
     );
   }
@@ -151,6 +160,7 @@ export function DetectionImageViewer({ detection, onVerify, onReject, onDelete, 
             imageUrl={detection.imageUrl}
             boundingBoxes={boundingBoxes}
             onBoundingBoxChange={handleBoundingBoxChange}
+            editable={true}
           />
 
           {/* Detection info */}

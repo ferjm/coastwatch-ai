@@ -352,6 +352,7 @@ export default function Review() {
                     onReject={handleReject}
                     onDelete={handleDelete}
                     showDirectly={true}
+                    editable={true}
                   />
                   
                   {/* Quick actions */}
