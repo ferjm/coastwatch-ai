@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { getGoogleMapsApiKey } from '@/services/mapsApi';
+import { DetectionImageViewer } from './DetectionImageViewer';
 import { 
   Map as MapIcon, 
   Satellite, 
@@ -408,7 +409,13 @@ function MapComponent({
         heatmapLayer.setMap(null);
       }
     };
-  }, [mapType]);
+  }, []);
+
+  // Handle map type changes
+  useEffect(() => {
+    if (!map) return;
+    map.setMapTypeId(mapType as google.maps.MapTypeId);
+  }, [map, mapType]);
 
   // Update markers when detections or filters change
   useEffect(() => {
@@ -435,33 +442,26 @@ function MapComponent({
       });
 
       marker.addListener('click', () => {
-        const verificationStatus = detection.verified ? 'Verificado' : 'Pendiente de verificación';
-        const content = `
-          <div class="p-3 max-w-xs">
-            <div class="font-semibold text-lg mb-2">Plástico detectado</div>
-            <div class="text-sm text-gray-600 mb-2">
-              ${t('confidence')}: ${Math.round(detection.confidence * 100)}%
-            </div>
-            <div class="text-sm text-gray-600 mb-2">
-              Estado: ${verificationStatus}
-            </div>
-            <div class="text-sm text-gray-600 mb-2">
-              ${t('coordinates')}: ${detection.lat.toFixed(4)}, ${detection.lng.toFixed(4)}
-            </div>
-            <div class="text-xs text-gray-500 mb-3">
-              ${t('lastUpdated')}: ${detection.detectedAt.toLocaleDateString()}
-            </div>
-            ${detection.description ? `<div class="text-sm mb-3">${detection.description}</div>` : ''}
-            <button 
-              onclick="window.viewDetectionImage('${detection.id}')"
-              class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
-            >
-              ${t('viewImage')}
-            </button>
-          </div>
-        `;
-
         if (infoWindowRef.current) {
+          const content = `
+            <div class="p-3 max-w-xs">
+              <div class="font-semibold text-lg mb-2">Plástico detectado</div>
+              <div class="text-sm text-gray-600 mb-2">
+                ${t('confidence')}: ${Math.round(detection.confidence * 100)}%
+              </div>
+              <div class="text-sm text-gray-600 mb-2">
+                Estado: ${detection.verified ? 'Verificado' : 'Pendiente de verificación'}
+              </div>
+              <div class="text-sm text-gray-600 mb-2">
+                ${t('coordinates')}: ${detection.lat.toFixed(4)}, ${detection.lng.toFixed(4)}
+              </div>
+              <div class="text-xs text-gray-500 mb-3">
+                ${t('lastUpdated')}: ${detection.detectedAt.toLocaleDateString()}
+              </div>
+              ${detection.description ? `<div class="text-sm mb-3">${detection.description}</div>` : ''}
+            </div>
+          `;
+          
           infoWindowRef.current.setContent(content);
           infoWindowRef.current.open(map, marker);
         }

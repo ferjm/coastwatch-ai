@@ -9,6 +9,10 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { CheckCircle, AlertTriangle, Filter } from 'lucide-react';
 
+import plasticBeach1 from '@/assets/plastic-beach-1.jpg';
+import plasticBeach2 from '@/assets/plastic-beach-2.jpg';
+import plasticBeach3 from '@/assets/plastic-beach-3.jpg';
+
 // Enhanced mock data with verification status - Brazilian coastal areas
 const mockDetectionsWithStatus: (MapDetection & { verified: boolean; reviewedAt?: string })[] = [
   // Rio de Janeiro - Copacabana
@@ -17,7 +21,7 @@ const mockDetectionsWithStatus: (MapDetection & { verified: boolean; reviewedAt?
     lat: -22.9707,
     lng: -43.1823,
     confidence: 0.92,
-    imageUrl: '/placeholder.svg',
+    imageUrl: plasticBeach1,
     detectedAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
     description: 'Botellas plásticas detectadas en la arena de Copacabana',
     verified: true,
@@ -28,7 +32,7 @@ const mockDetectionsWithStatus: (MapDetection & { verified: boolean; reviewedAt?
     lat: -22.9715,
     lng: -43.1830,
     confidence: 0.85,
-    imageUrl: '/placeholder.svg',
+    imageUrl: plasticBeach2,
     detectedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
     description: 'Residuos plásticos arrastrados por las olas en Copacabana',
     verified: false
@@ -40,7 +44,7 @@ const mockDetectionsWithStatus: (MapDetection & { verified: boolean; reviewedAt?
     lat: -22.9845,
     lng: -43.2096,
     confidence: 0.78,
-    imageUrl: '/placeholder.svg',
+    imageUrl: plasticBeach3,
     detectedAt: new Date(Date.now() - 3 * 60 * 60 * 1000),
     description: 'Fragmentos de plástico en las aguas cristalinas de Ipanema',
     verified: true,
@@ -51,34 +55,34 @@ const mockDetectionsWithStatus: (MapDetection & { verified: boolean; reviewedAt?
     lat: -22.9850,
     lng: -43.2105,
     confidence: 0.91,
-    imageUrl: '/placeholder.svg',
+    imageUrl: plasticBeach1,
     detectedAt: new Date(Date.now() - 4 * 60 * 60 * 1000),
     description: 'Bolsas plásticas entre las rocas del Arpoador',
     verified: false
   },
   
   // Rio de Janeiro - Leblon
-  {
-    id: '5',
-    lat: -22.9864,
-    lng: -43.2223,
-    confidence: 0.95,
-    imageUrl: '/placeholder.svg',
-    detectedAt: new Date(Date.now() - 5 * 60 * 60 * 1000),
-    description: 'Envases plásticos en la exclusiva Playa de Leblon',
-    verified: true,
-    reviewedAt: new Date(Date.now() - 7200000).toISOString()
-  },
-  {
-    id: '6',
-    lat: -22.9870,
-    lng: -43.2230,
-    confidence: 0.82,
-    imageUrl: '/placeholder.svg',
-    detectedAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
-    description: 'Microplásticos dispersos en Leblon',
-    verified: false
-  },
+    {
+      id: '5',
+      lat: -22.9864,
+      lng: -43.2223,
+      confidence: 0.95,
+      imageUrl: plasticBeach2,
+      detectedAt: new Date(Date.now() - 5 * 60 * 60 * 1000),
+      description: 'Envases plásticos en la exclusiva Playa de Leblon',
+      verified: true,
+      reviewedAt: new Date(Date.now() - 7200000).toISOString()
+    },
+    {
+      id: '6',
+      lat: -22.9870,
+      lng: -43.2230,
+      confidence: 0.82,
+      imageUrl: plasticBeach3,
+      detectedAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
+      description: 'Microplásticos dispersos en Leblon',
+      verified: false
+    },
   
   // Rio de Janeiro - Barra da Tijuca
   {

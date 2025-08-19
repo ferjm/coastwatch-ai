@@ -1,641 +1,452 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ImageItem, Detection } from '@/types';
+import { Badge } from '@/components/ui/badge';
+import { DetectionImageViewer } from '@/components/DetectionImageViewer';
 import { 
-  Grid, 
-  List, 
   CheckCircle, 
   XCircle, 
-  Eye, 
-  Edit,
-  MousePointer,
-  Trash2,
-  Plus,
-  Filter,
-  AlertTriangle
+  Clock, 
+  Grid3X3, 
+  ChevronLeft, 
+  ChevronRight,
+  LayoutGrid,
+  RotateCcw
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 
-// Mock data for images ready for review
-const mockReviewImages: (ImageItem & { detections: Detection[] })[] = [
+// Import real images
+import plasticBeach1 from '@/assets/plastic-beach-1.jpg';
+import plasticBeach2 from '@/assets/plastic-beach-2.jpg';
+import plasticBeach3 from '@/assets/plastic-beach-3.jpg';
+
+interface Detection {
+  id: string;
+  lat: number;
+  lng: number;
+  confidence: number;
+  imageUrl: string;
+  detectedAt: Date;
+  description: string;
+  verified: boolean;
+}
+
+// Mock unverified detections with real images for review queue
+const unverifiedDetections: Detection[] = [
   {
     id: '1',
-    fileName: 'ocean_plastic_1.jpg',
-    widthPx: 1920,
-    heightPx: 1080,
-    status: 'processed',
-    hash: 'hash1',
-    uploadedAt: new Date(Date.now() - 1200000).toISOString(),
-    processedAt: new Date(Date.now() - 60000).toISOString(),
-    thumbUrl: '/placeholder.svg',
-    detections: [
-      {
-        id: 'd1',
-        imageId: '1',
-        score: 0.95,
-        bbox: { x: 100, y: 150, w: 80, h: 120 },
-        reviewerLabel: 'pending',
-        verified: false
-      },
-      {
-        id: 'd2',
-        imageId: '1',
-        score: 0.87,
-        bbox: { x: 300, y: 200, w: 60, h: 90 },
-        reviewerLabel: 'pending',
-        verified: false
-      }
-    ]
+    lat: -22.9715,
+    lng: -43.1830,
+    confidence: 0.85,
+    imageUrl: plasticBeach1,
+    detectedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
+    description: 'Residuos plásticos arrastrados por las olas en Copacabana',
+    verified: false
   },
   {
     id: '2',
-    fileName: 'beach_debris_2.jpg',
-    widthPx: 1920,
-    heightPx: 1080,
-    status: 'processed',
-    hash: 'hash2',
-    uploadedAt: new Date(Date.now() - 1800000).toISOString(),
-    processedAt: new Date(Date.now() - 300000).toISOString(),
-    thumbUrl: '/placeholder.svg',
-    detections: [
-      {
-        id: 'd3',
-        imageId: '2',
-        score: 0.72,
-        bbox: { x: 200, y: 100, w: 40, h: 50 },
-        reviewerLabel: 'pending',
-        verified: false
-      }
-    ]
+    lat: -22.9850,
+    lng: -43.2105,
+    confidence: 0.91,
+    imageUrl: plasticBeach2,
+    detectedAt: new Date(Date.now() - 4 * 60 * 60 * 1000),
+    description: 'Bolsas plásticas entre las rocas del Arpoador',
+    verified: false
+  },
+  {
+    id: '3',
+    lat: -22.9870,
+    lng: -43.2230,
+    confidence: 0.82,
+    imageUrl: plasticBeach3,
+    detectedAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
+    description: 'Microplásticos dispersos en Leblon',
+    verified: false
+  },
+  {
+    id: '4',
+    lat: -23.0140,
+    lng: -43.3100,
+    confidence: 0.79,
+    imageUrl: plasticBeach1,
+    detectedAt: new Date(Date.now() - 8 * 60 * 60 * 1000),
+    description: 'Botellas de bebidas en Barra da Tijuca',
+    verified: false
+  },
+  {
+    id: '5',
+    lat: -24.0089,
+    lng: -46.2678,
+    confidence: 0.93,
+    imageUrl: plasticBeach2,
+    detectedAt: new Date(Date.now() - 10 * 60 * 60 * 1000),
+    description: 'Redes plásticas en Praia das Astúrias, Guarujá',
+    verified: false
+  },
+  {
+    id: '6',
+    lat: -27.5954,
+    lng: -48.5480,
+    confidence: 0.84,
+    imageUrl: plasticBeach3,
+    detectedAt: new Date(Date.now() - 12 * 60 * 60 * 1000),
+    description: 'Plásticos en Praia da Joaquina, Florianópolis',
+    verified: false
+  },
+  {
+    id: '7',
+    lat: -27.4891,
+    lng: -48.3958,
+    confidence: 0.77,
+    imageUrl: plasticBeach1,
+    detectedAt: new Date(Date.now() - 14 * 60 * 60 * 1000),
+    description: 'Residuos plásticos en Praia dos Ingleses',
+    verified: false
+  },
+  {
+    id: '8',
+    lat: -12.9234,
+    lng: -38.4756,
+    confidence: 0.83,
+    imageUrl: plasticBeach2,
+    detectedAt: new Date(Date.now() - 16 * 60 * 60 * 1000),
+    description: 'Bolsas plásticas en Praia de Stella Maris',
+    verified: false
   }
 ];
 
 export default function Review() {
   const { t } = useTranslation();
-  const [images, setImages] = useState(mockReviewImages);
-  const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [selectedImage, setSelectedImage] = useState<(typeof mockReviewImages)[0] | null>(null);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [showVerifiedOnly, setShowVerifiedOnly] = useState(false);
-  const [showUnverifiedOnly, setShowUnverifiedOnly] = useState(false);
+  const { toast } = useToast();
+  
+  const [detections, setDetections] = useState<Detection[]>(unverifiedDetections);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [viewMode, setViewMode] = useState<'single' | 'grid'>('single');
+  
+  const currentDetection = detections[currentIndex];
+  const hasNext = currentIndex < detections.length - 1;
+  const hasPrevious = currentIndex > 0;
 
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-        return; // Don't trigger shortcuts when typing in inputs
-      }
-
-      switch (e.key) {
-        case 'a':
-          if (e.ctrlKey || e.metaKey) {
-            e.preventDefault();
-            handleSelectAll();
-          }
-          break;
-        case 'Escape':
-          handleClearSelection();
-          break;
-        case 'Enter':
-          if (selectedImages.size > 0) {
-            handleBatchApprove();
-          }
-          break;
-        case 'Delete':
-        case 'Backspace':
-          if (selectedImages.size > 0) {
-            handleBatchReject();
-          }
-          break;
-        case 'g':
-          setViewMode('grid');
-          break;
-        case 'l':
-          setViewMode('list');
-          break;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [selectedImages]);
-
-  const handleSelectImage = (imageId: string) => {
-    setSelectedImages(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(imageId)) {
-        newSet.delete(imageId);
-      } else {
-        newSet.add(imageId);
-      }
-      return newSet;
+  const handleVerify = (id: string) => {
+    setDetections(prev => prev.filter(d => d.id !== id));
+    
+    // Adjust current index if needed
+    if (currentIndex >= detections.length - 1 && currentIndex > 0) {
+      setCurrentIndex(prev => prev - 1);
+    }
+    
+    toast({
+      title: "Detección verificada",
+      description: "La detección ha sido marcada como verificada.",
+      variant: "default"
     });
   };
 
-  const handleSelectAll = () => {
-    if (selectedImages.size === images.length) {
-      setSelectedImages(new Set());
-    } else {
-      setSelectedImages(new Set(images.map(img => img.id)));
+  const handleReject = (id: string) => {
+    setDetections(prev => prev.filter(d => d.id !== id));
+    
+    // Adjust current index if needed
+    if (currentIndex >= detections.length - 1 && currentIndex > 0) {
+      setCurrentIndex(prev => prev - 1);
+    }
+    
+    toast({
+      title: "Detección rechazada",
+      description: "La detección ha sido rechazada y eliminada de la cola.",
+      variant: "default"
+    });
+  };
+
+  const handleDelete = (id: string) => {
+    setDetections(prev => prev.filter(d => d.id !== id));
+    
+    // Adjust current index if needed
+    if (currentIndex >= detections.length - 1 && currentIndex > 0) {
+      setCurrentIndex(prev => prev - 1);
+    }
+    
+    toast({
+      title: "Detección eliminada",
+      description: "La detección ha sido eliminada permanentemente.",
+      variant: "destructive"
+    });
+  };
+
+  const nextDetection = () => {
+    if (hasNext) {
+      setCurrentIndex(prev => prev + 1);
     }
   };
 
-  const handleClearSelection = () => {
-    setSelectedImages(new Set());
-  };
-
-  const handleBatchApprove = () => {
-    const count = selectedImages.size;
-    setImages(prev => prev.map(img => 
-      selectedImages.has(img.id) 
-        ? { 
-            ...img, 
-            status: 'reviewed' as const,
-            reviewedAt: new Date().toISOString(),
-            detections: img.detections.map(det => ({
-              ...det, 
-              reviewerLabel: 'accepted' as const,
-              verified: true,
-              reviewedAt: new Date().toISOString()
-            }))
-          }
-        : img
-    ));
-    setSelectedImages(new Set());
-    toast.success(t('approvedImages', { count }));
-  };
-
-  const handleBatchReject = () => {
-    const count = selectedImages.size;
-    setImages(prev => prev.filter(img => !selectedImages.has(img.id)));
-    setSelectedImages(new Set());
-    toast.success(t('rejectedImages', { count }));
-  };
-
-  const handleEditImage = (image: typeof mockReviewImages[0]) => {
-    setSelectedImage(image);
-    setIsEditMode(true);
-  };
-
-  const handleViewImage = (image: typeof mockReviewImages[0]) => {
-    setSelectedImage(image);
-    setIsEditMode(false);
-  };
-
-  // Filter images based on verification status
-  const filteredImages = images.filter(image => {
-    if (showVerifiedOnly && !showUnverifiedOnly) {
-      return image.detections.some(d => d.verified);
+  const previousDetection = () => {
+    if (hasPrevious) {
+      setCurrentIndex(prev => prev - 1);
     }
-    if (showUnverifiedOnly && !showVerifiedOnly) {
-      return image.detections.some(d => !d.verified);
-    }
-    return true; // Show all if both or neither are selected
-  });
+  };
 
-  const pendingImages = filteredImages.filter(img => img.status === 'processed');
-  const reviewedImages = filteredImages.filter(img => img.status === 'reviewed');
-  
-  const verifiedCount = images.filter(img => img.detections.some(d => d.verified)).length;
-  const unverifiedCount = images.filter(img => img.detections.some(d => !d.verified)).length;
+  const goToDetection = (index: number) => {
+    setCurrentIndex(index);
+    setViewMode('single');
+  };
 
-  const GridView = () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      {pendingImages.map((image) => (
-        <Card key={image.id} className="relative group hover:shadow-lg transition-shadow">
-          <div className="absolute top-2 left-2 z-10">
-            <Checkbox
-              checked={selectedImages.has(image.id)}
-              onCheckedChange={() => handleSelectImage(image.id)}
-              className="bg-background border-2"
-            />
-          </div>
-          
-          <div className="relative">
-            <img
-              src={image.thumbUrl}
-              alt={image.fileName}
-              className="w-full h-48 object-cover rounded-t-lg"
-            />
-            
-            {/* Detection overlay */}
-            <div className="absolute inset-0">
-              {image.detections.map((detection) => (
-                 <div
-                  key={detection.id}
-                  className="absolute border-2 border-primary bg-primary/20"
-                  style={{
-                    left: `${(detection.bbox.x / image.widthPx) * 100}%`,
-                    top: `${(detection.bbox.y / image.heightPx) * 100}%`,
-                    width: `${(detection.bbox.w / image.widthPx) * 100}%`,
-                    height: `${(detection.bbox.h / image.heightPx) * 100}%`
-                  }}
-                >
-                  <Badge className="absolute -top-6 -left-1 text-xs">
-                    Plástico ({Math.round(detection.score * 100)}%)
-                  </Badge>
-                </div>
-              ))}
-            </div>
+  const resetQueue = () => {
+    setDetections(unverifiedDetections);
+    setCurrentIndex(0);
+    toast({
+      title: "Cola reiniciada",
+      description: "Se ha reiniciado la cola de revisión con todas las detecciones.",
+    });
+  };
 
-            {/* Action buttons */}
-            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-              <Button size="sm" variant="secondary" onClick={() => handleViewImage(image)}>
-                <Eye className="h-3 w-3" />
-              </Button>
-              <Button size="sm" variant="secondary" onClick={() => handleEditImage(image)}>
-                <Edit className="h-3 w-3" />
-              </Button>
-            </div>
-          </div>
-
-          <CardContent className="p-3">
-            <p className="font-medium text-sm truncate">{image.fileName}</p>
-            <p className="text-xs text-muted-foreground">
-              {image.detections.length} detection{image.detections.length !== 1 ? 's' : ''}
+  if (detections.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold text-foreground">Cola de Revisión</h1>
+          <Button onClick={resetQueue} variant="outline">
+            <RotateCcw className="h-4 w-4 mr-2" />
+            Reiniciar Cola
+          </Button>
+        </div>
+        
+        <Card className="text-center py-12">
+          <CardContent>
+            <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold mb-2">¡Excelente trabajo!</h3>
+            <p className="text-muted-foreground mb-4">
+              No hay más detecciones pendientes de revisión.
             </p>
-            <p className="text-xs text-muted-foreground">
-              {new Date(image.processedAt!).toLocaleString()}
-            </p>
+            <Button onClick={resetQueue}>
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Reiniciar Cola para Demo
+            </Button>
           </CardContent>
         </Card>
-      ))}
-    </div>
-  );
-
-  const ListView = () => (
-    <div className="space-y-2">
-      {pendingImages.map((image) => (
-        <Card key={image.id} className="p-4">
-          <div className="flex items-center space-x-4">
-            <Checkbox
-              checked={selectedImages.has(image.id)}
-              onCheckedChange={() => handleSelectImage(image.id)}
-            />
-            
-            <img
-              src={image.thumbUrl}
-              alt={image.fileName}
-              className="h-16 w-16 object-cover rounded"
-            />
-            
-            <div className="flex-1">
-              <p className="font-medium">{image.fileName}</p>
-              <p className="text-sm text-muted-foreground">
-                {image.detections.length} detection{image.detections.length !== 1 ? 's' : ''} • 
-                {new Date(image.processedAt!).toLocaleString()}
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              {image.detections.map((detection) => (
-                <Badge key={detection.id} variant="outline">
-                  Plástico ({Math.round(detection.score * 100)}%)
-                </Badge>
-              ))}
-            </div>
-
-            <div className="flex items-center gap-1">
-              <Button size="sm" variant="outline" onClick={() => handleViewImage(image)}>
-                <Eye className="h-3 w-3" />
-              </Button>
-              <Button size="sm" variant="outline" onClick={() => handleEditImage(image)}>
-                <Edit className="h-3 w-3" />
-              </Button>
-            </div>
-          </div>
-        </Card>
-      ))}
-    </div>
-  );
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-foreground">{t('detectionReview')}</h1>
-        
+        <h1 className="text-3xl font-bold text-foreground">Cola de Revisión</h1>
         <div className="flex items-center gap-2">
-          <Button
-            variant={viewMode === 'grid' ? 'default' : 'outline'}
+          <Badge variant="secondary" className="text-sm">
+            <Clock className="h-4 w-4 mr-1" />
+            {detections.length} pendientes
+          </Badge>
+          <Button 
+            variant="outline" 
             size="sm"
-            onClick={() => setViewMode('grid')}
+            onClick={() => setViewMode(viewMode === 'single' ? 'grid' : 'single')}
           >
-            <Grid className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={viewMode === 'list' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setViewMode('list')}
-          >
-            <List className="h-4 w-4" />
+            {viewMode === 'single' ? (
+              <>
+                <LayoutGrid className="h-4 w-4 mr-2" />
+                Vista Cuadrícula
+              </>
+            ) : (
+              <>
+                <Grid3X3 className="h-4 w-4 mr-2" />
+                Vista Individual
+              </>
+            )}
           </Button>
         </div>
       </div>
 
-      {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t('pendingReview')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{pendingImages.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-600" />
-              {t('verified')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{verifiedCount}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-orange-600" />
-              {t('pendingVerification')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{unverifiedCount}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t('totalDetections')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {images.reduce((acc, img) => acc + img.detections.length, 0)}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filter Controls */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            {t('filterDetections')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col sm:flex-row gap-6">
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="show-verified"
-                checked={showVerifiedOnly}
-                onCheckedChange={(checked) => {
-                  setShowVerifiedOnly(checked);
-                  if (checked) setShowUnverifiedOnly(false);
-                }}
-              />
-              <Label htmlFor="show-verified" className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                {t('showVerifiedOnly')}
-              </Label>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="show-unverified"
-                checked={showUnverifiedOnly}
-                onCheckedChange={(checked) => {
-                  setShowUnverifiedOnly(checked);
-                  if (checked) setShowVerifiedOnly(false);
-                }}
-              />
-              <Label htmlFor="show-unverified" className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-orange-600" />
-                {t('showUnverifiedOnly')}
-              </Label>
-            </div>
-
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowVerifiedOnly(false);
-                setShowUnverifiedOnly(false);
-              }}
-              disabled={!showVerifiedOnly && !showUnverifiedOnly}
-            >
-              {t('showAll')}
-            </Button>
-          </div>
-          
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Badge variant="secondary">
-              {t('showing')} {filteredImages.length} {t('of')} {images.length} {t('images')}
-            </Badge>
-            {showVerifiedOnly && (
-              <Badge variant="outline" className="text-green-600 border-green-600">
-                {t('verifiedOnly')}
-              </Badge>
-            )}
-            {showUnverifiedOnly && (
-              <Badge variant="outline" className="text-orange-600 border-orange-600">
-                {t('unverifiedOnly')}
-              </Badge>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Selection Controls */}
-      {selectedImages.size > 0 && (
-        <Card className="bg-primary/5 border-primary/20">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <span className="font-medium">
-                {selectedImages.size} image{selectedImages.size !== 1 ? 's' : ''} selected
-              </span>
-              
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={handleClearSelection}>
-                  {t('clearSelection')}
-                </Button>
-                <Button variant="default" size="sm" onClick={handleBatchApprove}>
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  {t('approveSelected')}
-                </Button>
-                <Button variant="destructive" size="sm" onClick={handleBatchReject}>
-                  <XCircle className="h-4 w-4 mr-2" />
-                  {t('rejectSelected')}
-                </Button>
+      {viewMode === 'single' ? (
+        // Single view mode
+        <div className="space-y-6">
+          {/* Progress bar */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-muted-foreground">
+                  Progreso de revisión
+                </span>
+                <span className="text-sm font-medium">
+                  {currentIndex + 1} de {detections.length}
+                </span>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Keyboard Shortcuts Help */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">{t('keyboardShortcuts')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div><kbd className="px-1 py-0.5 bg-muted rounded">Ctrl+A</kbd> {t('selectAll')}</div>
-            <div><kbd className="px-1 py-0.5 bg-muted rounded">Esc</kbd> {t('clearSelection')}</div>
-            <div><kbd className="px-1 py-0.5 bg-muted rounded">Enter</kbd> {t('approveSelected')}</div>
-            <div><kbd className="px-1 py-0.5 bg-muted rounded">Del</kbd> {t('rejectSelected')}</div>
-            <div><kbd className="px-1 py-0.5 bg-muted rounded">G</kbd> {t('gridView')}</div>
-            <div><kbd className="px-1 py-0.5 bg-muted rounded">L</kbd> {t('listView')}</div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Images */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>{t('imagesForReview')}</CardTitle>
-          <Button variant="outline" size="sm" onClick={handleSelectAll}>
-            <MousePointer className="h-4 w-4 mr-2" />
-            {selectedImages.size === images.length ? t('deselectAll') : t('selectAll')}
-          </Button>
-        </CardHeader>
-        <CardContent>
-          {pendingImages.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">{t('noImagesForReview')}</p>
-            </div>
-          ) : (
-            viewMode === 'grid' ? <GridView /> : <ListView />
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Image Detail Dialog */}
-      <Dialog open={selectedImage !== null} onOpenChange={() => setSelectedImage(null)}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {selectedImage?.fileName} {isEditMode && '- Edit Mode'}
-            </DialogTitle>
-          </DialogHeader>
-          
-          {selectedImage && (
-            <div className="space-y-4">
-              <div className="relative">
-                <img
-                  src={selectedImage.thumbUrl}
-                  alt={selectedImage.fileName}
-                  className="w-full max-h-96 object-contain"
+              <div className="w-full bg-secondary rounded-full h-2">
+                <div 
+                  className="bg-primary h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${((currentIndex + 1) / detections.length) * 100}%` }}
                 />
-                
-                {/* Detection overlays */}
-                {selectedImage.detections.map((detection) => (
-                  <div
-                    key={detection.id}
-                    className="absolute border-2 border-primary bg-primary/20"
-                    style={{
-                      left: `${(detection.bbox.x / selectedImage.widthPx) * 100}%`,
-                      top: `${(detection.bbox.y / selectedImage.heightPx) * 100}%`,
-                      width: `${(detection.bbox.w / selectedImage.widthPx) * 100}%`,
-                      height: `${(detection.bbox.h / selectedImage.heightPx) * 100}%`
-                    }}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Current detection */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  Detección #{currentIndex + 1}
+                  <Badge variant="outline">
+                    {Math.round(currentDetection.confidence * 100)}% confianza
+                  </Badge>
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={previousDetection}
+                    disabled={!hasPrevious}
                   >
-                   <Badge className="absolute -top-6 -left-1">
-                      Plástico ({Math.round(detection.score * 100)}%)
-                    </Badge>
-                    
-                    {isEditMode && (
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        className="absolute -top-8 -right-8 h-6 w-6"
-                        onClick={() => {
-                          // Remove detection logic here
-                        }}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h4 className="font-medium mb-2">{t('imageInfo')}</h4>
-                  <div className="text-sm space-y-1">
-                    <p><strong>{t('fileName')}:</strong> {selectedImage.fileName}</p>
-                    <p><strong>{t('resolution')}:</strong> {selectedImage.widthPx} × {selectedImage.heightPx}</p>
-                    <p><strong>{t('uploaded')}:</strong> {new Date(selectedImage.uploadedAt).toLocaleString()}</p>
-                    <p><strong>{t('processed')}:</strong> {new Date(selectedImage.processedAt!).toLocaleString()}</p>
-                  </div>
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={nextDetection}
+                    disabled={!hasNext}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
                 </div>
-                
-                <div>
-                  <h4 className="font-medium mb-2">{t('detections')}</h4>
-                  <div className="space-y-2">
-                    {selectedImage.detections.map((detection) => (
-        <div key={detection.id} className="p-2 bg-muted rounded">
-          <div className="flex items-center justify-between">
-            <Badge variant="outline">Plástico</Badge>
-            <span className="text-sm">{Math.round(detection.score * 100)}%</span>
-          </div>
-        </div>
-                    ))}
-                  </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Image with bounding boxes */}
+                <div className="space-y-4">
+                  <DetectionImageViewer
+                    detection={currentDetection}
+                    onVerify={handleVerify}
+                    onReject={handleReject}
+                    onDelete={handleDelete}
+                  />
                   
-                  {isEditMode && (
-                    <Button className="w-full mt-2" variant="outline">
-                      <Plus className="h-4 w-4 mr-2" />
-                      {t('addDetection')}
+                  {/* Quick actions */}
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      onClick={() => handleVerify(currentDetection.id)}
+                      className="flex-1"
+                      variant="default"
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Verificar
                     </Button>
-                  )}
+                    <Button 
+                      onClick={() => handleReject(currentDetection.id)}
+                      className="flex-1"
+                      variant="destructive"
+                    >
+                      <XCircle className="h-4 w-4 mr-2" />
+                      Rechazar
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Detection details */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-semibold mb-2">Información de la Detección</h3>
+                    <div className="space-y-3 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Confianza:</span>
+                        <Badge variant="outline">
+                          {Math.round(currentDetection.confidence * 100)}%
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Coordenadas:</span>
+                        <span>{currentDetection.lat.toFixed(4)}, {currentDetection.lng.toFixed(4)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Detectado:</span>
+                        <span>{currentDetection.detectedAt.toLocaleDateString()}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Descripción:</span>
+                        <p className="mt-1">{currentDetection.description}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="font-semibold mb-2">Objetos Detectados</h3>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between p-2 bg-muted rounded">
+                        <span className="text-sm">Plástico #1</span>
+                        <Badge variant="outline" className="text-xs">
+                          {Math.round(currentDetection.confidence * 100)}%
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between p-2 bg-muted rounded">
+                        <span className="text-sm">Plástico #2</span>
+                        <Badge variant="outline" className="text-xs">
+                          {Math.round(currentDetection.confidence * 0.9 * 100)}%
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-              
-              <div className="flex justify-end gap-2">
-                {isEditMode ? (
-                  <>
-                    <Button variant="outline" onClick={() => setIsEditMode(false)}>
-                      {t('cancel')}
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        // Grid view mode
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {detections.map((detection, index) => (
+            <Card 
+              key={detection.id} 
+              className="cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => goToDetection(index)}
+            >
+              <CardContent className="p-4">
+                <div className="aspect-video mb-3 overflow-hidden rounded">
+                  <img 
+                    src={detection.imageUrl}
+                    alt={`Detection ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-sm">Detección #{index + 1}</span>
+                    <Badge variant="outline" className="text-xs">
+                      {Math.round(detection.confidence * 100)}%
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground line-clamp-2">
+                    {detection.description}
+                  </p>
+                  <div className="flex gap-1">
+                    <Button 
+                      size="sm" 
+                      className="flex-1 text-xs h-8"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleVerify(detection.id);
+                      }}
+                    >
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Verificar
                     </Button>
-                    <Button onClick={() => setSelectedImage(null)}>
-                      {t('saveChanges')}
+                    <Button 
+                      size="sm" 
+                      variant="destructive" 
+                      className="flex-1 text-xs h-8"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleReject(detection.id);
+                      }}
+                    >
+                      <XCircle className="h-3 w-3 mr-1" />
+                      Rechazar
                     </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button variant="outline" onClick={() => setIsEditMode(true)}>
-                      <Edit className="h-4 w-4 mr-2" />
-                      {t('editDetections')}
-                    </Button>
-                    <Button variant="destructive">
-                      <XCircle className="h-4 w-4 mr-2" />
-                      {t('reject')}
-                    </Button>
-                    <Button>
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      {t('approve')}
-                    </Button>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
