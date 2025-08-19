@@ -30,6 +30,15 @@ interface Detection {
   detectedAt: Date;
   description: string;
   verified: boolean;
+  boundingBoxes?: Array<{
+    id: string;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    confidence: number;
+    label?: string;
+  }>;
 }
 
 // Mock unverified detections with real images for review queue
@@ -42,7 +51,27 @@ const unverifiedDetections: Detection[] = [
     imageUrl: plasticBeach1,
     detectedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
     description: 'Residuos plásticos en la playa',
-    verified: false
+    verified: false,
+    boundingBoxes: [
+      {
+        id: 'bb1-1',
+        x: 120,
+        y: 80,
+        width: 180,
+        height: 120,
+        confidence: 0.85,
+        label: 'Botella plástica'
+      },
+      {
+        id: 'bb1-2',
+        x: 350,
+        y: 200,
+        width: 140,
+        height: 90,
+        confidence: 0.78,
+        label: 'Fragmento plástico'
+      }
+    ]
   },
   {
     id: '2',
@@ -52,7 +81,36 @@ const unverifiedDetections: Detection[] = [
     imageUrl: plasticBeach2,
     detectedAt: new Date(Date.now() - 4 * 60 * 60 * 1000),
     description: 'Bolsas plásticas entre rocas',
-    verified: false
+    verified: false,
+    boundingBoxes: [
+      {
+        id: 'bb2-1',
+        x: 200,
+        y: 100,
+        width: 160,
+        height: 140,
+        confidence: 0.91,
+        label: 'Bolsa plástica'
+      },
+      {
+        id: 'bb2-2',
+        x: 400,
+        y: 250,
+        width: 120,
+        height: 80,
+        confidence: 0.73,
+        label: 'Envoltorio'
+      },
+      {
+        id: 'bb2-3',
+        x: 80,
+        y: 300,
+        width: 100,
+        height: 60,
+        confidence: 0.82,
+        label: 'Tapa plástica'
+      }
+    ]
   },
   {
     id: '3',
@@ -62,7 +120,27 @@ const unverifiedDetections: Detection[] = [
     imageUrl: plasticBeach3,
     detectedAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
     description: 'Microplásticos dispersos en Leblon',
-    verified: false
+    verified: false,
+    boundingBoxes: [
+      {
+        id: 'bb3-1',
+        x: 150,
+        y: 120,
+        width: 200,
+        height: 150,
+        confidence: 0.82,
+        label: 'Residuos varios'
+      },
+      {
+        id: 'bb3-2',
+        x: 380,
+        y: 180,
+        width: 130,
+        height: 100,
+        confidence: 0.69,
+        label: 'Microplásticos'
+      }
+    ]
   },
   {
     id: '4',
