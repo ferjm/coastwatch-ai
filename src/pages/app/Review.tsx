@@ -205,6 +205,10 @@ export default function Review() {
   const currentDetection = detections[currentIndex];
   const hasNext = currentIndex < detections.length - 1;
   const hasPrevious = currentIndex > 0;
+  
+  // Debug logging
+  console.log('Review - Current detection:', currentDetection);
+  console.log('Review - Current detection bounding boxes:', currentDetection?.boundingBoxes);
 
   const handleVerify = (id: string) => {
     setDetections(prev => prev.filter(d => d.id !== id));
