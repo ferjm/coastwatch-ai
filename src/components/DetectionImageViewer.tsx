@@ -53,7 +53,7 @@ export function DetectionImageViewer({
           width: 150,
           height: 100,
           confidence: detection.confidence,
-          label: 'Plastic Object'
+          label: 'Plástico'
         },
         {
           id: 'default-2',
@@ -62,7 +62,7 @@ export function DetectionImageViewer({
           width: 120,
           height: 80,
           confidence: detection.confidence * 0.9,
-          label: 'Debris'
+          label: 'Plástico'
         }
       ];
       setBoundingBoxes(defaultBoxes);

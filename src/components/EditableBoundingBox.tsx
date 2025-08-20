@@ -171,10 +171,10 @@ export function EditableBoundingBox({
                   : 'border-emerald-400 bg-emerald-400/10'
               }`}
               style={{
-                left: `${(box.x / 800) * 100}%`,
-                top: `${(box.y / 600) * 100}%`,
-                width: `${(box.width / 800) * 100}%`,
-                height: `${(box.height / 600) * 100}%`,
+                left: `${box.x}px`,
+                top: `${box.y}px`,
+                width: `${box.width}px`,
+                height: `${box.height}px`,
                 boxShadow: editable 
                   ? '0 0 0 1px rgba(34, 211, 238, 0.3), 0 4px 12px rgba(34, 211, 238, 0.15)' 
                   : '0 0 0 1px rgba(52, 211, 153, 0.3), 0 4px 12px rgba(52, 211, 153, 0.15)',
@@ -267,8 +267,8 @@ export function EditableBoundingBox({
                   : 'bg-emerald-500/90 text-white border-emerald-400/50'
               }`}
               style={{
-                left: `${(box.x / 800) * 100}%`,
-                top: `${((box.y - 28) / 600) * 100}%`,
+                left: `${box.x}px`,
+                top: `${box.y - 28}px`,
                 minWidth: '64px',
                 pointerEvents: editable ? 'auto' : 'none',
                 transform: 'translateY(-100%)'
@@ -281,7 +281,7 @@ export function EditableBoundingBox({
                 <input
                   type="text"
                   className="bg-transparent border-none outline-none text-xs w-full text-white placeholder-cyan-200"
-                  defaultValue={box.label || `Object ${Math.round(box.confidence * 100)}%`}
+                  defaultValue={box.label || `Plástico ${Math.round(box.confidence * 100)}%`}
                   autoFocus
                   onBlur={(e) => handleLabelEdit(box.id, e.target.value)}
                   onKeyDown={(e) => {
@@ -295,7 +295,7 @@ export function EditableBoundingBox({
                 />
               ) : (
                 <span className="block truncate">
-                  {box.label || `Object ${Math.round(box.confidence * 100)}%`}
+                  {box.label || `Plástico ${Math.round(box.confidence * 100)}%`}
                 </span>
               )}
             </div>
