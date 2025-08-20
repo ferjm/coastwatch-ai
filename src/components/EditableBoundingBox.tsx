@@ -152,16 +152,31 @@ export function EditableBoundingBox({
   };
 
   if (showDirectly) {
+    console.log('EditableBoundingBox - showDirectly mode', { boxes, imageUrl });
     return (
       <div className="relative w-full bg-background rounded-lg overflow-hidden">
         <img 
           src={imageUrl}
           alt="Detection"
           className="w-full h-auto block"
+          style={{ maxHeight: '600px', objectFit: 'contain' }}
         />
         
+        {/* Debug info */}
+        <div className="absolute top-2 left-2 bg-black/80 text-white p-2 text-xs rounded z-50">
+          Boxes: {boxes.length} | Image: {imageUrl ? 'loaded' : 'missing'}
+        </div>
+        
         {/* Roboflow-style bounding boxes */}
-        {boxes.map((box, index) => (
+        {boxes.map((box, index) => {
+          console.log('Rendering box', index, box);
+          // Assume image is 800x600 for percentage calculation
+          const leftPercent = (box.x / 800) * 100;
+          const topPercent = (box.y / 600) * 100;
+          const widthPercent = (box.width / 800) * 100;
+          const heightPercent = (box.height / 600) * 100;
+          
+          return (
           <div key={box.id} className="absolute" style={{ pointerEvents: 'none' }}>
             {/* Main bounding box */}
             <div
@@ -171,10 +186,10 @@ export function EditableBoundingBox({
                   : 'border-emerald-400 bg-emerald-400/10'
               }`}
               style={{
-                left: `${box.x}px`,
-                top: `${box.y}px`,
-                width: `${box.width}px`,
-                height: `${box.height}px`,
+                left: `${leftPercent}%`,
+                top: `${topPercent}%`,
+                width: `${widthPercent}%`,
+                height: `${heightPercent}%`,
                 boxShadow: editable 
                   ? '0 0 0 1px rgba(34, 211, 238, 0.3), 0 4px 12px rgba(34, 211, 238, 0.15)' 
                   : '0 0 0 1px rgba(52, 211, 153, 0.3), 0 4px 12px rgba(52, 211, 153, 0.15)',
@@ -221,40 +236,6 @@ export function EditableBoundingBox({
                       handleMouseDown(e, box.id, 'resize', 'bottom-right');
                     }}
                   />
-                  
-                  {/* Edge handles */}
-                  <div
-                    className="absolute w-full h-1 cursor-n-resize -top-0.5 left-0 opacity-0 hover:opacity-30 bg-cyan-400 transition-opacity"
-                    onMouseDown={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      handleMouseDown(e, box.id, 'resize', 'top');
-                    }}
-                  />
-                  <div
-                    className="absolute w-full h-1 cursor-s-resize -bottom-0.5 left-0 opacity-0 hover:opacity-30 bg-cyan-400 transition-opacity"
-                    onMouseDown={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      handleMouseDown(e, box.id, 'resize', 'bottom');
-                    }}
-                  />
-                  <div
-                    className="absolute w-1 h-full cursor-w-resize -left-0.5 top-0 opacity-0 hover:opacity-30 bg-cyan-400 transition-opacity"
-                    onMouseDown={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      handleMouseDown(e, box.id, 'resize', 'left');
-                    }}
-                  />
-                  <div
-                    className="absolute w-1 h-full cursor-e-resize -right-0.5 top-0 opacity-0 hover:opacity-30 bg-cyan-400 transition-opacity"
-                    onMouseDown={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      handleMouseDown(e, box.id, 'resize', 'right');
-                    }}
-                  />
                 </>
               )}
             </div>
@@ -267,8 +248,8 @@ export function EditableBoundingBox({
                   : 'bg-emerald-500/90 text-white border-emerald-400/50'
               }`}
               style={{
-                left: `${box.x}px`,
-                top: `${box.y - 28}px`,
+                left: `${leftPercent}%`,
+                top: `${Math.max(0, topPercent - 5)}%`,
                 minWidth: '64px',
                 pointerEvents: editable ? 'auto' : 'none',
                 transform: 'translateY(-100%)'
@@ -300,7 +281,7 @@ export function EditableBoundingBox({
               )}
             </div>
           </div>
-        ))}
+        )})}
       </div>
     );
   }

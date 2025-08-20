@@ -41,7 +41,10 @@ export function DetectionImageViewer({
 
   // Use bounding boxes from detection data or create default ones
   useEffect(() => {
+    console.log('DetectionImageViewer - detection:', detection);
+    console.log('DetectionImageViewer - boundingBoxes from detection:', detection.boundingBoxes);
     if (detection.boundingBoxes && detection.boundingBoxes.length > 0) {
+      console.log('Using detection bounding boxes:', detection.boundingBoxes);
       setBoundingBoxes(detection.boundingBoxes);
     } else {
       // Fallback to default boxes only if none provided
