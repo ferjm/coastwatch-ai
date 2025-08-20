@@ -60,7 +60,7 @@ const unverifiedDetections: Detection[] = [
         width: 200,
         height: 120,
         confidence: 0.85,
-        label: 'bottle'
+        label: 'Plástico'
       },
       {
         id: 'bb1-2',
@@ -69,7 +69,7 @@ const unverifiedDetections: Detection[] = [
         width: 150,
         height: 90,
         confidence: 0.78,
-        label: 'plastic_bag'
+        label: 'Plástico'
       }
     ]
   },
@@ -90,7 +90,7 @@ const unverifiedDetections: Detection[] = [
         width: 180,
         height: 140,
         confidence: 0.91,
-        label: 'debris'
+        label: 'Plástico'
       },
       {
         id: 'bb2-2',
@@ -99,7 +99,7 @@ const unverifiedDetections: Detection[] = [
         width: 120,
         height: 80,
         confidence: 0.73,
-        label: 'wrapper'
+        label: 'Plástico'
       },
       {
         id: 'bb2-3',
@@ -108,7 +108,7 @@ const unverifiedDetections: Detection[] = [
         width: 100,
         height: 60,
         confidence: 0.82,
-        label: 'cap'
+        label: 'Plástico'
       }
     ]
   },
@@ -129,7 +129,7 @@ const unverifiedDetections: Detection[] = [
         width: 200,
         height: 150,
         confidence: 0.82,
-        label: 'Residuos varios'
+        label: 'Plástico'
       },
       {
         id: 'bb3-2',
@@ -138,7 +138,7 @@ const unverifiedDetections: Detection[] = [
         width: 130,
         height: 100,
         confidence: 0.69,
-        label: 'Microplásticos'
+        label: 'Plástico'
       }
     ]
   },
