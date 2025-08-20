@@ -55,19 +55,19 @@ const unverifiedDetections: Detection[] = [
     boundingBoxes: [
       {
         id: 'bb1-1',
-        x: 150,
-        y: 100,
-        width: 200,
-        height: 120,
+        x: 15, // 15% from left
+        y: 25, // 25% from top
+        width: 25, // 25% width
+        height: 30, // 30% height
         confidence: 0.85,
         label: 'Plástico'
       },
       {
         id: 'bb1-2',
-        x: 400,
-        y: 200,
-        width: 150,
-        height: 90,
+        x: 50, // 50% from left
+        y: 35, // 35% from top
+        width: 20, // 20% width
+        height: 25, // 25% height
         confidence: 0.78,
         label: 'Plástico'
       }
@@ -85,28 +85,28 @@ const unverifiedDetections: Detection[] = [
     boundingBoxes: [
       {
         id: 'bb2-1',
-        x: 100,
-        y: 80,
-        width: 180,
-        height: 140,
+        x: 10, // 10% from left
+        y: 20, // 20% from top
+        width: 30, // 30% width
+        height: 25, // 25% height
         confidence: 0.91,
         label: 'Plástico'
       },
       {
         id: 'bb2-2',
-        x: 350,
-        y: 180,
-        width: 120,
-        height: 80,
+        x: 45, // 45% from left
+        y: 40, // 40% from top
+        width: 25, // 25% width
+        height: 20, // 20% height
         confidence: 0.73,
         label: 'Plástico'
       },
       {
         id: 'bb2-3',
-        x: 200,
-        y: 300,
-        width: 100,
-        height: 60,
+        x: 25, // 25% from left
+        y: 60, // 60% from top
+        width: 20, // 20% width
+        height: 15, // 15% height
         confidence: 0.82,
         label: 'Plástico'
       }
@@ -124,19 +124,19 @@ const unverifiedDetections: Detection[] = [
     boundingBoxes: [
       {
         id: 'bb3-1',
-        x: 150,
-        y: 120,
-        width: 200,
-        height: 150,
+        x: 20, // 20% from left
+        y: 30, // 30% from top
+        width: 25, // 25% width
+        height: 35, // 35% height
         confidence: 0.82,
         label: 'Plástico'
       },
       {
         id: 'bb3-2',
-        x: 380,
-        y: 180,
-        width: 130,
-        height: 100,
+        x: 55, // 55% from left
+        y: 40, // 40% from top
+        width: 22, // 22% width
+        height: 28, // 28% height
         confidence: 0.69,
         label: 'Plástico'
       }

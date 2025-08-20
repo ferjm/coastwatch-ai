@@ -152,136 +152,44 @@ export function EditableBoundingBox({
   };
 
   if (showDirectly) {
-    console.log('EditableBoundingBox - showDirectly mode', { boxes, imageUrl });
     return (
-      <div className="relative w-full bg-background rounded-lg overflow-hidden">
+      <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
         <img 
           src={imageUrl}
           alt="Detection"
-          className="w-full h-auto block"
-          style={{ maxHeight: '600px', objectFit: 'contain' }}
+          className="w-full h-full object-cover"
         />
         
-        {/* Debug info */}
-        <div className="absolute top-2 left-2 bg-black/80 text-white p-2 text-xs rounded z-50">
-          Boxes: {boxes.length} | Image: {imageUrl ? 'loaded' : 'missing'}
-        </div>
-        
-        {/* Roboflow-style bounding boxes */}
-        {boxes.map((box, index) => {
-          console.log('Rendering box', index, box);
-          // Assume image is 800x600 for percentage calculation
-          const leftPercent = (box.x / 800) * 100;
-          const topPercent = (box.y / 600) * 100;
-          const widthPercent = (box.width / 800) * 100;
-          const heightPercent = (box.height / 600) * 100;
-          
-          return (
-          <div key={box.id} className="absolute" style={{ pointerEvents: 'none' }}>
-            {/* Main bounding box */}
-            <div
-              className={`absolute border-2 transition-all duration-200 ${
-                editable 
-                  ? 'border-cyan-400 hover:border-cyan-300 bg-cyan-400/10 hover:bg-cyan-400/15 cursor-move' 
-                  : 'border-emerald-400 bg-emerald-400/10'
-              }`}
-              style={{
-                left: `${leftPercent}%`,
-                top: `${topPercent}%`,
-                width: `${widthPercent}%`,
-                height: `${heightPercent}%`,
-                boxShadow: editable 
-                  ? '0 0 0 1px rgba(34, 211, 238, 0.3), 0 4px 12px rgba(34, 211, 238, 0.15)' 
-                  : '0 0 0 1px rgba(52, 211, 153, 0.3), 0 4px 12px rgba(52, 211, 153, 0.15)',
-                pointerEvents: editable ? 'auto' : 'none'
-              }}
-              onMouseDown={editable ? (e) => {
-                e.preventDefault();
-                handleMouseDown(e, box.id, 'drag');
-              } : undefined}
-            >
-              {/* Resize handles - only when editable */}
-              {editable && (
-                <>
-                  {/* Corner handles */}
-                  <div
-                    className="absolute w-2 h-2 bg-cyan-400 border border-white cursor-nw-resize -top-1 -left-1 opacity-80 hover:opacity-100 transition-opacity"
-                    onMouseDown={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      handleMouseDown(e, box.id, 'resize', 'top-left');
-                    }}
-                  />
-                  <div
-                    className="absolute w-2 h-2 bg-cyan-400 border border-white cursor-ne-resize -top-1 -right-1 opacity-80 hover:opacity-100 transition-opacity"
-                    onMouseDown={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      handleMouseDown(e, box.id, 'resize', 'top-right');
-                    }}
-                  />
-                  <div
-                    className="absolute w-2 h-2 bg-cyan-400 border border-white cursor-sw-resize -bottom-1 -left-1 opacity-80 hover:opacity-100 transition-opacity"
-                    onMouseDown={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      handleMouseDown(e, box.id, 'resize', 'bottom-left');
-                    }}
-                  />
-                  <div
-                    className="absolute w-2 h-2 bg-cyan-400 border border-white cursor-se-resize -bottom-1 -right-1 opacity-80 hover:opacity-100 transition-opacity"
-                    onMouseDown={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      handleMouseDown(e, box.id, 'resize', 'bottom-right');
-                    }}
-                  />
-                </>
-              )}
-            </div>
-            
-            {/* Label - Roboflow style */}
-            <div
-              className={`absolute px-2 py-1 text-xs font-medium rounded shadow-lg border backdrop-blur-sm transition-all duration-200 ${
-                editable 
-                  ? 'bg-cyan-500/90 text-white border-cyan-400/50 cursor-pointer hover:bg-cyan-500 hover:shadow-xl' 
-                  : 'bg-emerald-500/90 text-white border-emerald-400/50'
-              }`}
-              style={{
-                left: `${leftPercent}%`,
-                top: `${Math.max(0, topPercent - 5)}%`,
-                minWidth: '64px',
-                pointerEvents: editable ? 'auto' : 'none',
-                transform: 'translateY(-100%)'
-              }}
-              onClick={() => {
-                if (editable) setEditingLabel(box.id);
-              }}
-            >
-              {editingLabel === box.id ? (
-                <input
-                  type="text"
-                  className="bg-transparent border-none outline-none text-xs w-full text-white placeholder-cyan-200"
-                  defaultValue={box.label || `Plástico ${Math.round(box.confidence * 100)}%`}
-                  autoFocus
-                  onBlur={(e) => handleLabelEdit(box.id, e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleLabelEdit(box.id, e.currentTarget.value);
-                    } else if (e.key === 'Escape') {
-                      setEditingLabel(null);
-                    }
+        {/* Bounding Boxes Overlay - Using same approach as InferenceResults */}
+        {boxes.length > 0 && (
+          <div className="absolute inset-0">
+            {boxes.map((box) => {
+              const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444'];
+              const color = colors[0]; // Use first color for consistency
+              
+              return (
+                <div
+                  key={box.id}
+                  className="absolute border-2 rounded"
+                  style={{
+                    left: `${box.x}%`,
+                    top: `${box.y}%`,
+                    width: `${box.width}%`,
+                    height: `${box.height}%`,
+                    borderColor: color,
                   }}
-                  onClick={(e) => e.stopPropagation()}
-                />
-              ) : (
-                <span className="block truncate">
-                  {box.label || `Plástico ${Math.round(box.confidence * 100)}%`}
-                </span>
-              )}
-            </div>
+                >
+                  <div 
+                    className="absolute -top-6 left-0 px-2 py-1 text-xs font-medium text-white rounded text-nowrap"
+                    style={{ backgroundColor: color }}
+                  >
+                    {box.label || `Plástico ${Math.round(box.confidence * 100)}%`}
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        )})}
+        )}
       </div>
     );
   }
