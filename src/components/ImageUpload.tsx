@@ -33,7 +33,6 @@ export function ImageUpload({
   const { t } = useTranslation();
   const { toast } = useToast();
   const [uploadFiles, setUploadFiles] = useState<UploadFile[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
 
   const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: any[]) => {
     // Handle rejected files
@@ -73,7 +72,6 @@ export function ImageUpload({
     },
     maxFiles: maxFiles - uploadFiles.length,
     maxSize: maxFileSize,
-    disabled: isUploading
   });
 
   const removeFile = (id: string) => {
@@ -91,48 +89,17 @@ export function ImageUpload({
     setUploadFiles([]);
   };
 
-  const simulateUpload = async () => {
-    setIsUploading(true);
+  const startUpload = async () => {
+    const readyToUpload = uploadFiles.filter(f => f.status === 'ready');
+    if (readyToUpload.length === 0) return;
+
+    // Call the upload callback immediately with the ready files
+    onUploadComplete?.(readyToUpload);
     
-    try {
-      // Simulate upload process for each file
-      for (const file of uploadFiles) {
-        if (file.status === 'ready') {
-          // Update status to uploading
-          setUploadFiles(prev => prev.map(f => 
-            f.id === file.id ? { ...f, status: 'uploading' } : f
-          ));
-
-          // Simulate progress
-          for (let progress = 0; progress <= 100; progress += 10) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-            setUploadFiles(prev => prev.map(f => 
-              f.id === file.id ? { ...f, progress } : f
-            ));
-          }
-
-          // Mark as completed
-          setUploadFiles(prev => prev.map(f => 
-            f.id === file.id ? { ...f, status: 'completed', progress: 100 } : f
-          ));
-        }
-      }
-
-      toast({
-        title: t('uploadSuccess'),
-        description: t('processingImages'),
-      });
-
-      onUploadComplete?.(uploadFiles);
-    } catch (error) {
-      toast({
-        title: t('uploadError'),
-        description: t('uploadError'),
-        variant: 'destructive',
-      });
-    } finally {
-      setIsUploading(false);
-    }
+    // Clear the upload queue after triggering the upload
+    setTimeout(() => {
+      clearAll();
+    }, 500);
   };
 
   const formatFileSize = (bytes: number) => {
@@ -157,7 +124,7 @@ export function ImageUpload({
               isDragActive
                 ? 'border-primary bg-primary/5'
                 : 'border-muted-foreground/25 hover:border-primary/50'
-            } ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            } ${uploadFiles.length >= maxFiles ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             <input {...getInputProps()} />
             <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
@@ -186,11 +153,11 @@ export function ImageUpload({
               </div>
               <div className="flex gap-2">
                 {readyFiles > 0 && (
-                  <Button onClick={simulateUpload} disabled={isUploading}>
-                    {isUploading ? t('uploading') : t('startUpload')}
+                  <Button onClick={startUpload}>
+                    {t('startUpload')}
                   </Button>
                 )}
-                <Button variant="outline" onClick={clearAll} disabled={isUploading}>
+                <Button variant="outline" onClick={clearAll}>
                   {t('clearAll')}
                 </Button>
               </div>
