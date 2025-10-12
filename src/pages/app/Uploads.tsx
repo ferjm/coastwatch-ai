@@ -1,164 +1,205 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { supabase } from '@/integrations/supabase/client';
 import { ImageUpload, UploadFile } from '@/components/ImageUpload';
 import { InferenceResults, ProcessedImage, Detection } from '@/components/InferenceResults';
 import { useToast } from '@/hooks/use-toast';
-
-// Import example images
-import plasticBeach1 from '@/assets/plastic-beach-1.jpg';
-import plasticBeach2 from '@/assets/plastic-beach-2.jpg';
-import plasticBeach3 from '@/assets/plastic-beach-3.jpg';
-
-// Mock data for demonstration
-const mockProcessedImages: ProcessedImage[] = [
-  {
-    id: '1',
-    fileName: 'coastal_beach_001.jpg',
-    fileSize: 2458624, // ~2.4MB
-    uploadedAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-    status: 'completed',
-    progress: 100,
-    imageUrl: plasticBeach1, // Example image
-    processingTime: 45,
-    resolution: { width: 1920, height: 1080 },
-    detections: [
-      {
-        id: 'd1',
-        class: 'Botellas',
-        confidence: 0.89,
-        bbox: { x: 15, y: 25, width: 8, height: 12 }
-      },
-      {
-        id: 'd2', 
-        class: 'Bolsas',
-        confidence: 0.76,
-        bbox: { x: 45, y: 35, width: 12, height: 8 }
-      },
-      {
-        id: 'd3',
-        class: 'Fragmentos', 
-        confidence: 0.92,
-        bbox: { x: 70, y: 55, width: 6, height: 4 }
-      }
-    ]
-  },
-  {
-    id: '2',
-    fileName: 'drone_survey_002.jpg',
-    fileSize: 3785216, // ~3.7MB
-    uploadedAt: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
-    status: 'processing',
-    progress: 65,
-    imageUrl: plasticBeach2,
-    resolution: { width: 2048, height: 1536 },
-    detections: []
-  },
-  {
-    id: '3',
-    fileName: 'beach_cleanup_003.jpg', 
-    fileSize: 1924867, // ~1.9MB
-    uploadedAt: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
-    status: 'completed',
-    progress: 100,
-    imageUrl: plasticBeach3,
-    processingTime: 32,
-    resolution: { width: 1600, height: 1200 },
-    detections: [
-      {
-        id: 'd4',
-        class: 'Redes',
-        confidence: 0.84,
-        bbox: { x: 20, y: 40, width: 15, height: 10 }
-      }
-    ]
-  },
-  {
-    id: '4',
-    fileName: 'error_image_004.jpg',
-    fileSize: 5123456, // ~5MB  
-    uploadedAt: new Date(Date.now() - 8 * 60 * 60 * 1000), // 8 hours ago
-    status: 'failed',
-    progress: 0,
-    imageUrl: plasticBeach1,
-    detections: [],
-    error: 'Error en el procesamiento: imagen corrupta'
-  }
-];
+import { useImageUpload } from '@/hooks/useImageUpload';
 
 export default function Uploads() {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const [processedImages, setProcessedImages] = useState<ProcessedImage[]>(mockProcessedImages);
+  const { uploads, uploadAndProcess, clearUploads } = useImageUpload();
+  const [processedImages, setProcessedImages] = useState<ProcessedImage[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load images from database
+  useEffect(() => {
+    loadImages();
+    
+    // Subscribe to real-time updates
+    const channel = supabase
+      .channel('image-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'images'
+        },
+        () => {
+          loadImages();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const loadImages = async () => {
+    try {
+      const { data: images, error } = await supabase
+        .from('images')
+        .select(`
+          *,
+          detections (*)
+        `)
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+
+      if (images) {
+        const formattedImages: ProcessedImage[] = images.map(img => {
+          const detections: Detection[] = (img.detections || []).map((d: any) => ({
+            id: d.id,
+            class: d.label,
+            confidence: parseFloat(d.confidence),
+            bbox: { 
+              x: d.x / img.width_px * 100, 
+              y: d.y / img.height_px * 100, 
+              width: d.width / img.width_px * 100, 
+              height: d.height / img.height_px * 100 
+            },
+          }));
+
+          // Get image URL from storage
+          const { data: urlData } = supabase.storage
+            .from('thumbnails')
+            .getPublicUrl(img.thumbnail_path || img.storage_path);
+
+          // Map database status to component status
+          let status: 'pending' | 'processing' | 'completed' | 'failed' = 'pending';
+          if (img.status === 'uploaded' || img.status === 'queued') {
+            status = 'pending';
+          } else if (img.status === 'processing') {
+            status = 'processing';
+          } else if (img.status === 'processed') {
+            status = 'completed';
+          } else if (img.status === 'failed') {
+            status = 'failed';
+          }
+
+          return {
+            id: img.id,
+            fileName: img.file_name,
+            fileSize: img.file_size,
+            resolution: { width: img.width_px, height: img.height_px },
+            uploadedAt: new Date(img.uploaded_at),
+            status,
+            progress: status === 'completed' ? 100 : status === 'processing' ? 50 : 0,
+            imageUrl: urlData.publicUrl,
+            detections,
+            error: img.error_message || undefined,
+            processingTime: img.processed_at ? 
+              Math.round((new Date(img.processed_at).getTime() - new Date(img.uploaded_at).getTime()) / 1000) : 
+              undefined,
+          };
+        });
+
+        setProcessedImages(formattedImages);
+      }
+    } catch (error) {
+      console.error('Error loading images:', error);
+      toast({
+        title: "Error loading images",
+        description: error instanceof Error ? error.message : "Failed to load images",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleFilesAdded = (files: UploadFile[]) => {
     console.log('Files added:', files);
   };
 
-  const handleUploadComplete = (files: UploadFile[]) => {
-    console.log('Upload completed:', files);
-    
-    // Simulate adding uploaded files to processed images with pending status
-    const newProcessedImages: ProcessedImage[] = files.map(file => ({
-      id: Math.random().toString(36).substr(2, 9),
-      fileName: file.file.name,
-      fileSize: file.file.size,
-      uploadedAt: new Date(),
-      status: 'pending' as const,
-      progress: 0,
-      imageUrl: file.preview,
-      detections: []
-    }));
-
-    setProcessedImages(prev => [...newProcessedImages, ...prev]);
-    
-    // Simulate processing after a delay
-    setTimeout(() => {
-      setProcessedImages(prev => 
-        prev.map(img => {
-          const newImg = newProcessedImages.find(ni => ni.id === img.id);
-          if (newImg) {
-            return { ...img, status: 'processing' as const, progress: 25 };
-          }
-          return img;
-        })
-      );
-    }, 2000);
+  const handleUploadComplete = async (files: UploadFile[]) => {
+    const actualFiles = files.map(f => f.file);
+    await uploadAndProcess(actualFiles);
   };
 
-  const handleReprocess = (imageId: string) => {
-    setProcessedImages(prev =>
-      prev.map(img =>
-        img.id === imageId
-          ? { ...img, status: 'pending', progress: 0, error: undefined }
-          : img
-      )
-    );
-    
+  const handleReprocess = async (imageId: string) => {
+    console.log("Reprocessing not yet implemented:", imageId);
     toast({
-      title: t('processingImages'),
-      description: `Reprocesando imagen...`,
+      title: "Reprocessing",
+      description: "Reprocessing feature coming soon",
     });
   };
 
-  const handleDelete = (imageId: string) => {
-    setProcessedImages(prev => prev.filter(img => img.id !== imageId));
-    
-    toast({
-      title: t('deleteImage'),
-      description: `Imagen eliminada`,
-    });
-  };
+  const handleDelete = async (imageId: string) => {
+    try {
+      const { error } = await supabase
+        .from('images')
+        .delete()
+        .eq('id', imageId);
 
-  const handleDownload = (imageId: string) => {
-    const image = processedImages.find(img => img.id === imageId);
-    if (image) {
+      if (error) throw error;
+
       toast({
-        title: t('downloadResults'),
-        description: `Descargando resultados para ${image.fileName}`,
+        title: "Deleted",
+        description: "Image deleted successfully",
+      });
+    } catch (error) {
+      console.error('Error deleting image:', error);
+      toast({
+        title: "Delete Failed",
+        description: error instanceof Error ? error.message : "Failed to delete image",
+        variant: "destructive",
       });
     }
   };
+
+  const handleDownload = async (imageId: string) => {
+    try {
+      const image = processedImages.find(img => img.id === imageId);
+      if (!image) return;
+
+      const { data: imageData } = await supabase
+        .from('images')
+        .select('storage_path')
+        .eq('id', imageId)
+        .single();
+
+      if (!imageData) throw new Error('Image not found');
+
+      const { data, error } = await supabase.storage
+        .from('images')
+        .download(imageData.storage_path);
+
+      if (error) throw error;
+
+      const url = URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = image.fileName;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Downloading",
+        description: "Image download started",
+      });
+    } catch (error) {
+      console.error('Error downloading image:', error);
+      toast({
+        title: "Download Failed",
+        description: error instanceof Error ? error.message : "Failed to download image",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <p className="text-muted-foreground">Loading images...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -172,6 +213,30 @@ export default function Uploads() {
         onUploadComplete={handleUploadComplete}
         maxFiles={20}
       />
+
+      {/* Current Uploads Progress */}
+      {uploads.length > 0 && (
+        <div className="space-y-2">
+          <h2 className="text-xl font-semibold">Current Uploads</h2>
+          {uploads.map(upload => (
+            <div key={upload.fileId} className="p-4 border rounded-lg">
+              <div className="flex justify-between items-center mb-2">
+                <span className="font-medium">{upload.fileName}</span>
+                <span className="text-sm text-muted-foreground capitalize">{upload.status}</span>
+              </div>
+              <div className="w-full bg-secondary rounded-full h-2">
+                <div 
+                  className="bg-primary h-2 rounded-full transition-all"
+                  style={{ width: `${upload.progress}%` }}
+                />
+              </div>
+              {upload.error && (
+                <p className="text-sm text-destructive mt-1">{upload.error}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Results Section */}
       <InferenceResults
