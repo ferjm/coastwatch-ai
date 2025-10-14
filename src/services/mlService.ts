@@ -24,30 +24,21 @@ export interface MLProcessorConfig {
 
 export class MLService {
   private config: MLProcessorConfig;
-  private classifier: any = null;
-  private classifierReady: Promise<void> | null = null;
+  private scriptsLoaded: boolean = false;
 
   constructor(config: MLProcessorConfig = { type: 'wasm' }) {
     this.config = config;
-    if (config.type === 'wasm') {
-      this.classifierReady = this.loadEdgeImpulseClassifier();
-    }
   }
 
   /**
-   * Load Edge Impulse WebAssembly classifier
+   * Load Edge Impulse WebAssembly scripts (only once)
    */
-  private async loadEdgeImpulseClassifier(): Promise<void> {
-    try {
-      // Check if scripts are already loaded
-      if (window.EdgeImpulseClassifier) {
-        console.log('Edge Impulse classifier already loaded, initializing...');
-        this.classifier = new window.EdgeImpulseClassifier();
-        await this.classifier.init();
-        console.log('Edge Impulse classifier initialized successfully');
-        return;
-      }
+  private async loadEdgeImpulseScripts(): Promise<void> {
+    if (this.scriptsLoaded) {
+      return;
+    }
 
+    try {
       console.log('Loading Edge Impulse scripts...');
       
       // Configure Module object before loading scripts to set WASM path
@@ -74,8 +65,6 @@ export class MLService {
 
       // Check if EdgeImpulseClassifier is available
       console.log('Checking for EdgeImpulseClassifier...');
-      console.log('window.EdgeImpulseClassifier:', (window as any).EdgeImpulseClassifier);
-      console.log('typeof EdgeImpulseClassifier:', typeof (window as any).EdgeImpulseClassifier);
 
       // Try to access it from global scope using eval to bypass TypeScript
       try {
@@ -93,15 +82,10 @@ export class MLService {
         throw new Error('EdgeImpulseClassifier not found after loading scripts. Check console for script errors.');
       }
 
-      console.log('EdgeImpulseClassifier found, creating instance...');
-      this.classifier = new window.EdgeImpulseClassifier();
-      
-      console.log('Initializing classifier...');
-      await this.classifier.init();
-      
-      console.log('Edge Impulse classifier initialized successfully');
+      this.scriptsLoaded = true;
+      console.log('Edge Impulse scripts loaded successfully');
     } catch (error) {
-      console.error('Failed to load Edge Impulse classifier:', error);
+      console.error('Failed to load Edge Impulse scripts:', error);
       throw error;
     }
   }
@@ -149,22 +133,23 @@ export class MLService {
 
   /**
    * WASM processing (browser-based) using Edge Impulse
+   * Creates a fresh classifier instance for each image
    */
   private async processWithWASM(imageFile: File): Promise<DetectionResult[]> {
     console.log('Starting WASM processing for:', imageFile.name);
     
-    // Ensure classifier is ready
-    if (this.classifierReady) {
-      await this.classifierReady;
-    }
+    // Ensure scripts are loaded
+    await this.loadEdgeImpulseScripts();
 
-    if (!this.classifier) {
-      throw new Error('Edge Impulse classifier not initialized');
-    }
+    // Create a NEW classifier instance for each image to avoid memory issues
+    console.log('Creating new classifier instance...');
+    const classifier = new window.EdgeImpulseClassifier();
+    await classifier.init();
+    console.log('Classifier initialized');
 
     // Get model properties to know expected input size
     console.log('Getting model properties...');
-    const properties = this.classifier.getProperties();
+    const properties = classifier.getProperties();
     console.log('Model properties:', properties);
     
     const inputWidth = properties.input_width || 320;
@@ -181,12 +166,11 @@ export class MLService {
     console.log('Running classification...');
     let result;
     try {
-      result = this.classifier.classify(features, true); // Enable debug mode
+      result = classifier.classify(features, true); // Enable debug mode
       console.log('Raw classification result:', result);
     } catch (error) {
       console.error('Classification error details:', error);
-      console.log('Trying with debug info...');
-      console.log('Model info:', this.classifier.getProjectInfo());
+      console.log('Model info:', classifier.getProjectInfo());
       throw error;
     }
 
