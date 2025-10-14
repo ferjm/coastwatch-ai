@@ -194,26 +194,19 @@ export class MLService {
     }
 
     // Convert Edge Impulse results to our DetectionResult format
-    // Coordinates from model are in pixels relative to input size (e.g., 160x160)
-    // Convert to percentages for display at any size
-    const detections: DetectionResult[] = result.results.map((r: any) => {
-      // Convert pixel coordinates to percentages
-      const xPercent = ((r.x || 0) / inputWidth) * 100;
-      const yPercent = ((r.y || 0) / inputHeight) * 100;
-      const widthPercent = ((r.width || 0) / inputWidth) * 100;
-      const heightPercent = ((r.height || 0) / inputHeight) * 100;
-      
-      return {
-        label: r.label,
-        confidence: r.value,
-        x: Math.round(xPercent * 100) / 100, // Round to 2 decimal places
-        y: Math.round(yPercent * 100) / 100,
-        width: Math.round(widthPercent * 100) / 100,
-        height: Math.round(heightPercent * 100) / 100,
-      };
-    });
+    // Keep coordinates in model pixel space (e.g., 160x160)
+    // They will be scaled to image percentages when displaying
+    const detections: DetectionResult[] = result.results.map((r: any) => ({
+      label: r.label,
+      confidence: r.value,
+      x: Math.round(r.x || 0),      // pixels in model space
+      y: Math.round(r.y || 0),      // pixels in model space
+      width: Math.round(r.width || 0),   // pixels in model space
+      height: Math.round(r.height || 0),  // pixels in model space
+    }));
 
-    console.log('Formatted detections (as percentages):', detections);
+    console.log('Formatted detections (model pixels):', detections);
+    console.log(`Model input size: ${inputWidth}x${inputHeight}`);
     console.log(`Found ${detections.length} detections`);
 
     return detections;

@@ -55,17 +55,31 @@ export default function Uploads() {
 
       if (images) {
         const formattedImages: ProcessedImage[] = images.map(img => {
-          const detections: Detection[] = (img.detections || []).map((d: any) => ({
-            id: d.id,
-            class: d.label,
-            confidence: parseFloat(d.confidence),
-            bbox: { 
-              x: d.x / img.width_px * 100, 
-              y: d.y / img.height_px * 100, 
-              width: d.width / img.width_px * 100, 
-              height: d.height / img.height_px * 100 
-            },
-          }));
+          // Model input size (assuming 160x160 based on Edge Impulse model)
+          const MODEL_WIDTH = 160;
+          const MODEL_HEIGHT = 160;
+          
+          // Convert detections from model pixel space to image percentage space
+          const detections: Detection[] = (img.detections || []).map((d: any) => {
+            // Scale from model pixels to image pixels, then to percentages
+            // d.x, d.y, d.width, d.height are in model space (0-160)
+            const xPercent = (d.x / MODEL_WIDTH) * 100;
+            const yPercent = (d.y / MODEL_HEIGHT) * 100;
+            const widthPercent = (d.width / MODEL_WIDTH) * 100;
+            const heightPercent = (d.height / MODEL_HEIGHT) * 100;
+            
+            return {
+              id: d.id,
+              class: d.label,
+              confidence: parseFloat(d.confidence),
+              bbox: { 
+                x: xPercent, 
+                y: yPercent, 
+                width: widthPercent, 
+                height: heightPercent 
+              },
+            };
+          });
 
           // Get image URL from storage
           const { data: urlData } = supabase.storage

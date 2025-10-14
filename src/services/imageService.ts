@@ -234,6 +234,7 @@ export async function updateImageStatus(
 
 /**
  * Save detection results to database
+ * Detections are stored in model pixel space (e.g., 160x160)
  */
 export async function saveDetections(imageId: string, detections: any[]) {
   if (detections.length === 0) return;
@@ -242,10 +243,10 @@ export async function saveDetections(imageId: string, detections: any[]) {
     image_id: imageId,
     label: d.label,
     confidence: d.confidence,
-    x: d.x,
-    y: d.y,
-    width: d.width,
-    height: d.height,
+    x: d.x,        // pixels in model space (e.g., 0-160)
+    y: d.y,        // pixels in model space (e.g., 0-160)
+    width: d.width,    // pixels in model space
+    height: d.height,  // pixels in model space
   }));
 
   const { error } = await supabase
