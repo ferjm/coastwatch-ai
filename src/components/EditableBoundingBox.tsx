@@ -95,32 +95,45 @@ export function EditableBoundingBox({
     if (!editable) return;
     
     const handleMouseMove = (e: MouseEvent) => {
+      const container = containerRef.current;
+      if (!container) return;
+      
+      const containerRect = container.getBoundingClientRect();
+      
       if (dragState?.isDragging) {
         const deltaX = e.clientX - dragState.startX;
         const deltaY = e.clientY - dragState.startY;
         
+        // Convert pixel deltas to percentage
+        const deltaXPercent = (deltaX / containerRect.width) * 100;
+        const deltaYPercent = (deltaY / containerRect.height) * 100;
+        
         updateBox(dragState.boxId, {
-          x: Math.max(0, dragState.initialX + deltaX),
-          y: Math.max(0, dragState.initialY + deltaY)
+          x: Math.max(0, Math.min(100, dragState.initialX + deltaXPercent)),
+          y: Math.max(0, Math.min(100, dragState.initialY + deltaYPercent))
         });
       } else if (resizeState?.isResizing) {
         const deltaX = e.clientX - resizeState.startX;
         const deltaY = e.clientY - resizeState.startY;
         
+        // Convert pixel deltas to percentage
+        const deltaXPercent = (deltaX / containerRect.width) * 100;
+        const deltaYPercent = (deltaY / containerRect.height) * 100;
+        
         let newWidth = resizeState.initialWidth;
         let newHeight = resizeState.initialHeight;
         
         if (resizeState.handle.includes('right')) {
-          newWidth = Math.max(20, resizeState.initialWidth + deltaX);
+          newWidth = Math.max(5, resizeState.initialWidth + deltaXPercent);
         }
         if (resizeState.handle.includes('bottom')) {
-          newHeight = Math.max(20, resizeState.initialHeight + deltaY);
+          newHeight = Math.max(5, resizeState.initialHeight + deltaYPercent);
         }
         if (resizeState.handle.includes('left')) {
-          newWidth = Math.max(20, resizeState.initialWidth - deltaX);
+          newWidth = Math.max(5, resizeState.initialWidth - deltaXPercent);
         }
         if (resizeState.handle.includes('top')) {
-          newHeight = Math.max(20, resizeState.initialHeight - deltaY);
+          newHeight = Math.max(5, resizeState.initialHeight - deltaYPercent);
         }
         
         updateBox(resizeState.boxId, {
@@ -203,7 +216,7 @@ export function EditableBoundingBox({
       />
       {/* Editable bounding boxes overlay */}
       {boxes.map((box) => (
-        <div key={box.id} className="absolute">
+        <div key={box.id} className="absolute inset-0">
           {/* Main bounding box */}
           <div
             className={`absolute border-2 transition-colors ${
@@ -212,10 +225,10 @@ export function EditableBoundingBox({
                 : 'border-blue-500'
             } ${editable ? 'bg-primary/10 hover:bg-primary/15' : 'bg-blue-500/10'}`}
             style={{
-              left: `${box.x}px`,
-              top: `${box.y}px`,
-              width: `${box.width}px`,
-              height: `${box.height}px`,
+              left: `${box.x}%`,
+              top: `${box.y}%`,
+              width: `${box.width}%`,
+              height: `${box.height}%`,
             }}
             onMouseDown={(e) => handleMouseDown(e, box.id, 'drag')}
           >
@@ -263,14 +276,14 @@ export function EditableBoundingBox({
           
           {/* Label */}
           <div
-            className={`absolute px-2 py-1 text-xs font-medium rounded shadow-sm ${
+            className={`absolute px-2 py-1 text-xs font-medium rounded shadow-sm -translate-y-7 ${
               editable 
                 ? 'bg-primary text-primary-foreground cursor-pointer hover:bg-primary/90' 
                 : 'bg-blue-500 text-white'
             }`}
             style={{
-              left: `${box.x}px`,
-              top: `${box.y - 28}px`,
+              left: `${box.x}%`,
+              top: `${box.y}%`,
               minWidth: '60px',
             }}
             onClick={() => editable && setEditingLabel(box.id)}

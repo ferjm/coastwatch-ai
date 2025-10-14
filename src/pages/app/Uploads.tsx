@@ -135,6 +135,22 @@ export default function Uploads() {
 
   const handleUploadComplete = async (files: UploadFile[]) => {
     const actualFiles = files.map(f => f.file);
+    
+    // Immediately add images to state in "pending" status
+    const pendingImages: ProcessedImage[] = actualFiles.map(file => ({
+      id: `temp-${Date.now()}-${Math.random()}`,
+      fileName: file.name,
+      fileSize: file.size,
+      resolution: { width: 0, height: 0 },
+      uploadedAt: new Date(),
+      status: 'pending',
+      progress: 0,
+      imageUrl: URL.createObjectURL(file),
+      detections: [],
+    }));
+    
+    setProcessedImages(prev => [...pendingImages, ...prev]);
+    
     await uploadAndProcess(actualFiles);
   };
 
