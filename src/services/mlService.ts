@@ -69,15 +69,27 @@ export class MLService {
       await this.loadScript('/run-impulse.js');
       console.log('Loaded run-impulse.js');
 
-      // Wait for the classifier to be available
-      console.log('Waiting for EdgeImpulseClassifier to be available...');
-      let attempts = 0;
-      while (!window.EdgeImpulseClassifier && attempts < 100) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-        attempts++;
+      // Give scripts time to execute and define EdgeImpulseClassifier
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Check if EdgeImpulseClassifier is available
+      console.log('Checking for EdgeImpulseClassifier...');
+      console.log('window.EdgeImpulseClassifier:', (window as any).EdgeImpulseClassifier);
+      console.log('typeof EdgeImpulseClassifier:', typeof (window as any).EdgeImpulseClassifier);
+
+      // Try to access it from global scope using eval to bypass TypeScript
+      try {
+        const GlobalEdgeImpulseClassifier = (window as any).EdgeImpulseClassifier || eval('typeof EdgeImpulseClassifier !== "undefined" ? EdgeImpulseClassifier : undefined');
+        if (GlobalEdgeImpulseClassifier) {
+          console.log('Found EdgeImpulseClassifier in global scope');
+          window.EdgeImpulseClassifier = GlobalEdgeImpulseClassifier;
+        }
+      } catch (e) {
+        console.log('Could not access EdgeImpulseClassifier from global scope:', e);
       }
 
       if (!window.EdgeImpulseClassifier) {
+        console.error('Available globals:', Object.keys(window).filter(k => k.toLowerCase().includes('edge') || k.toLowerCase().includes('classifier') || k.toLowerCase().includes('module')));
         throw new Error('EdgeImpulseClassifier not found after loading scripts. Check console for script errors.');
       }
 
