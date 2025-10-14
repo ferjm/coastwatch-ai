@@ -13,7 +13,11 @@ import {
   Clock, 
   Image as ImageIcon,
   Target,
-  Zap
+  Zap,
+  Grid3x3,
+  List,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 export interface Detection {
@@ -57,12 +61,29 @@ export function InferenceResults({
 }: InferenceResultsProps) {
   const { t } = useTranslation();
   const [showBoundingBoxes, setShowBoundingBoxes] = useState<Record<string, boolean>>({});
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
 
   const toggleBoundingBoxes = (imageId: string) => {
     setShowBoundingBoxes(prev => ({
       ...prev,
       [imageId]: !prev[imageId]
     }));
+  };
+
+  // Pagination logic
+  const totalPages = Math.ceil(images.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedImages = images.slice(startIndex, endIndex);
+
+  const goToNextPage = () => {
+    setCurrentPage(prev => Math.min(prev + 1, totalPages));
+  };
+
+  const goToPreviousPage = () => {
+    setCurrentPage(prev => Math.max(prev - 1, 1));
   };
 
   const formatFileSize = (bytes: number) => {
@@ -130,24 +151,47 @@ export function InferenceResults({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">{t('recentUploads')}</h2>
-        <p className="text-sm text-muted-foreground">
-          {images.length} {t('uploadedImages')}
-        </p>
+        <div>
+          <h2 className="text-2xl font-bold">{t('recentUploads')}</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            {images.length} {t('uploadedImages')}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant={viewMode === 'grid' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('grid')}
+          >
+            <Grid3x3 className="h-4 w-4" />
+          </Button>
+          <Button
+            variant={viewMode === 'list' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('list')}
+          >
+            <List className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {images.map((image) => {
+      <div className={viewMode === 'grid' 
+        ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4'
+        : 'space-y-4'
+      }>
+        {paginatedImages.map((image) => {
           const colors = getDetectionClassColors();
           const uniqueClasses = [...new Set(image.detections.map(d => d.class))];
           
           return (
             <Card key={image.id} className="overflow-hidden">
               <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <CardTitle className="text-lg truncate">{image.fileName}</CardTitle>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                    <CardTitle className={viewMode === 'grid' ? 'text-sm truncate' : 'text-lg truncate'}>
+                      {image.fileName}
+                    </CardTitle>
+                    <div className={`flex ${viewMode === 'grid' ? 'flex-col' : 'flex-row'} items-start ${viewMode === 'list' ? 'gap-4' : 'gap-1'} text-xs text-muted-foreground mt-1`}>
                       <span>{formatFileSize(image.fileSize)}</span>
                       {image.resolution && (
                         <span>{image.resolution.width}×{image.resolution.height}</span>
@@ -161,9 +205,9 @@ export function InferenceResults({
                 </div>
               </CardHeader>
 
-              <CardContent className="space-y-4">
+              <CardContent className={viewMode === 'grid' ? 'space-y-2' : 'space-y-4'}>
                 {/* Image with Bounding Boxes */}
-                <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
+                <div className={`relative ${viewMode === 'grid' ? 'aspect-square' : 'aspect-video'} rounded-lg overflow-hidden bg-muted`}>
                   <img
                     src={image.imageUrl}
                     alt={image.fileName}
@@ -215,15 +259,15 @@ export function InferenceResults({
 
                 {/* Detection Results */}
                 {image.status === 'completed' && (
-                  <div className="space-y-3">
+                  <div className={viewMode === 'grid' ? 'space-y-2' : 'space-y-3'}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Target className="h-4 w-4 text-green-600" />
-                        <span className="text-sm font-medium">
+                        <Target className={`${viewMode === 'grid' ? 'h-3 w-3' : 'h-4 w-4'} text-green-600`} />
+                        <span className={viewMode === 'grid' ? 'text-xs font-medium' : 'text-sm font-medium'}>
                           {image.detections.length} {t('detectionsFound')}
                         </span>
                       </div>
-                      {image.processingTime && (
+                      {image.processingTime && viewMode === 'list' && (
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Clock className="h-3 w-3" />
                           {formatProcessingTime(image.processingTime)}
@@ -232,7 +276,7 @@ export function InferenceResults({
                     </div>
 
                     {/* Detection Classes */}
-                    {uniqueClasses.length > 0 && (
+                    {uniqueClasses.length > 0 && viewMode === 'list' && (
                       <div className="flex flex-wrap gap-2">
                         {uniqueClasses.map((className, index) => {
                           const colorIndex = index % colors.length;
@@ -268,9 +312,9 @@ export function InferenceResults({
                 )}
 
                 {/* Action Buttons */}
-                <div className="flex items-center justify-between pt-2">
-                  <div className="flex items-center gap-2">
-                    {image.detections.length > 0 && (
+                <div className={`flex items-center justify-between ${viewMode === 'grid' ? 'pt-1' : 'pt-2'}`}>
+                  <div className="flex items-center gap-1">
+                    {image.detections.length > 0 && viewMode === 'list' && (
                       <Button
                         variant="outline"
                         size="sm"
@@ -289,20 +333,29 @@ export function InferenceResults({
                         )}
                       </Button>
                     )}
+                    {image.detections.length > 0 && viewMode === 'grid' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => toggleBoundingBoxes(image.id)}
+                      >
+                        {showBoundingBoxes[image.id] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                      </Button>
+                    )}
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     {image.status === 'completed' && onDownload && (
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => onDownload(image.id)}
                       >
-                        <Download className="h-4 w-4" />
+                        <Download className={viewMode === 'grid' ? 'h-3 w-3' : 'h-4 w-4'} />
                       </Button>
                     )}
                     
-                    {(image.status === 'failed' || image.status === 'completed') && onReprocess && (
+                    {(image.status === 'failed' || image.status === 'completed') && onReprocess && viewMode === 'list' && (
                       <Button
                         variant="outline"
                         size="sm"
@@ -319,7 +372,7 @@ export function InferenceResults({
                         onClick={() => onDelete(image.id)}
                         className="text-red-600 hover:text-red-700"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className={viewMode === 'grid' ? 'h-3 w-3' : 'h-4 w-4'} />
                       </Button>
                     )}
                   </div>
@@ -329,6 +382,31 @@ export function InferenceResults({
           );
         })}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={goToPreviousPage}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            {currentPage} / {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={goToNextPage}
+            disabled={currentPage === totalPages}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
