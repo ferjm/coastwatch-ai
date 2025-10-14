@@ -240,12 +240,12 @@ export class MLService {
         const imageData = ctx.getImageData(0, 0, targetWidth, targetHeight);
         const pixels = imageData.data;
 
-        // Convert to RGB array (remove alpha channel)
+        // Convert to RGB array and normalize to 0-1 (Edge Impulse expects float values)
         const features: number[] = [];
         for (let i = 0; i < pixels.length; i += 4) {
-          features.push(pixels[i]);     // R
-          features.push(pixels[i + 1]); // G
-          features.push(pixels[i + 2]); // B
+          features.push(pixels[i] / 255.0);     // R normalized
+          features.push(pixels[i + 1] / 255.0); // G normalized
+          features.push(pixels[i + 2] / 255.0); // B normalized
         }
 
         resolve(features);
