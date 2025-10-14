@@ -73,6 +73,7 @@ const resources = {
       "users": "Usuarios",
       
       // Upload page
+      "uploadImages": "Subir Imágenes",
       "dragDropImages": "Arrastra y suelta imágenes aquí",
       "orClickToSelect": "o haz clic para seleccionar archivos",
       "supportedFormats": "Formatos soportados: JPG, PNG, TIFF, WEBP",

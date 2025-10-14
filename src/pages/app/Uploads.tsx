@@ -5,6 +5,8 @@ import { ImageUpload, UploadFile } from '@/components/ImageUpload';
 import { InferenceResults, ProcessedImage, Detection } from '@/components/InferenceResults';
 import { useToast } from '@/hooks/use-toast';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import { mlService } from '@/services/mlService';
+import { updateImageStatus, saveDetections } from '@/services/imageService';
 
 export default function Uploads() {
   const { t } = useTranslation();
@@ -123,21 +125,112 @@ export default function Uploads() {
   };
 
   const handleReprocess = async (imageId: string) => {
-    console.log("Reprocessing not yet implemented:", imageId);
-    toast({
-      title: "Reprocessing",
-      description: "Reprocessing feature coming soon",
-    });
+    try {
+      const image = processedImages.find(img => img.id === imageId);
+      if (!image) return;
+
+      // Reset status to queued
+      await updateImageStatus(imageId, 'queued');
+
+      toast({
+        title: "Reprocessing",
+        description: `Reprocessing ${image.fileName}...`,
+      });
+
+      // Update status to processing
+      await updateImageStatus(imageId, 'processing');
+
+      // Get the original file from storage
+      const { data: imageData } = await supabase
+        .from('images')
+        .select('storage_path')
+        .eq('id', imageId)
+        .single();
+
+      if (!imageData) throw new Error('Image not found');
+
+      // Download the file
+      const { data: fileData, error: downloadError } = await supabase.storage
+        .from('images')
+        .download(imageData.storage_path);
+
+      if (downloadError) throw downloadError;
+
+      // Convert blob to File
+      const file = new File([fileData], image.fileName, { type: fileData.type });
+
+      // Delete old detections
+      await supabase
+        .from('detections')
+        .delete()
+        .eq('image_id', imageId);
+
+      // Run ML inference again
+      const detections = await mlService.processImage(file);
+
+      // Save new detections
+      await saveDetections(imageId, detections);
+
+      // Update status to processed
+      await updateImageStatus(imageId, 'processed');
+
+      toast({
+        title: "Reprocessing Complete",
+        description: `Found ${detections.length} detection(s) in ${image.fileName}`,
+      });
+    } catch (error) {
+      console.error('Error reprocessing:', error);
+      await updateImageStatus(imageId, 'failed', error instanceof Error ? error.message : 'Reprocessing failed');
+      toast({
+        title: "Reprocess Failed",
+        description: error instanceof Error ? error.message : "Failed to reprocess image",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDelete = async (imageId: string) => {
     try {
-      const { error } = await supabase
+      // Get image data to delete from storage
+      const { data: imageData } = await supabase
+        .from('images')
+        .select('storage_path, thumbnail_path')
+        .eq('id', imageId)
+        .single();
+
+      if (!imageData) throw new Error('Image not found');
+
+      // Delete detections first (foreign key constraint)
+      const { error: detectionsError } = await supabase
+        .from('detections')
+        .delete()
+        .eq('image_id', imageId);
+
+      if (detectionsError) {
+        console.error('Error deleting detections:', detectionsError);
+        // Continue anyway - image might not have detections
+      }
+
+      // Delete from database
+      const { error: dbError } = await supabase
         .from('images')
         .delete()
         .eq('id', imageId);
 
-      if (error) throw error;
+      if (dbError) throw dbError;
+
+      // Delete from storage (in background, don't wait)
+      supabase.storage
+        .from('images')
+        .remove([imageData.storage_path])
+        .catch(err => console.error('Error deleting image from storage:', err));
+
+      if (imageData.thumbnail_path) {
+        supabase.storage
+          .from('thumbnails')
+          .remove([imageData.thumbnail_path])
+          .catch(err => console.error('Error deleting thumbnail from storage:', err));
+      }
 
       toast({
         title: "Deleted",
