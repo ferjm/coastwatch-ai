@@ -187,6 +187,21 @@ export class MLService {
     try {
       result = classifier.classify(features, true); // Enable debug mode
       console.log('Raw classification result:', result);
+      console.log('Result.results:', JSON.stringify(result.results, null, 2));
+      
+      // Log each detection in detail
+      if (result.results && result.results.length > 0) {
+        result.results.forEach((r, idx) => {
+          console.log(`Detection ${idx}:`, {
+            label: r.label,
+            value: r.value,
+            x: r.x,
+            y: r.y,
+            width: r.width,
+            height: r.height
+          });
+        });
+      }
     } catch (error) {
       console.error('Classification error details:', error);
       console.log('Model info:', classifier.getProjectInfo());
@@ -196,16 +211,29 @@ export class MLService {
     // Convert Edge Impulse results to our DetectionResult format
     // Keep coordinates in model pixel space (e.g., 160x160)
     // They will be scaled to image percentages when displaying
-    const detections: DetectionResult[] = result.results.map((r: any) => ({
-      label: r.label,
-      confidence: r.value,
-      x: Math.round(r.x || 0),      // pixels in model space
-      y: Math.round(r.y || 0),      // pixels in model space
-      width: Math.round(r.width || 0),   // pixels in model space
-      height: Math.round(r.height || 0),  // pixels in model space
-    }));
+    const detections: DetectionResult[] = result.results.map((r: any) => {
+      console.log('Processing detection:', {
+        label: r.label,
+        value: r.value,
+        x: r.x,
+        y: r.y,
+        width: r.width,
+        height: r.height,
+        inputWidth,
+        inputHeight
+      });
+      
+      return {
+        label: r.label,
+        confidence: r.value,
+        x: r.x || 0,      // Keep as-is from Edge Impulse
+        y: r.y || 0,      // Keep as-is from Edge Impulse
+        width: r.width || 0,   // Keep as-is from Edge Impulse
+        height: r.height || 0,  // Keep as-is from Edge Impulse
+      };
+    });
 
-    console.log('Formatted detections (model pixels):', detections);
+    console.log('Formatted detections:', JSON.stringify(detections, null, 2));
     console.log(`Model input size: ${inputWidth}x${inputHeight}`);
     console.log(`Found ${detections.length} detections`);
 
