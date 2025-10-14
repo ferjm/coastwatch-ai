@@ -1,5 +1,12 @@
-// ML Service - Abstract interface for plastic detection
+// ML Service - Edge Impulse WebAssembly integration for plastic detection
 // Can be swapped between WASM (browser) and external server
+
+// Extend window to include Edge Impulse classifier
+declare global {
+  interface Window {
+    EdgeImpulseClassifier?: any;
+  }
+}
 
 export interface DetectionResult {
   label: string;
@@ -17,9 +24,64 @@ export interface MLProcessorConfig {
 
 export class MLService {
   private config: MLProcessorConfig;
+  private classifier: any = null;
+  private classifierReady: Promise<void> | null = null;
 
   constructor(config: MLProcessorConfig = { type: 'wasm' }) {
     this.config = config;
+    if (config.type === 'wasm') {
+      this.classifierReady = this.loadEdgeImpulseClassifier();
+    }
+  }
+
+  /**
+   * Load Edge Impulse WebAssembly classifier
+   */
+  private async loadEdgeImpulseClassifier(): Promise<void> {
+    // Check if scripts are already loaded
+    if (window.EdgeImpulseClassifier) {
+      this.classifier = new window.EdgeImpulseClassifier();
+      await this.classifier.init();
+      return;
+    }
+
+    // Load scripts dynamically
+    await this.loadScript('/edge-impulse-standalone.js');
+    await this.loadScript('/run-impulse.js');
+
+    // Wait for the classifier to be available
+    let attempts = 0;
+    while (!window.EdgeImpulseClassifier && attempts < 50) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      attempts++;
+    }
+
+    if (!window.EdgeImpulseClassifier) {
+      throw new Error('Edge Impulse classifier failed to load');
+    }
+
+    this.classifier = new window.EdgeImpulseClassifier();
+    await this.classifier.init();
+  }
+
+  /**
+   * Load external script
+   */
+  private loadScript(src: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      // Check if script already exists
+      const existing = document.querySelector(`script[src="${src}"]`);
+      if (existing) {
+        resolve();
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = src;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+      document.head.appendChild(script);
+    });
   }
 
   /**
@@ -36,33 +98,80 @@ export class MLService {
   }
 
   /**
-   * WASM processing (browser-based)
-   * Currently mocked - will be replaced with actual WASM model
+   * WASM processing (browser-based) using Edge Impulse
    */
   private async processWithWASM(imageFile: File): Promise<DetectionResult[]> {
-    // Simulate processing time
-    await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 2000));
-
-    // Mock detection results
-    const mockDetections: DetectionResult[] = [];
-    const hasPlastic = Math.random() > 0.3; // 70% chance of detecting plastic
-
-    if (hasPlastic) {
-      const numDetections = Math.floor(Math.random() * 5) + 1;
-      
-      for (let i = 0; i < numDetections; i++) {
-        mockDetections.push({
-          label: 'plastic',
-          confidence: 0.7 + Math.random() * 0.25, // 0.7 to 0.95
-          x: Math.floor(Math.random() * 400),
-          y: Math.floor(Math.random() * 300),
-          width: Math.floor(Math.random() * 200) + 50,
-          height: Math.floor(Math.random() * 200) + 50,
-        });
-      }
+    // Ensure classifier is ready
+    if (this.classifierReady) {
+      await this.classifierReady;
     }
 
-    return mockDetections;
+    if (!this.classifier) {
+      throw new Error('Edge Impulse classifier not initialized');
+    }
+
+    // Get model properties to know expected input size
+    const properties = this.classifier.getProperties();
+    const inputWidth = properties.input_width || 320;
+    const inputHeight = properties.input_height || 320;
+
+    // Convert image to raw features (RGB pixel array)
+    const features = await this.imageToFeatures(imageFile, inputWidth, inputHeight);
+
+    // Run classification
+    const result = this.classifier.classify(features, false);
+
+    // Convert Edge Impulse results to our DetectionResult format
+    const detections: DetectionResult[] = result.results.map((r: any) => ({
+      label: r.label,
+      confidence: r.value,
+      x: Math.round(r.x || 0),
+      y: Math.round(r.y || 0),
+      width: Math.round(r.width || 0),
+      height: Math.round(r.height || 0),
+    }));
+
+    return detections;
+  }
+
+  /**
+   * Convert image file to raw feature array (RGB pixels)
+   */
+  private async imageToFeatures(imageFile: File, targetWidth: number, targetHeight: number): Promise<number[]> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      if (!ctx) {
+        reject(new Error('Failed to get canvas context'));
+        return;
+      }
+
+      img.onload = () => {
+        // Resize image to target dimensions
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+        ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+
+        // Get image data
+        const imageData = ctx.getImageData(0, 0, targetWidth, targetHeight);
+        const pixels = imageData.data;
+
+        // Convert to RGB array (remove alpha channel)
+        const features: number[] = [];
+        for (let i = 0; i < pixels.length; i += 4) {
+          features.push(pixels[i]);     // R
+          features.push(pixels[i + 1]); // G
+          features.push(pixels[i + 2]); // B
+        }
+
+        resolve(features);
+      };
+
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = URL.createObjectURL(imageFile);
+    });
   }
 
   /**
