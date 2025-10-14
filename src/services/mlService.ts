@@ -49,6 +49,19 @@ export class MLService {
       }
 
       console.log('Loading Edge Impulse scripts...');
+      
+      // Configure Module object before loading scripts to set WASM path
+      (window as any).Module = {
+        locateFile: (path: string) => {
+          console.log('locateFile called with:', path);
+          // Ensure WASM file is loaded from public directory
+          if (path.endsWith('.wasm')) {
+            return '/' + path;
+          }
+          return path;
+        }
+      };
+      
       // Load scripts dynamically in sequence
       await this.loadScript('/edge-impulse-standalone.js');
       console.log('Loaded edge-impulse-standalone.js');
