@@ -233,13 +233,15 @@ export class MLService {
         const imageData = ctx.getImageData(0, 0, targetWidth, targetHeight);
         const pixels = imageData.data;
 
-        // Convert to RGB array (remove alpha channel)
-        // Pass raw pixel values - WASM module handles normalization internally
+        // Pack RGB values into single integers (Edge Impulse format)
+        // Format: (R << 16) + (G << 8) + B
         const features: number[] = [];
         for (let i = 0; i < pixels.length; i += 4) {
-          features.push(pixels[i]);     // R
-          features.push(pixels[i + 1]); // G
-          features.push(pixels[i + 2]); // B
+          const r = pixels[i];
+          const g = pixels[i + 1];
+          const b = pixels[i + 2];
+          // eslint-disable-next-line no-bitwise
+          features.push((r << 16) + (g << 8) + b);
         }
 
         resolve(features);
