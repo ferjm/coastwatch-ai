@@ -152,6 +152,24 @@ export class MLService {
     const properties = classifier.getProperties();
     console.log('Model properties:', properties);
     
+    // Try to lower detection threshold if available
+    if (properties.model_type === 'object_detection' || properties.model_type === 'constrained_object_detection') {
+      console.log('Attempting to set lower threshold for object detection...');
+      try {
+        // Try to get thresholds and lower them
+        const projectInfo = classifier.getProjectInfo();
+        console.log('Project info:', projectInfo);
+        
+        // Lower threshold to 0.1 (10%) to see if we can get any detections
+        if (projectInfo.impulse_id) {
+          classifier.setThreshold({ id: projectInfo.impulse_id, min_score: 0.1 });
+          console.log('Set detection threshold to 0.1');
+        }
+      } catch (e) {
+        console.log('Could not set threshold:', e);
+      }
+    }
+    
     const inputWidth = properties.input_width || 320;
     const inputHeight = properties.input_height || 320;
     console.log(`Input dimensions: ${inputWidth}x${inputHeight}`);
