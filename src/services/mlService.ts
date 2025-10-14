@@ -175,11 +175,20 @@ export class MLService {
     console.log('Converting image to features...');
     const features = await this.imageToFeatures(imageFile, inputWidth, inputHeight);
     console.log(`Features length: ${features.length} (expected: ${inputWidth * inputHeight * 3})`);
+    console.log('Feature value range:', Math.min(...features), '-', Math.max(...features));
 
-    // Run classification
+    // Run classification with error handling
     console.log('Running classification...');
-    const result = this.classifier.classify(features, false);
-    console.log('Raw classification result:', result);
+    let result;
+    try {
+      result = this.classifier.classify(features, true); // Enable debug mode
+      console.log('Raw classification result:', result);
+    } catch (error) {
+      console.error('Classification error details:', error);
+      console.log('Trying with debug info...');
+      console.log('Model info:', this.classifier.getProjectInfo());
+      throw error;
+    }
 
     // Convert Edge Impulse results to our DetectionResult format
     const detections: DetectionResult[] = result.results.map((r: any) => ({
