@@ -162,6 +162,16 @@ export class MLService {
       throw new Error('Edge Impulse classifier not initialized');
     }
 
+    // Reinitialize classifier for each image to avoid WASM memory issues
+    console.log('Reinitializing classifier for this image...');
+    try {
+      await this.classifier.init();
+      console.log('Classifier reinitialized successfully');
+    } catch (error) {
+      console.error('Failed to reinitialize classifier:', error);
+      // Continue anyway - it might already be initialized
+    }
+
     // Get model properties to know expected input size
     console.log('Getting model properties...');
     const properties = this.classifier.getProperties();
