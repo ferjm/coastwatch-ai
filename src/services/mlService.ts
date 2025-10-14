@@ -162,16 +162,6 @@ export class MLService {
       throw new Error('Edge Impulse classifier not initialized');
     }
 
-    // Reinitialize classifier for each image to avoid WASM memory issues
-    console.log('Reinitializing classifier for this image...');
-    try {
-      await this.classifier.init();
-      console.log('Classifier reinitialized successfully');
-    } catch (error) {
-      console.error('Failed to reinitialize classifier:', error);
-      // Continue anyway - it might already be initialized
-    }
-
     // Get model properties to know expected input size
     console.log('Getting model properties...');
     const properties = this.classifier.getProperties();
@@ -240,12 +230,13 @@ export class MLService {
         const imageData = ctx.getImageData(0, 0, targetWidth, targetHeight);
         const pixels = imageData.data;
 
-        // Convert to RGB array and normalize to 0-1 (Edge Impulse expects float values)
+        // Convert to RGB array (remove alpha channel)
+        // Pass raw pixel values - WASM module handles normalization internally
         const features: number[] = [];
         for (let i = 0; i < pixels.length; i += 4) {
-          features.push(pixels[i] / 255.0);     // R normalized
-          features.push(pixels[i + 1] / 255.0); // G normalized
-          features.push(pixels[i + 2] / 255.0); // B normalized
+          features.push(pixels[i]);     // R
+          features.push(pixels[i + 1]); // G
+          features.push(pixels[i + 2]); // B
         }
 
         resolve(features);
