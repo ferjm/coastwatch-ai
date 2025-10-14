@@ -161,6 +161,7 @@ export class MLService {
     const features = await this.imageToFeatures(imageFile, inputWidth, inputHeight);
     console.log(`Features length: ${features.length} (expected: ${inputWidth * inputHeight * 3})`);
     console.log('Feature value range:', Math.min(...features), '-', Math.max(...features));
+    console.log('First 50 features:', features.slice(0, 50).join(', '));
 
     // Run classification with error handling
     console.log('Running classification...');
