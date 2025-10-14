@@ -4,6 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { 
   Eye, 
   EyeOff, 
@@ -63,6 +69,7 @@ export function InferenceResults({
   const [showBoundingBoxes, setShowBoundingBoxes] = useState<Record<string, boolean>>({});
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedImage, setSelectedImage] = useState<ProcessedImage | null>(null);
   const itemsPerPage = 12;
 
   const toggleBoundingBoxes = (imageId: string) => {
@@ -149,264 +156,399 @@ export function InferenceResults({
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">{t('recentUploads')}</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            {images.length} {t('uploadedImages')}
-          </p>
+    <>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold">{t('recentUploads')}</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              {images.length} {t('uploadedImages')}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant={viewMode === 'grid' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('grid')}
+            >
+              <Grid3x3 className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+            >
+              <List className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant={viewMode === 'grid' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setViewMode('grid')}
-          >
-            <Grid3x3 className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={viewMode === 'list' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setViewMode('list')}
-          >
-            <List className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
 
-      <div className={viewMode === 'grid' 
-        ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4'
-        : 'space-y-4'
-      }>
-        {paginatedImages.map((image) => {
-          const colors = getDetectionClassColors();
-          const uniqueClasses = [...new Set(image.detections.map(d => d.class))];
-          
-          return (
-            <Card key={image.id} className="overflow-hidden">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <CardTitle className={viewMode === 'grid' ? 'text-sm truncate' : 'text-lg truncate'}>
-                      {image.fileName}
-                    </CardTitle>
-                    <div className={`flex ${viewMode === 'grid' ? 'flex-col' : 'flex-row'} items-start ${viewMode === 'list' ? 'gap-4' : 'gap-1'} text-xs text-muted-foreground mt-1`}>
-                      <span>{formatFileSize(image.fileSize)}</span>
-                      {image.resolution && (
-                        <span>{image.resolution.width}×{image.resolution.height}</span>
-                      )}
-                      <span>{new Date(image.uploadedAt).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                  <Badge className={getStatusColor(image.status)}>
-                    {getStatusText(image.status)}
-                  </Badge>
-                </div>
-              </CardHeader>
+        {viewMode === 'list' ? (
+          <div className="space-y-2">
+            {paginatedImages.map((image) => {
+              const colors = getDetectionClassColors();
+              const uniqueClasses = [...new Set(image.detections.map(d => d.class))];
+              
+              return (
+                <Card 
+                  key={image.id} 
+                  className="hover:bg-accent/50 transition-colors cursor-pointer"
+                  onClick={() => setSelectedImage(image)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-4">
+                      {/* Thumbnail */}
+                      <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                        <img
+                          src={image.imageUrl}
+                          alt={image.fileName}
+                          className="w-full h-full object-cover"
+                        />
+                        {image.status === 'processing' && (
+                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <RefreshCw className="h-4 w-4 text-white animate-spin" />
+                          </div>
+                        )}
+                      </div>
 
-              <CardContent className={viewMode === 'grid' ? 'space-y-2' : 'space-y-4'}>
-                {/* Image with Bounding Boxes */}
-                <div className={`relative ${viewMode === 'grid' ? 'aspect-square' : 'aspect-video'} rounded-lg overflow-hidden bg-muted`}>
-                  <img
-                    src={image.imageUrl}
-                    alt={image.fileName}
-                    className="w-full h-full object-cover"
-                  />
-                  
-                  {/* Bounding Boxes Overlay */}
-                  {showBoundingBoxes[image.id] && image.detections.length > 0 && (
-                    <div className="absolute inset-0">
-                      {image.detections.map((detection, index) => {
-                        const colorIndex = uniqueClasses.indexOf(detection.class) % colors.length;
-                        const color = colors[colorIndex];
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <h3 className="font-medium truncate">{image.fileName}</h3>
+                          <Badge className={getStatusColor(image.status)}>
+                            {getStatusText(image.status)}
+                          </Badge>
+                        </div>
                         
-                        return (
-                          <div
-                            key={detection.id}
-                            className="absolute border-2 rounded"
-                            style={{
-                              left: `${detection.bbox.x}%`,
-                              top: `${detection.bbox.y}%`,
-                              width: `${detection.bbox.width}%`,
-                              height: `${detection.bbox.height}%`,
-                              borderColor: color,
-                            }}
-                          >
-                            <div 
-                              className="absolute -top-6 left-0 px-2 py-1 text-xs font-medium text-white rounded text-nowrap"
-                              style={{ backgroundColor: color }}
-                            >
-                              {detection.class} {Math.round(detection.confidence * 100)}%
+                        <div className="flex items-center gap-3 text-sm text-muted-foreground mb-2">
+                          <span>{formatFileSize(image.fileSize)}</span>
+                          {image.resolution && (
+                            <span>{image.resolution.width}×{image.resolution.height}</span>
+                          )}
+                          <span>{new Date(image.uploadedAt).toLocaleDateString()}</span>
+                          {image.processingTime && (
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              {formatProcessingTime(image.processingTime)}
+                            </span>
+                          )}
+                        </div>
+
+                        {image.status === 'completed' && (
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1 text-sm">
+                              <Target className="h-3 w-3 text-green-600" />
+                              <span className="font-medium">{image.detections.length}</span>
+                            </div>
+                            <div className="flex flex-wrap gap-1">
+                              {uniqueClasses.slice(0, 3).map((className, index) => {
+                                const colorIndex = index % colors.length;
+                                const color = colors[colorIndex];
+                                const classDetections = image.detections.filter(d => d.class === className);
+                                
+                                return (
+                                  <Badge 
+                                    key={className}
+                                    variant="outline"
+                                    className="text-xs px-1.5 py-0"
+                                    style={{ 
+                                      borderColor: color, 
+                                      color: color,
+                                      backgroundColor: `${color}10`
+                                    }}
+                                  >
+                                    {className} ({classDetections.length})
+                                  </Badge>
+                                );
+                              })}
+                              {uniqueClasses.length > 3 && (
+                                <Badge variant="outline" className="text-xs px-1.5 py-0">
+                                  +{uniqueClasses.length - 3}
+                                </Badge>
+                              )}
                             </div>
                           </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
+                        )}
 
-                {/* Progress Bar for Processing */}
-                {image.status === 'processing' && (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span>{t('processingStatus')}</span>
-                      <span>{image.progress}%</span>
-                    </div>
-                    <Progress value={image.progress} className="h-2" />
-                  </div>
-                )}
-
-                {/* Detection Results */}
-                {image.status === 'completed' && (
-                  <div className={viewMode === 'grid' ? 'space-y-2' : 'space-y-3'}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Target className={`${viewMode === 'grid' ? 'h-3 w-3' : 'h-4 w-4'} text-green-600`} />
-                        <span className={viewMode === 'grid' ? 'text-xs font-medium' : 'text-sm font-medium'}>
-                          {image.detections.length} {t('detectionsFound')}
-                        </span>
+                        {image.error && (
+                          <p className="text-sm text-destructive mt-1">{image.error}</p>
+                        )}
                       </div>
-                      {image.processingTime && viewMode === 'list' && (
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Clock className="h-3 w-3" />
-                          {formatProcessingTime(image.processingTime)}
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        {image.status === 'completed' && onDownload && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDownload(image.id);
+                            }}
+                          >
+                            <Download className="h-4 w-4" />
+                          </Button>
+                        )}
+                        
+                        {onDelete && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDelete(image.id);
+                            }}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+            {paginatedImages.map((image) => {
+              const colors = getDetectionClassColors();
+              const uniqueClasses = [...new Set(image.detections.map(d => d.class))];
+              
+              return (
+                <Card 
+                  key={image.id} 
+                  className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => setSelectedImage(image)}
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <CardTitle className="text-sm truncate">
+                          {image.fileName}
+                        </CardTitle>
+                        <div className="flex flex-col items-start gap-1 text-xs text-muted-foreground mt-1">
+                          <span>{formatFileSize(image.fileSize)}</span>
+                          {image.resolution && (
+                            <span>{image.resolution.width}×{image.resolution.height}</span>
+                          )}
+                        </div>
+                      </div>
+                      <Badge className={getStatusColor(image.status)}>
+                        {getStatusText(image.status)}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+
+                  <CardContent className="space-y-2">
+                    {/* Image Thumbnail */}
+                    <div className="relative aspect-square rounded-lg overflow-hidden bg-muted">
+                      <img
+                        src={image.imageUrl}
+                        alt={image.fileName}
+                        className="w-full h-full object-cover"
+                      />
+                      {image.status === 'processing' && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                          <RefreshCw className="h-6 w-6 text-white animate-spin" />
                         </div>
                       )}
                     </div>
 
-                    {/* Detection Classes */}
-                    {uniqueClasses.length > 0 && viewMode === 'list' && (
-                      <div className="flex flex-wrap gap-2">
-                        {uniqueClasses.map((className, index) => {
-                          const colorIndex = index % colors.length;
-                          const color = colors[colorIndex];
-                          const classDetections = image.detections.filter(d => d.class === className);
-                          const avgConfidence = classDetections.reduce((acc, d) => acc + d.confidence, 0) / classDetections.length;
-                          
-                          return (
-                            <Badge 
-                              key={className}
-                              variant="outline"
-                              className="text-xs"
-                              style={{ 
-                                borderColor: color, 
-                                color: color,
-                                backgroundColor: `${color}10`
-                              }}
-                            >
-                              {className} ({classDetections.length}) {Math.round(avgConfidence * 100)}%
-                            </Badge>
-                          );
-                        })}
+                    {/* Detection Count */}
+                    {image.status === 'completed' && image.detections.length > 0 && (
+                      <div className="flex items-center gap-2">
+                        <Target className="h-3 w-3 text-green-600" />
+                        <span className="text-xs font-medium">
+                          {image.detections.length} {t('detectionsFound')}
+                        </span>
                       </div>
                     )}
-                  </div>
-                )}
 
-                {/* Error State */}
-                {image.status === 'failed' && image.error && (
-                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-sm text-red-700">{image.error}</p>
-                  </div>
-                )}
+                    {/* Error State */}
+                    {image.status === 'failed' && image.error && (
+                      <p className="text-xs text-destructive">{image.error}</p>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
 
-                {/* Action Buttons */}
-                <div className={`flex items-center justify-between ${viewMode === 'grid' ? 'pt-1' : 'pt-2'}`}>
-                  <div className="flex items-center gap-1">
-                    {image.detections.length > 0 && viewMode === 'list' && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => toggleBoundingBoxes(image.id)}
-                      >
-                        {showBoundingBoxes[image.id] ? (
-                          <>
-                            <EyeOff className="h-4 w-4 mr-1" />
-                            {t('hideBoundingBoxes')}
-                          </>
-                        ) : (
-                          <>
-                            <Eye className="h-4 w-4 mr-1" />
-                            {t('showBoundingBoxes')}
-                          </>
-                        )}
-                      </Button>
-                    )}
-                    {image.detections.length > 0 && viewMode === 'grid' && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => toggleBoundingBoxes(image.id)}
-                      >
-                        {showBoundingBoxes[image.id] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-                      </Button>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-1">
-                    {image.status === 'completed' && onDownload && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onDownload(image.id)}
-                      >
-                        <Download className={viewMode === 'grid' ? 'h-3 w-3' : 'h-4 w-4'} />
-                      </Button>
-                    )}
-                    
-                    {(image.status === 'failed' || image.status === 'completed') && onReprocess && viewMode === 'list' && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onReprocess(image.id)}
-                      >
-                        <RefreshCw className="h-4 w-4" />
-                      </Button>
-                    )}
-                    
-                    {onDelete && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onDelete(image.id)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className={viewMode === 'grid' ? 'h-3 w-3' : 'h-4 w-4'} />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 pt-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToPreviousPage}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-sm text-muted-foreground">
+              {currentPage} / {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToNextPage}
+              disabled={currentPage === totalPages}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 pt-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={goToPreviousPage}
-            disabled={currentPage === 1}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <span className="text-sm text-muted-foreground">
-            {currentPage} / {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={goToNextPage}
-            disabled={currentPage === totalPages}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
+      {/* Image Detail Modal */}
+      {selectedImage && (
+        <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
+          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{selectedImage.fileName}</DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              {/* Image with Bounding Boxes */}
+              <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
+                <img
+                  src={selectedImage.imageUrl}
+                  alt={selectedImage.fileName}
+                  className="w-full h-full object-contain"
+                />
+                
+                {/* Bounding Boxes Overlay */}
+                {selectedImage.detections.length > 0 && (
+                  <div className="absolute inset-0">
+                    {selectedImage.detections.map((detection) => {
+                      const colors = getDetectionClassColors();
+                      const uniqueClasses = [...new Set(selectedImage.detections.map(d => d.class))];
+                      const colorIndex = uniqueClasses.indexOf(detection.class) % colors.length;
+                      const color = colors[colorIndex];
+                      
+                      return (
+                        <div
+                          key={detection.id}
+                          className="absolute border-2 rounded"
+                          style={{
+                            left: `${detection.bbox.x}%`,
+                            top: `${detection.bbox.y}%`,
+                            width: `${detection.bbox.width}%`,
+                            height: `${detection.bbox.height}%`,
+                            borderColor: color,
+                          }}
+                        >
+                          <div 
+                            className="absolute -top-6 left-0 px-2 py-1 text-xs font-medium text-white rounded text-nowrap"
+                            style={{ backgroundColor: color }}
+                          >
+                            {detection.class} {Math.round(detection.confidence * 100)}%
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Image Details */}
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-muted-foreground">Size:</span> {formatFileSize(selectedImage.fileSize)}
+                </div>
+                {selectedImage.resolution && (
+                  <div>
+                    <span className="text-muted-foreground">Resolution:</span> {selectedImage.resolution.width}×{selectedImage.resolution.height}
+                  </div>
+                )}
+                <div>
+                  <span className="text-muted-foreground">Uploaded:</span> {new Date(selectedImage.uploadedAt).toLocaleString()}
+                </div>
+                {selectedImage.processingTime && (
+                  <div>
+                    <span className="text-muted-foreground">Processing time:</span> {formatProcessingTime(selectedImage.processingTime)}
+                  </div>
+                )}
+              </div>
+
+              {/* Detection Summary */}
+              {selectedImage.status === 'completed' && selectedImage.detections.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <Target className="h-4 w-4 text-green-600" />
+                    {selectedImage.detections.length} {t('detectionsFound')}
+                  </h3>
+                  
+                  <div className="flex flex-wrap gap-2">
+                    {[...new Set(selectedImage.detections.map(d => d.class))].map((className, index) => {
+                      const colors = getDetectionClassColors();
+                      const colorIndex = index % colors.length;
+                      const color = colors[colorIndex];
+                      const classDetections = selectedImage.detections.filter(d => d.class === className);
+                      const avgConfidence = classDetections.reduce((acc, d) => acc + d.confidence, 0) / classDetections.length;
+                      
+                      return (
+                        <Badge 
+                          key={className}
+                          variant="outline"
+                          style={{ 
+                            borderColor: color, 
+                            color: color,
+                            backgroundColor: `${color}10`
+                          }}
+                        >
+                          {className} ({classDetections.length}) {Math.round(avgConfidence * 100)}%
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex justify-end gap-2 pt-4 border-t">
+                {selectedImage.status === 'completed' && onDownload && (
+                  <Button
+                    variant="outline"
+                    onClick={() => onDownload(selectedImage.id)}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Download
+                  </Button>
+                )}
+                {(selectedImage.status === 'failed' || selectedImage.status === 'completed') && onReprocess && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      onReprocess(selectedImage.id);
+                      setSelectedImage(null);
+                    }}
+                  >
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Reprocess
+                  </Button>
+                )}
+                {onDelete && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      onDelete(selectedImage.id);
+                      setSelectedImage(null);
+                    }}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </Button>
+                )}
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
-    </div>
+    </>
   );
 }
