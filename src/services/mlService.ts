@@ -151,6 +151,8 @@ export class MLService {
    * WASM processing (browser-based) using Edge Impulse
    */
   private async processWithWASM(imageFile: File): Promise<DetectionResult[]> {
+    console.log('Starting WASM processing for:', imageFile.name);
+    
     // Ensure classifier is ready
     if (this.classifierReady) {
       await this.classifierReady;
@@ -161,15 +163,23 @@ export class MLService {
     }
 
     // Get model properties to know expected input size
+    console.log('Getting model properties...');
     const properties = this.classifier.getProperties();
+    console.log('Model properties:', properties);
+    
     const inputWidth = properties.input_width || 320;
     const inputHeight = properties.input_height || 320;
+    console.log(`Input dimensions: ${inputWidth}x${inputHeight}`);
 
     // Convert image to raw features (RGB pixel array)
+    console.log('Converting image to features...');
     const features = await this.imageToFeatures(imageFile, inputWidth, inputHeight);
+    console.log(`Features length: ${features.length} (expected: ${inputWidth * inputHeight * 3})`);
 
     // Run classification
+    console.log('Running classification...');
     const result = this.classifier.classify(features, false);
+    console.log('Raw classification result:', result);
 
     // Convert Edge Impulse results to our DetectionResult format
     const detections: DetectionResult[] = result.results.map((r: any) => ({
@@ -180,6 +190,9 @@ export class MLService {
       width: Math.round(r.width || 0),
       height: Math.round(r.height || 0),
     }));
+
+    console.log('Formatted detections:', detections);
+    console.log(`Found ${detections.length} detections`);
 
     return detections;
   }
