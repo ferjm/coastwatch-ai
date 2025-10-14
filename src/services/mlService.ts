@@ -38,30 +38,47 @@ export class MLService {
    * Load Edge Impulse WebAssembly classifier
    */
   private async loadEdgeImpulseClassifier(): Promise<void> {
-    // Check if scripts are already loaded
-    if (window.EdgeImpulseClassifier) {
+    try {
+      // Check if scripts are already loaded
+      if (window.EdgeImpulseClassifier) {
+        console.log('Edge Impulse classifier already loaded, initializing...');
+        this.classifier = new window.EdgeImpulseClassifier();
+        await this.classifier.init();
+        console.log('Edge Impulse classifier initialized successfully');
+        return;
+      }
+
+      console.log('Loading Edge Impulse scripts...');
+      // Load scripts dynamically in sequence
+      await this.loadScript('/edge-impulse-standalone.js');
+      console.log('Loaded edge-impulse-standalone.js');
+      
+      await this.loadScript('/run-impulse.js');
+      console.log('Loaded run-impulse.js');
+
+      // Wait for the classifier to be available
+      console.log('Waiting for EdgeImpulseClassifier to be available...');
+      let attempts = 0;
+      while (!window.EdgeImpulseClassifier && attempts < 100) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
+      }
+
+      if (!window.EdgeImpulseClassifier) {
+        throw new Error('EdgeImpulseClassifier not found after loading scripts. Check console for script errors.');
+      }
+
+      console.log('EdgeImpulseClassifier found, creating instance...');
       this.classifier = new window.EdgeImpulseClassifier();
+      
+      console.log('Initializing classifier...');
       await this.classifier.init();
-      return;
+      
+      console.log('Edge Impulse classifier initialized successfully');
+    } catch (error) {
+      console.error('Failed to load Edge Impulse classifier:', error);
+      throw error;
     }
-
-    // Load scripts dynamically
-    await this.loadScript('/edge-impulse-standalone.js');
-    await this.loadScript('/run-impulse.js');
-
-    // Wait for the classifier to be available
-    let attempts = 0;
-    while (!window.EdgeImpulseClassifier && attempts < 50) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-      attempts++;
-    }
-
-    if (!window.EdgeImpulseClassifier) {
-      throw new Error('Edge Impulse classifier failed to load');
-    }
-
-    this.classifier = new window.EdgeImpulseClassifier();
-    await this.classifier.init();
   }
 
   /**
@@ -72,14 +89,22 @@ export class MLService {
       // Check if script already exists
       const existing = document.querySelector(`script[src="${src}"]`);
       if (existing) {
+        console.log(`Script ${src} already exists`);
         resolve();
         return;
       }
 
       const script = document.createElement('script');
       script.src = src;
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+      script.async = false; // Load scripts in order
+      script.onload = () => {
+        console.log(`Script ${src} loaded successfully`);
+        resolve();
+      };
+      script.onerror = (error) => {
+        console.error(`Failed to load script: ${src}`, error);
+        reject(new Error(`Failed to load script: ${src}`));
+      };
       document.head.appendChild(script);
     });
   }
