@@ -1,3 +1,4 @@
+/// <reference types="google.maps" />
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Wrapper, Status } from '@googlemaps/react-wrapper';
