@@ -1,3 +1,5 @@
+import type * as GeoJSON from 'geojson';
+
 export type UUID = string;
 
 export type Area = {
