@@ -22,6 +22,8 @@ export type Database = {
           id: string
           image_id: string
           label: string
+          model: string | null
+          source: string
           width: number
           x: number
           y: number
@@ -33,6 +35,8 @@ export type Database = {
           id?: string
           image_id: string
           label: string
+          model?: string | null
+          source?: string
           width: number
           x: number
           y: number
@@ -44,6 +48,8 @@ export type Database = {
           id?: string
           image_id?: string
           label?: string
+          model?: string | null
+          source?: string
           width?: number
           x?: number
           y?: number
@@ -61,7 +67,9 @@ export type Database = {
       images: {
         Row: {
           captured_at: string | null
+          cloud_count: number | null
           created_at: string
+          edge_count: number | null
           error_message: string | null
           file_name: string
           file_size: number
@@ -70,6 +78,7 @@ export type Database = {
           height_px: number
           id: string
           processed_at: string | null
+          screening_would_escalate: boolean | null
           status: string
           storage_path: string
           tags: string[] | null
@@ -81,7 +90,9 @@ export type Database = {
         }
         Insert: {
           captured_at?: string | null
+          cloud_count?: number | null
           created_at?: string
+          edge_count?: number | null
           error_message?: string | null
           file_name: string
           file_size: number
@@ -90,6 +101,7 @@ export type Database = {
           height_px: number
           id?: string
           processed_at?: string | null
+          screening_would_escalate?: boolean | null
           status: string
           storage_path: string
           tags?: string[] | null
@@ -101,7 +113,9 @@ export type Database = {
         }
         Update: {
           captured_at?: string | null
+          cloud_count?: number | null
           created_at?: string
+          edge_count?: number | null
           error_message?: string | null
           file_name?: string
           file_size?: number
@@ -110,6 +124,7 @@ export type Database = {
           height_px?: number
           id?: string
           processed_at?: string | null
+          screening_would_escalate?: boolean | null
           status?: string
           storage_path?: string
           tags?: string[] | null
