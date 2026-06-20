@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { uploadImage, updateImageStatus, saveDetections } from '@/services/imageService';
+import { toEdgeDetections } from '@/services/detectionMapper';
 import { mlService } from '@/services/mlService';
 import { useToast } from '@/hooks/use-toast';
 
@@ -61,8 +62,8 @@ export function useImageUpload() {
           progress: 90,
         }));
 
-        // Save detections
-        await saveDetections(uploadedImage.id, detections);
+        // Save detections (Nivel 1 = edge)
+        await saveDetections(uploadedImage.id, toEdgeDetections(detections));
         
         // Update status to processed
         await updateImageStatus(uploadedImage.id, 'processed');

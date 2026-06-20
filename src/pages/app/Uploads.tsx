@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { mlService } from '@/services/mlService';
 import { updateImageStatus, saveDetections } from '@/services/imageService';
+import { toEdgeDetections } from '@/services/detectionMapper';
 
 export default function Uploads() {
   const { t } = useTranslation();
@@ -199,7 +200,7 @@ export default function Uploads() {
       const detections = await mlService.processImage(file);
 
       // Save new detections
-      await saveDetections(imageId, detections);
+      await saveDetections(imageId, toEdgeDetections(detections));
 
       // Update status to processed
       await updateImageStatus(imageId, 'processed');

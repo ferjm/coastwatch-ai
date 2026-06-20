@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import exifr from 'exifr';
+import { buildDetectionRows, type TieredDetection } from './detectionMapper';
 
 export interface ImageMetadata {
   fileName: string;
@@ -233,21 +234,13 @@ export async function updateImageStatus(
 }
 
 /**
- * Save detection results to database
- * Detections are stored in model pixel space (e.g., 160x160)
+ * Guarda detecciones de dos niveles en la base de datos.
+ * Las detecciones llegan ya etiquetadas con source/model (ver detectionMapper).
  */
-export async function saveDetections(imageId: string, detections: any[]) {
+export async function saveDetections(imageId: string, detections: TieredDetection[]) {
   if (detections.length === 0) return;
 
-  const detectionsToInsert = detections.map(d => ({
-    image_id: imageId,
-    label: d.label,
-    confidence: d.confidence,
-    x: d.x,        // pixels in model space (e.g., 0-160)
-    y: d.y,        // pixels in model space (e.g., 0-160)
-    width: d.width,    // pixels in model space
-    height: d.height,  // pixels in model space
-  }));
+  const detectionsToInsert = buildDetectionRows(imageId, detections);
 
   const { error } = await supabase
     .from('detections')
