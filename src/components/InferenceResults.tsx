@@ -412,8 +412,18 @@ export function InferenceResults({
             </DialogHeader>
             
             <div className="space-y-4">
-              {/* Image with Bounding Boxes */}
-              <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
+              {/* Image with Bounding Boxes.
+                  El contenedor toma el aspect ratio REAL de la imagen para que `object-contain`
+                  la rellene sin bandas (letterbox) y el overlay de cajas (en %) coincida exactamente
+                  con la imagen renderizada. */}
+              <div
+                className="relative rounded-lg overflow-hidden bg-muted mx-auto"
+                style={{
+                  aspectRatio: selectedImage.resolution && selectedImage.resolution.height > 0
+                    ? `${selectedImage.resolution.width} / ${selectedImage.resolution.height}`
+                    : '16 / 9',
+                }}
+              >
                 <img
                   src={selectedImage.imageUrl}
                   alt={selectedImage.fileName}
