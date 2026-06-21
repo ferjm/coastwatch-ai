@@ -6,56 +6,33 @@ import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { ImageItem } from '@/types';
 import { RefreshCw, Clock, CheckCircle, XCircle } from 'lucide-react';
-
-// Mock data for demonstration
-const mockJobs: ImageItem[] = [
-  {
-    id: '1',
-    fileName: 'ocean_plastic_1.jpg',
-    widthPx: 1920,
-    heightPx: 1080,
-    status: 'processing',
-    hash: 'hash1',
-    uploadedAt: new Date(Date.now() - 300000).toISOString(), // 5 min ago
-    thumbUrl: '/placeholder.svg'
-  },
-  {
-    id: '2',
-    fileName: 'beach_debris_2.jpg',
-    widthPx: 1920,
-    heightPx: 1080,
-    status: 'queued',
-    hash: 'hash2',
-    uploadedAt: new Date(Date.now() - 600000).toISOString(), // 10 min ago
-    thumbUrl: '/placeholder.svg'
-  },
-  {
-    id: '3',
-    fileName: 'plastic_bottles_3.jpg',
-    widthPx: 1920,
-    heightPx: 1080,
-    status: 'processed',
-    hash: 'hash3',
-    uploadedAt: new Date(Date.now() - 1200000).toISOString(), // 20 min ago
-    processedAt: new Date(Date.now() - 60000).toISOString(), // 1 min ago
-    thumbUrl: '/placeholder.svg'
-  },
-  {
-    id: '4',
-    fileName: 'failed_image.jpg',
-    widthPx: 1920,
-    heightPx: 1080,
-    status: 'failed',
-    hash: 'hash4',
-    uploadedAt: new Date(Date.now() - 1800000).toISOString(), // 30 min ago
-    thumbUrl: '/placeholder.svg'
-  }
-];
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Jobs() {
   const { t } = useTranslation();
-  const [jobs, setJobs] = useState<ImageItem[]>(mockJobs);
+  const [jobs, setJobs] = useState<ImageItem[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const load = async () => {
+    const { data } = await supabase
+      .from('images')
+      .select('id, file_name, width_px, height_px, status, uploaded_at, processed_at, thumbnail_path')
+      .order('uploaded_at', { ascending: false })
+      .limit(100);
+    setJobs((data ?? []).map((i: any) => ({
+      id: i.id, fileName: i.file_name, widthPx: i.width_px, heightPx: i.height_px,
+      status: i.status, hash: '', uploadedAt: i.uploaded_at, processedAt: i.processed_at ?? undefined,
+      thumbUrl: i.thumbnail_path
+        ? supabase.storage.from('thumbnails').getPublicUrl(i.thumbnail_path).data.publicUrl
+        : '/placeholder.svg',
+    })));
+  };
+
+  useEffect(() => {
+    load();
+    const ch = supabase.channel('jobs').on('postgres_changes', { event: '*', schema: 'public', table: 'images' }, () => load()).subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, []);
 
   const getStatusIcon = (status: ImageItem['status']) => {
     switch (status) {
@@ -89,15 +66,12 @@ export default function Jobs() {
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await load();
     setIsRefreshing(false);
   };
 
-  const handleRetry = (id: string) => {
-    setJobs(prev => prev.map(job => 
-      job.id === id ? { ...job, status: 'queued' } : job
-    ));
+  const handleRetry = async (id: string) => {
+    await supabase.from('images').update({ status: 'queued' }).eq('id', id);
   };
 
   const queuedJobs = jobs.filter(job => job.status === 'queued');
@@ -191,17 +165,17 @@ export default function Jobs() {
                       )}
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center space-x-4">
                     {job.status === 'processing' && (
-                      <Progress value={Math.random() * 100} className="w-24" />
+                      <Progress value={undefined} className="w-24" />
                     )}
-                    
+
                     <Badge variant={getStatusColor(job.status)} className="flex items-center gap-1">
                       {getStatusIcon(job.status)}
                       {t(job.status)}
                     </Badge>
-                    
+
                     {job.status === 'failed' && (
                       <Button size="sm" variant="outline" onClick={() => handleRetry(job.id)}>
                         {t('retry')}
