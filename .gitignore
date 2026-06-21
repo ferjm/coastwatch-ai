@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Deno lockfile (generado por deno check local)
+deno.lock
