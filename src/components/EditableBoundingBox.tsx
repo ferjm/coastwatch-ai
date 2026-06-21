@@ -166,11 +166,11 @@ export function EditableBoundingBox({
 
   if (showDirectly) {
     return (
-      <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
-        <img 
+      <div className="relative rounded-lg overflow-hidden bg-muted w-full">
+        <img
           src={imageUrl}
           alt="Detection"
-          className="w-full h-full object-cover"
+          className="block w-full h-auto"
         />
         
         {/* Bounding Boxes Overlay - Using same approach as InferenceResults */}
@@ -208,11 +208,11 @@ export function EditableBoundingBox({
   }
 
   return (
-    <div className="relative border-2 border-border rounded-lg overflow-hidden bg-background" style={{ height: '400px' }}>
-      <img 
+    <div className="relative border-2 border-border rounded-lg overflow-hidden bg-background w-full">
+      <img
         src={imageUrl}
         alt="Detection"
-        className="w-full h-full object-contain"
+        className="block w-full h-auto"
       />
       {/* Editable bounding boxes overlay */}
       {boxes.map((box) => (
