@@ -60,6 +60,7 @@ export default function Uploads() {
             id: d.id,
             class: d.label,
             confidence: parseFloat(d.confidence),
+            source: d.source,
             bbox: {
               x: d.x * 100,
               y: d.y * 100,
@@ -96,6 +97,9 @@ export default function Uploads() {
             imageUrl: urlData.publicUrl,
             storagePath: img.storage_path,
             detections,
+            edgeCount: img.edge_count ?? undefined,
+            cloudCount: img.cloud_count ?? undefined,
+            screeningWouldEscalate: img.screening_would_escalate,
             error: img.error_message || undefined,
             processingTime: img.processed_at ? 
               Math.round((new Date(img.processed_at).getTime() - new Date(img.uploaded_at).getTime()) / 1000) : 

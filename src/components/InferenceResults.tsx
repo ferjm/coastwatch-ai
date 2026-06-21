@@ -34,6 +34,7 @@ export interface Detection {
   id: string;
   class: string;
   confidence: number;
+  source?: 'edge' | 'cloud';
   bbox: {
     x: number;
     y: number;
@@ -54,8 +55,15 @@ export interface ProcessedImage {
   processingTime?: number;
   resolution?: { width: number; height: number };
   detections: Detection[];
+  edgeCount?: number;
+  cloudCount?: number;
+  screeningWouldEscalate?: boolean | null;
   error?: string;
 }
+
+// Colores por nivel de inferencia (alto contraste sobre arena/vegetación).
+const SOURCE_COLORS: Record<'edge' | 'cloud', string> = { edge: '#EC4899', cloud: '#06B6D4' };
+const sourceColor = (source?: 'edge' | 'cloud') => (source ? SOURCE_COLORS[source] : '#3B82F6');
 
 interface InferenceResultsProps {
   images: ProcessedImage[];
@@ -79,6 +87,7 @@ export function InferenceResults({
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedImage, setSelectedImage] = useState<ProcessedImage | null>(null);
   const [fullImageSrc, setFullImageSrc] = useState<string | null>(null);
+  const [layer, setLayer] = useState<'both' | 'edge' | 'cloud'>('both');
   const transformRef = useRef<ReactZoomPanPinchRef>(null);
   const itemsPerPage = 12;
 
@@ -471,6 +480,29 @@ export function InferenceResults({
                   </Button>
                 </div>
 
+                {/* Capas (Edge / Cloud / Ambos) + leyenda de colores por nivel */}
+                <div className="absolute top-2 left-2 z-10 flex items-center gap-2">
+                  <div className="flex rounded-md overflow-hidden border bg-background/80 backdrop-blur">
+                    {(['both', 'edge', 'cloud'] as const).map((l) => (
+                      <button
+                        key={l}
+                        onClick={() => setLayer(l)}
+                        className={`px-2 py-1 text-xs transition-colors ${layer === l ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'}`}
+                      >
+                        {l === 'both' ? 'Ambos' : l === 'edge' ? 'Edge' : 'Cloud'}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-2 text-xs bg-background/80 backdrop-blur rounded-md px-2 py-1">
+                    <span className="flex items-center gap-1">
+                      <span className="inline-block w-2 h-2 rounded-full" style={{ background: SOURCE_COLORS.edge }} />Edge
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="inline-block w-2 h-2 rounded-full" style={{ background: SOURCE_COLORS.cloud }} />Cloud
+                    </span>
+                  </div>
+                </div>
+
                 <TransformWrapper
                   ref={transformRef}
                   minScale={1}
@@ -492,38 +524,40 @@ export function InferenceResults({
                         draggable={false}
                       />
 
-                      {/* Overlay de cajas (en % de la imagen) */}
-                      {selectedImage.detections.length > 0 && (
-                        <div className="absolute inset-0">
-                          {selectedImage.detections.map((detection) => {
-                            const colors = getDetectionClassColors();
-                            const uniqueClasses = [...new Set(selectedImage.detections.map(d => d.class))];
-                            const colorIndex = uniqueClasses.indexOf(detection.class) % colors.length;
-                            const color = colors[colorIndex];
-
-                            return (
-                              <div
-                                key={detection.id}
-                                className="absolute border-2 rounded"
-                                style={{
-                                  left: `${detection.bbox.x}%`,
-                                  top: `${detection.bbox.y}%`,
-                                  width: `${detection.bbox.width}%`,
-                                  height: `${detection.bbox.height}%`,
-                                  borderColor: color,
-                                }}
-                              >
+                      {/* Overlay de cajas (en % de la imagen), coloreadas por nivel y filtradas por capa */}
+                      {(() => {
+                        const visible = selectedImage.detections.filter(
+                          (d) => layer === 'both' || d.source === layer,
+                        );
+                        if (visible.length === 0) return null;
+                        return (
+                          <div className="absolute inset-0">
+                            {visible.map((detection) => {
+                              const color = sourceColor(detection.source);
+                              return (
                                 <div
-                                  className="absolute -top-6 left-0 px-2 py-1 text-xs font-medium text-white rounded text-nowrap"
-                                  style={{ backgroundColor: color }}
+                                  key={detection.id}
+                                  className="absolute border-2 rounded"
+                                  style={{
+                                    left: `${detection.bbox.x}%`,
+                                    top: `${detection.bbox.y}%`,
+                                    width: `${detection.bbox.width}%`,
+                                    height: `${detection.bbox.height}%`,
+                                    borderColor: color,
+                                  }}
                                 >
-                                  {detection.class} {Math.round(detection.confidence * 100)}%
+                                  <div
+                                    className="absolute -top-6 left-0 px-2 py-1 text-xs font-medium text-white rounded text-nowrap"
+                                    style={{ backgroundColor: color }}
+                                  >
+                                    {detection.class} {Math.round(detection.confidence * 100)}%
+                                  </div>
                                 </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
+                              );
+                            })}
+                          </div>
+                        );
+                      })()}
                     </div>
                   </TransformComponent>
                 </TransformWrapper>
@@ -531,6 +565,25 @@ export function InferenceResults({
 
               {/* Image Details */}
               <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-muted-foreground">Niveles:</span>{' '}
+                  <Badge variant="outline" style={{ borderColor: SOURCE_COLORS.edge, color: SOURCE_COLORS.edge }}>
+                    {selectedImage.edgeCount ?? 0} edge
+                  </Badge>{' '}
+                  <Badge variant="outline" style={{ borderColor: SOURCE_COLORS.cloud, color: SOURCE_COLORS.cloud }}>
+                    {selectedImage.cloudCount ?? 0} cloud
+                  </Badge>
+                </div>
+                {selectedImage.screeningWouldEscalate != null && (
+                  <div>
+                    <span className="text-muted-foreground">Criba (H8):</span>{' '}
+                    <Badge variant={selectedImage.screeningWouldEscalate ? 'default' : 'secondary'}>
+                      {selectedImage.screeningWouldEscalate
+                        ? 'El edge la habría escalado'
+                        : 'El edge no vió nada (ahorro / posible falso negativo)'}
+                    </Badge>
+                  </div>
+                )}
                 <div>
                   <span className="text-muted-foreground">Size:</span> {formatFileSize(selectedImage.fileSize)}
                 </div>
