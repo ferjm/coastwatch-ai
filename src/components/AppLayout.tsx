@@ -17,6 +17,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { supabase } from '@/integrations/supabase/client';
+import { useInferenceWorker } from '@/hooks/useInferenceWorker';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -28,6 +29,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const { user, signOut, setUser } = useAuthStore();
   const { toast } = useToast();
   const [profile, setProfile] = useState<{ full_name?: string; avatar_url?: string } | null>(null);
+  useInferenceWorker();
 
   useEffect(() => {
     const fetchProfile = async () => {

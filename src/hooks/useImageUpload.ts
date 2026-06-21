@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { uploadImage, updateImageStatus, saveDetections, saveCascadeMeta } from '@/services/imageService';
-import { runCascade } from '@/services/inference/cascadeService';
+import { uploadImage, updateImageStatus } from '@/services/imageService';
 import { useToast } from '@/hooks/use-toast';
 
 export interface UploadProgress {
@@ -28,56 +27,22 @@ export function useImageUpload() {
       }));
 
       try {
-        // Upload image
         const uploadedImage = await uploadImage(file);
-        
+
         setUploads(prev => new Map(prev).set(fileId, {
-          fileId,
-          fileName: file.name,
-          status: 'uploading',
-          progress: 50,
+          fileId, fileName: file.name, status: 'processing', progress: 80,
         }));
 
-        // Update status to queued
+        // Encola: el worker (useInferenceWorker) la procesará.
         await updateImageStatus(uploadedImage.id, 'queued');
 
-        // Start processing
         setUploads(prev => new Map(prev).set(fileId, {
-          fileId,
-          fileName: file.name,
-          status: 'processing',
-          progress: 60,
-        }));
-
-        await updateImageStatus(uploadedImage.id, 'processing');
-
-        // Run cascade inference (edge + cloud)
-        const cascade = await runCascade(file);
-
-        setUploads(prev => new Map(prev).set(fileId, {
-          fileId,
-          fileName: file.name,
-          status: 'processing',
-          progress: 90,
-        }));
-
-        // Save detections (edge + cloud) and cascade metadata
-        await saveDetections(uploadedImage.id, cascade.detections);
-        await saveCascadeMeta(uploadedImage.id, cascade);
-
-        // Update status to processed
-        await updateImageStatus(uploadedImage.id, 'processed');
-
-        setUploads(prev => new Map(prev).set(fileId, {
-          fileId,
-          fileName: file.name,
-          status: 'completed',
-          progress: 100,
+          fileId, fileName: file.name, status: 'completed', progress: 100,
         }));
 
         toast({
-          title: 'Upload Successful',
-          description: `${file.name}: ${cascade.edgeCount} edge + ${cascade.cloudCount} cloud detección(es).`,
+          title: 'Subida completada',
+          description: `${file.name} en cola para procesar.`,
         });
 
       } catch (error) {
