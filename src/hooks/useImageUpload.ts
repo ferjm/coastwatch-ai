@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { uploadImage, updateImageStatus, saveDetections } from '@/services/imageService';
-import { toEdgeDetections } from '@/services/detectionMapper';
-import { mlService } from '@/services/mlService';
+import { uploadImage, updateImageStatus, saveDetections, saveCascadeMeta } from '@/services/imageService';
+import { runCascade } from '@/services/inference/cascadeService';
 import { useToast } from '@/hooks/use-toast';
 
 export interface UploadProgress {
@@ -52,8 +51,8 @@ export function useImageUpload() {
 
         await updateImageStatus(uploadedImage.id, 'processing');
 
-        // Run ML inference
-        const detections = await mlService.processImage(file);
+        // Run cascade inference (edge + cloud)
+        const cascade = await runCascade(file);
 
         setUploads(prev => new Map(prev).set(fileId, {
           fileId,
@@ -62,9 +61,10 @@ export function useImageUpload() {
           progress: 90,
         }));
 
-        // Save detections (Nivel 1 = edge)
-        await saveDetections(uploadedImage.id, toEdgeDetections(detections));
-        
+        // Save detections (edge + cloud) and cascade metadata
+        await saveDetections(uploadedImage.id, cascade.detections);
+        await saveCascadeMeta(uploadedImage.id, cascade);
+
         // Update status to processed
         await updateImageStatus(uploadedImage.id, 'processed');
 
@@ -77,7 +77,7 @@ export function useImageUpload() {
 
         toast({
           title: 'Upload Successful',
-          description: `${file.name} processed. Found ${detections.length} detection(s).`,
+          description: `${file.name}: ${cascade.edgeCount} edge + ${cascade.cloudCount} cloud detección(es).`,
         });
 
       } catch (error) {
