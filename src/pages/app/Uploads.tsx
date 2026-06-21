@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { ImageUpload, UploadFile } from '@/components/ImageUpload';
@@ -94,6 +94,7 @@ export default function Uploads() {
             status,
             progress: status === 'completed' ? 100 : status === 'processing' ? 50 : 0,
             imageUrl: urlData.publicUrl,
+            storagePath: img.storage_path,
             detections,
             error: img.error_message || undefined,
             processingTime: img.processed_at ? 
@@ -304,6 +305,18 @@ export default function Uploads() {
     }
   };
 
+  // Resuelve una URL firmada (1h) de la imagen ORIGINAL (bucket privado `images`) para el modal.
+  const resolveFullImage = useCallback(async (storagePath: string): Promise<string | null> => {
+    const { data, error } = await supabase.storage
+      .from('images')
+      .createSignedUrl(storagePath, 3600);
+    if (error) {
+      console.error('No se pudo firmar la URL de la imagen original:', error);
+      return null;
+    }
+    return data?.signedUrl ?? null;
+  }, []);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -355,6 +368,7 @@ export default function Uploads() {
         onReprocess={handleReprocess}
         onDelete={handleDelete}
         onDownload={handleDownload}
+        resolveFullImage={resolveFullImage}
       />
     </div>
   );

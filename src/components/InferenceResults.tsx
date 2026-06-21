@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -46,6 +46,7 @@ export interface ProcessedImage {
   status: 'pending' | 'processing' | 'completed' | 'failed';
   progress: number;
   imageUrl: string;
+  storagePath?: string;
   processingTime?: number;
   resolution?: { width: number; height: number };
   detections: Detection[];
@@ -57,20 +58,40 @@ interface InferenceResultsProps {
   onReprocess?: (imageId: string) => void;
   onDelete?: (imageId: string) => void;
   onDownload?: (imageId: string) => void;
+  /** Resuelve la URL (firmada) de la imagen original a resolución completa para el modal. */
+  resolveFullImage?: (storagePath: string) => Promise<string | null>;
 }
 
-export function InferenceResults({ 
-  images, 
-  onReprocess, 
-  onDelete, 
-  onDownload 
+export function InferenceResults({
+  images,
+  onReprocess,
+  onDelete,
+  onDownload,
+  resolveFullImage,
 }: InferenceResultsProps) {
   const { t } = useTranslation();
   const [showBoundingBoxes, setShowBoundingBoxes] = useState<Record<string, boolean>>({});
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedImage, setSelectedImage] = useState<ProcessedImage | null>(null);
+  const [fullImageSrc, setFullImageSrc] = useState<string | null>(null);
   const itemsPerPage = 12;
+
+  // Al abrir el modal, carga la imagen original a resolución completa (URL firmada).
+  // Mientras llega, se muestra la miniatura (imageUrl) como placeholder.
+  useEffect(() => {
+    let active = true;
+    setFullImageSrc(null);
+    const path = selectedImage?.storagePath;
+    if (path && resolveFullImage) {
+      resolveFullImage(path).then((url) => {
+        if (active) setFullImageSrc(url);
+      }).catch(() => {
+        /* si falla, se queda la miniatura */
+      });
+    }
+    return () => { active = false; };
+  }, [selectedImage, resolveFullImage]);
 
   const toggleBoundingBoxes = (imageId: string) => {
     setShowBoundingBoxes(prev => ({
@@ -425,7 +446,7 @@ export function InferenceResults({
                 }}
               >
                 <img
-                  src={selectedImage.imageUrl}
+                  src={fullImageSrc || selectedImage.imageUrl}
                   alt={selectedImage.fileName}
                   className="w-full h-full object-contain"
                 />
