@@ -250,3 +250,24 @@ export async function saveDetections(imageId: string, detections: TieredDetectio
     throw new Error(`Failed to save detections: ${error.message}`);
   }
 }
+
+/**
+ * Guarda los metadatos de la cascada a nivel imagen (contadores + criba analítica H8).
+ */
+export async function saveCascadeMeta(
+  imageId: string,
+  meta: { edgeCount: number; cloudCount: number; screeningWouldEscalate: boolean },
+) {
+  const { error } = await supabase
+    .from('images')
+    .update({
+      edge_count: meta.edgeCount,
+      cloud_count: meta.cloudCount,
+      screening_would_escalate: meta.screeningWouldEscalate,
+    })
+    .eq('id', imageId);
+
+  if (error) {
+    throw new Error(`Failed to save cascade meta: ${error.message}`);
+  }
+}
