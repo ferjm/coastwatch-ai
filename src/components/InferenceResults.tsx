@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { TransformWrapper, TransformComponent, type ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -23,7 +24,10 @@ import {
   Grid3x3,
   List,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ZoomIn,
+  ZoomOut,
+  Maximize2
 } from 'lucide-react';
 
 export interface Detection {
@@ -75,7 +79,20 @@ export function InferenceResults({
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedImage, setSelectedImage] = useState<ProcessedImage | null>(null);
   const [fullImageSrc, setFullImageSrc] = useState<string | null>(null);
+  const transformRef = useRef<ReactZoomPanPinchRef>(null);
   const itemsPerPage = 12;
+
+  // Atajos de teclado de zoom mientras el modal está abierto: +/=  -/_  0 (reset).
+  useEffect(() => {
+    if (!selectedImage) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === '+' || e.key === '=') { e.preventDefault(); transformRef.current?.zoomIn(); }
+      else if (e.key === '-' || e.key === '_') { e.preventDefault(); transformRef.current?.zoomOut(); }
+      else if (e.key === '0') { e.preventDefault(); transformRef.current?.resetTransform(); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [selectedImage]);
 
   // Al abrir el modal, carga la imagen original a resolución completa (URL firmada).
   // Mientras llega, se muestra la miniatura (imageUrl) como placeholder.
@@ -433,56 +450,83 @@ export function InferenceResults({
             </DialogHeader>
             
             <div className="space-y-4">
-              {/* Image with Bounding Boxes.
-                  El contenedor toma el aspect ratio REAL de la imagen para que `object-contain`
-                  la rellene sin bandas (letterbox) y el overlay de cajas (en %) coincida exactamente
-                  con la imagen renderizada. */}
-              <div
-                className="relative rounded-lg overflow-hidden bg-muted mx-auto"
-                style={{
-                  aspectRatio: selectedImage.resolution && selectedImage.resolution.height > 0
-                    ? `${selectedImage.resolution.width} / ${selectedImage.resolution.height}`
-                    : '16 / 9',
-                }}
-              >
-                <img
-                  src={fullImageSrc || selectedImage.imageUrl}
-                  alt={selectedImage.fileName}
-                  className="w-full h-full object-contain"
-                />
-                
-                {/* Bounding Boxes Overlay */}
-                {selectedImage.detections.length > 0 && (
-                  <div className="absolute inset-0">
-                    {selectedImage.detections.map((detection) => {
-                      const colors = getDetectionClassColors();
-                      const uniqueClasses = [...new Set(selectedImage.detections.map(d => d.class))];
-                      const colorIndex = uniqueClasses.indexOf(detection.class) % colors.length;
-                      const color = colors[colorIndex];
-                      
-                      return (
-                        <div
-                          key={detection.id}
-                          className="absolute border-2 rounded"
-                          style={{
-                            left: `${detection.bbox.x}%`,
-                            top: `${detection.bbox.y}%`,
-                            width: `${detection.bbox.width}%`,
-                            height: `${detection.bbox.height}%`,
-                            borderColor: color,
-                          }}
-                        >
-                          <div 
-                            className="absolute -top-6 left-0 px-2 py-1 text-xs font-medium text-white rounded text-nowrap"
-                            style={{ backgroundColor: color }}
-                          >
-                            {detection.class} {Math.round(detection.confidence * 100)}%
-                          </div>
+              {/* Imagen con zoom/pan. Las cajas (en %) van DENTRO del contenedor transformado,
+                  así escalan y se desplazan junto con la imagen y siguen alineadas.
+                  UX: rueda del ratón, doble click, arrastrar para pan, botones +/−/reset y
+                  atajos de teclado +, −, 0. */}
+              <div className="relative rounded-lg overflow-hidden bg-muted">
+                {/* Controles de zoom */}
+                <div className="absolute top-2 right-2 z-10 flex gap-1">
+                  <Button variant="secondary" size="icon" className="h-8 w-8 shadow"
+                    onClick={() => transformRef.current?.zoomOut()} title="Alejar (−)">
+                    <ZoomOut className="h-4 w-4" />
+                  </Button>
+                  <Button variant="secondary" size="icon" className="h-8 w-8 shadow"
+                    onClick={() => transformRef.current?.resetTransform()} title="Restablecer (0)">
+                    <Maximize2 className="h-4 w-4" />
+                  </Button>
+                  <Button variant="secondary" size="icon" className="h-8 w-8 shadow"
+                    onClick={() => transformRef.current?.zoomIn()} title="Acercar (+)">
+                    <ZoomIn className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <TransformWrapper
+                  ref={transformRef}
+                  minScale={1}
+                  maxScale={12}
+                  centerOnInit
+                  doubleClick={{ mode: 'zoomIn', step: 0.7 }}
+                  wheel={{ step: 0.15 }}
+                  panning={{ velocityDisabled: true }}
+                >
+                  <TransformComponent
+                    wrapperStyle={{ width: '100%', maxHeight: '75vh' }}
+                    contentStyle={{ width: '100%' }}
+                  >
+                    <div className="relative w-full">
+                      <img
+                        src={fullImageSrc || selectedImage.imageUrl}
+                        alt={selectedImage.fileName}
+                        className="block w-full h-auto select-none"
+                        draggable={false}
+                      />
+
+                      {/* Overlay de cajas (en % de la imagen) */}
+                      {selectedImage.detections.length > 0 && (
+                        <div className="absolute inset-0">
+                          {selectedImage.detections.map((detection) => {
+                            const colors = getDetectionClassColors();
+                            const uniqueClasses = [...new Set(selectedImage.detections.map(d => d.class))];
+                            const colorIndex = uniqueClasses.indexOf(detection.class) % colors.length;
+                            const color = colors[colorIndex];
+
+                            return (
+                              <div
+                                key={detection.id}
+                                className="absolute border-2 rounded"
+                                style={{
+                                  left: `${detection.bbox.x}%`,
+                                  top: `${detection.bbox.y}%`,
+                                  width: `${detection.bbox.width}%`,
+                                  height: `${detection.bbox.height}%`,
+                                  borderColor: color,
+                                }}
+                              >
+                                <div
+                                  className="absolute -top-6 left-0 px-2 py-1 text-xs font-medium text-white rounded text-nowrap"
+                                  style={{ backgroundColor: color }}
+                                >
+                                  {detection.class} {Math.round(detection.confidence * 100)}%
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
+                      )}
+                    </div>
+                  </TransformComponent>
+                </TransformWrapper>
               </div>
 
               {/* Image Details */}
