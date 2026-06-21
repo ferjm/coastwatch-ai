@@ -2,6 +2,7 @@
 // detecciones de espacio-modelo (px) a fracciones 0–1 de la imagen original.
 import { mlService, type DetectionResult } from '../mlService';
 import type { TieredDetection } from '../detectionMapper';
+import { useSettingsStore } from '@/stores/settings';
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 
@@ -25,6 +26,11 @@ export function normalizeEdgeDetections(
 }
 
 export async function runEdgeInference(file: File): Promise<TieredDetection[]> {
-  const { detections, inputWidth, inputHeight } = await mlService.processImage(file);
-  return normalizeEdgeDetections(detections, inputWidth, inputHeight);
+  // Umbral de criba configurable (Ajustes). Gobierna el min_score de FOMO y, por coherencia,
+  // se filtra la salida: la capa edge y la decisión de criba honran el mismo umbral.
+  const threshold = useSettingsStore.getState().edgeScreenThreshold;
+  const { detections, inputWidth, inputHeight } = await mlService.processImage(file, threshold);
+  return normalizeEdgeDetections(detections, inputWidth, inputHeight).filter(
+    (d) => d.confidence >= threshold,
+  );
 }

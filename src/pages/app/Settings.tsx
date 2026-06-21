@@ -4,8 +4,10 @@ import { ProfileForm } from '@/components/ProfileForm';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { useTheme } from '@/hooks/use-theme';
-import { Monitor, Moon, Sun, Languages } from 'lucide-react';
+import { Monitor, Moon, Sun, Languages, SlidersHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Slider } from '@/components/ui/slider';
+import { useSettingsStore, DEFAULT_EDGE_SCREEN_THRESHOLD } from '@/stores/settings';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +24,8 @@ const languages = [
 export default function Settings() {
   const { t, i18n } = useTranslation();
   const { theme, setTheme } = useTheme();
+  const edgeScreenThreshold = useSettingsStore((s) => s.edgeScreenThreshold);
+  const setEdgeScreenThreshold = useSettingsStore((s) => s.setEdgeScreenThreshold);
 
   const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
 
@@ -97,6 +101,42 @@ export default function Settings() {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <SlidersHorizontal className="h-5 w-5" />
+            Cascada — criba edge
+          </CardTitle>
+          <CardDescription>
+            Umbral de confianza con el que FOMO (nivel edge) considera que hay un candidato y la imagen
+            "se habría escalado" al nivel cloud. Más bajo = criba más sensible (más recall, menos ahorro
+            de banda). Afecta a las próximas inferencias (subir o reprocesar).
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="edge-threshold">Umbral de criba edge</Label>
+              <span className="text-sm font-medium tabular-nums">
+                {Math.round(edgeScreenThreshold * 100)}%
+              </span>
+            </div>
+            <Slider
+              id="edge-threshold"
+              value={[edgeScreenThreshold]}
+              onValueChange={([v]) => setEdgeScreenThreshold(v)}
+              min={0.01}
+              max={0.5}
+              step={0.01}
+            />
+            <p className="text-xs text-muted-foreground">
+              Por defecto {Math.round(DEFAULT_EDGE_SCREEN_THRESHOLD * 100)}%. Valores muy bajos pueden
+              hacer que FOMO dispare sobre ruido (sobre-escala de negativos).
+            </p>
           </div>
         </CardContent>
       </Card>

@@ -129,9 +129,9 @@ export class MLService {
    * @param imageFile - The image file to process
    * @returns Array of detection results
    */
-  async processImage(imageFile: File): Promise<EdgeInferenceOutput> {
+  async processImage(imageFile: File, minScore?: number): Promise<EdgeInferenceOutput> {
     if (this.config.type === 'wasm') {
-      return this.processWithWASM(imageFile);
+      return this.processWithWASM(imageFile, minScore);
     } else {
       return this.processWithServer(imageFile);
     }
@@ -140,8 +140,9 @@ export class MLService {
   /**
    * WASM processing (browser-based) using Edge Impulse
    * Creates a fresh classifier instance for each image
+   * @param minScore - Umbral de confianza (min_score) de la criba edge. Si se omite, 0.1.
    */
-  private async processWithWASM(imageFile: File): Promise<EdgeInferenceOutput> {
+  private async processWithWASM(imageFile: File, minScore?: number): Promise<EdgeInferenceOutput> {
     console.log('Starting WASM processing for:', imageFile.name);
     
     // Ensure scripts are loaded
@@ -166,10 +167,11 @@ export class MLService {
         const projectInfo = classifier.getProjectInfo();
         console.log('Project info:', projectInfo);
         
-        // Lower threshold to 0.1 (10%) to see if we can get any detections
+        // Umbral de criba configurable (min_score). Bajo = criba más sensible.
+        const screenMinScore = minScore ?? 0.1;
         if (projectInfo.impulse_id) {
-          classifier.setThreshold({ id: projectInfo.impulse_id, min_score: 0.1 });
-          console.log('Set detection threshold to 0.1');
+          classifier.setThreshold({ id: projectInfo.impulse_id, min_score: screenMinScore });
+          console.log('Set detection threshold (min_score) to', screenMinScore);
         }
       } catch (e) {
         console.log('Could not set threshold:', e);
