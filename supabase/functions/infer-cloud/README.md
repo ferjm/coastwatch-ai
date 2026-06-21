@@ -4,8 +4,16 @@ Recibe `{ image: <base64> }` por POST y devuelve detecciones normalizadas (fracc
 esquina superior-izquierda, `source='cloud'`, `model='rfdetr-medium-v6'`) del modelo
 `coastal-plastic-5m/6` (RF-DETR-medium).
 
-## Secret requerido
-- `ROBOFLOW_API_KEY` — API key privada de Roboflow (workspace ecos-u7zcx). NO se versiona.
+## Secrets / config
+- `ROBOFLOW_API_KEY` (requerido) — API key privada de Roboflow (workspace ecos-u7zcx). NO se versiona.
+- `ROBOFLOW_INFERENCE_HOST` (opcional) — host del servidor de inferencia. Por defecto
+  `https://serverless.roboflow.com` (Hosted, consume créditos). Apúntalo a un self-host
+  (p.ej. un Space de Hugging Face con `roboflow-inference-server`) para inferencia **sin créditos**:
+  `ROBOFLOW_INFERENCE_HOST=https://<tu-usuario>-<tu-space>.hf.space`. La ruta y el formato son
+  idénticos, así que solo cambia esta variable. Ver `deploy/hf-space-inference/`.
+
+> Nota: la inferencia *serverless* consume créditos (puede dar `402 credit_cap_exceeded`).
+> La inferencia *self-hosted* del propio modelo NO consume créditos serverless (verificado 2026-06-21).
 
 ## Desplegar (elige una vía)
 ### A) Lovable Cloud (sin CLI)

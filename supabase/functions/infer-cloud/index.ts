@@ -6,7 +6,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const ROBOFLOW_HOST = 'https://serverless.roboflow.com'
+// Host de inferencia configurable: serverless por defecto, o un self-host
+// (p.ej. un Space de Hugging Face corriendo roboflow-inference-server) vía env.
+const ROBOFLOW_HOST = Deno.env.get('ROBOFLOW_INFERENCE_HOST') ?? 'https://serverless.roboflow.com'
 const MODEL = 'coastal-plastic-5m/6'
 
 serve(async (req) => {
