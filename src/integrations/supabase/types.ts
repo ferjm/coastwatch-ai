@@ -78,6 +78,7 @@ export type Database = {
           height_px: number
           id: string
           processed_at: string | null
+          review_status: string
           screening_would_escalate: boolean | null
           status: string
           storage_path: string
@@ -101,6 +102,7 @@ export type Database = {
           height_px: number
           id?: string
           processed_at?: string | null
+          review_status?: string
           screening_would_escalate?: boolean | null
           status: string
           storage_path: string
@@ -124,6 +126,7 @@ export type Database = {
           height_px?: number
           id?: string
           processed_at?: string | null
+          review_status?: string
           screening_would_escalate?: boolean | null
           status?: string
           storage_path?: string
