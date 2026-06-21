@@ -22,6 +22,12 @@ export interface MLProcessorConfig {
   endpoint?: string; // For server mode
 }
 
+export interface EdgeInferenceOutput {
+  detections: DetectionResult[];
+  inputWidth: number;
+  inputHeight: number;
+}
+
 export class MLService {
   private config: MLProcessorConfig;
   private scriptsLoaded: boolean = false;
@@ -123,7 +129,7 @@ export class MLService {
    * @param imageFile - The image file to process
    * @returns Array of detection results
    */
-  async processImage(imageFile: File): Promise<DetectionResult[]> {
+  async processImage(imageFile: File): Promise<EdgeInferenceOutput> {
     if (this.config.type === 'wasm') {
       return this.processWithWASM(imageFile);
     } else {
@@ -135,7 +141,7 @@ export class MLService {
    * WASM processing (browser-based) using Edge Impulse
    * Creates a fresh classifier instance for each image
    */
-  private async processWithWASM(imageFile: File): Promise<DetectionResult[]> {
+  private async processWithWASM(imageFile: File): Promise<EdgeInferenceOutput> {
     console.log('Starting WASM processing for:', imageFile.name);
     
     // Ensure scripts are loaded
@@ -237,7 +243,7 @@ export class MLService {
     console.log(`Model input size: ${inputWidth}x${inputHeight}`);
     console.log(`Found ${detections.length} detections`);
 
-    return detections;
+    return { detections, inputWidth, inputHeight };
   }
 
   /**
@@ -287,7 +293,7 @@ export class MLService {
    * Server-based processing
    * For future use when switching to external server
    */
-  private async processWithServer(imageFile: File): Promise<DetectionResult[]> {
+  private async processWithServer(imageFile: File): Promise<EdgeInferenceOutput> {
     if (!this.config.endpoint) {
       throw new Error('Server endpoint not configured');
     }
@@ -305,7 +311,7 @@ export class MLService {
     }
 
     const result = await response.json();
-    return result.detections || [];
+    return { detections: result.detections || [], inputWidth: 0, inputHeight: 0 };
   }
 
   /**
