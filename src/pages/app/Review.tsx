@@ -4,22 +4,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DetectionImageViewer } from '@/components/DetectionImageViewer';
-import { 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
-  Grid3X3, 
-  ChevronLeft, 
+import {
+  CheckCircle,
+  XCircle,
+  Clock,
+  Grid3X3,
+  ChevronLeft,
   ChevronRight,
   LayoutGrid,
   RotateCcw
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
-// Import real images
-import plasticBeach1 from '@/assets/plastic-beach-1.jpg';
-import plasticBeach2 from '@/assets/plastic-beach-2.jpg';
-import plasticBeach3 from '@/assets/plastic-beach-3.jpg';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Detection {
   id: string;
@@ -41,209 +37,72 @@ interface Detection {
   }>;
 }
 
-// Mock unverified detections with real images for review queue
-const unverifiedDetections: Detection[] = [
-  {
-    id: '1',
-    lat: -22.9715,
-    lng: -43.1830,
-    confidence: 0.85,
-    imageUrl: plasticBeach1,
-    detectedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-    description: 'Residuos plásticos en la playa',
-    verified: false,
-    boundingBoxes: [
-      {
-        id: 'bb1-1',
-        x: 15, // 15% from left
-        y: 25, // 25% from top
-        width: 25, // 25% width
-        height: 30, // 30% height
-        confidence: 0.85,
-        label: 'Plástico'
-      },
-      {
-        id: 'bb1-2',
-        x: 50, // 50% from left
-        y: 35, // 35% from top
-        width: 20, // 20% width
-        height: 25, // 25% height
-        confidence: 0.78,
-        label: 'Plástico'
-      }
-    ]
-  },
-  {
-    id: '2',
-    lat: -22.9850,
-    lng: -43.2105,
-    confidence: 0.91,
-    imageUrl: plasticBeach2,
-    detectedAt: new Date(Date.now() - 4 * 60 * 60 * 1000),
-    description: 'Bolsas plásticas entre rocas',
-    verified: false,
-    boundingBoxes: [
-      {
-        id: 'bb2-1',
-        x: 10, // 10% from left
-        y: 20, // 20% from top
-        width: 30, // 30% width
-        height: 25, // 25% height
-        confidence: 0.91,
-        label: 'Plástico'
-      },
-      {
-        id: 'bb2-2',
-        x: 45, // 45% from left
-        y: 40, // 40% from top
-        width: 25, // 25% width
-        height: 20, // 20% height
-        confidence: 0.73,
-        label: 'Plástico'
-      },
-      {
-        id: 'bb2-3',
-        x: 25, // 25% from left
-        y: 60, // 60% from top
-        width: 20, // 20% width
-        height: 15, // 15% height
-        confidence: 0.82,
-        label: 'Plástico'
-      }
-    ]
-  },
-  {
-    id: '3',
-    lat: -22.9870,
-    lng: -43.2230,
-    confidence: 0.82,
-    imageUrl: plasticBeach3,
-    detectedAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
-    description: 'Microplásticos dispersos en Leblon',
-    verified: false,
-    boundingBoxes: [
-      {
-        id: 'bb3-1',
-        x: 20, // 20% from left
-        y: 30, // 30% from top
-        width: 25, // 25% width
-        height: 35, // 35% height
-        confidence: 0.82,
-        label: 'Plástico'
-      },
-      {
-        id: 'bb3-2',
-        x: 55, // 55% from left
-        y: 40, // 40% from top
-        width: 22, // 22% width
-        height: 28, // 28% height
-        confidence: 0.69,
-        label: 'Plástico'
-      }
-    ]
-  },
-  {
-    id: '4',
-    lat: -23.0140,
-    lng: -43.3100,
-    confidence: 0.79,
-    imageUrl: plasticBeach1,
-    detectedAt: new Date(Date.now() - 8 * 60 * 60 * 1000),
-    description: 'Botellas de bebidas en Barra da Tijuca',
-    verified: false
-  },
-  {
-    id: '5',
-    lat: -24.0089,
-    lng: -46.2678,
-    confidence: 0.93,
-    imageUrl: plasticBeach2,
-    detectedAt: new Date(Date.now() - 10 * 60 * 60 * 1000),
-    description: 'Redes plásticas en Praia das Astúrias, Guarujá',
-    verified: false
-  },
-  {
-    id: '6',
-    lat: -27.5954,
-    lng: -48.5480,
-    confidence: 0.84,
-    imageUrl: plasticBeach3,
-    detectedAt: new Date(Date.now() - 12 * 60 * 60 * 1000),
-    description: 'Plásticos en Praia da Joaquina, Florianópolis',
-    verified: false
-  },
-  {
-    id: '7',
-    lat: -27.4891,
-    lng: -48.3958,
-    confidence: 0.77,
-    imageUrl: plasticBeach1,
-    detectedAt: new Date(Date.now() - 14 * 60 * 60 * 1000),
-    description: 'Residuos plásticos en Praia dos Ingleses',
-    verified: false
-  },
-  {
-    id: '8',
-    lat: -12.9234,
-    lng: -38.4756,
-    confidence: 0.83,
-    imageUrl: plasticBeach2,
-    detectedAt: new Date(Date.now() - 16 * 60 * 60 * 1000),
-    description: 'Bolsas plásticas en Praia de Stella Maris',
-    verified: false
-  }
-];
-
 export default function Review() {
   const { t } = useTranslation();
   const { toast } = useToast();
-  
-  const [detections, setDetections] = useState<Detection[]>(unverifiedDetections);
+
+  const [detections, setDetections] = useState<Detection[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [viewMode, setViewMode] = useState<'single' | 'grid'>('single');
-  
+
   const currentDetection = detections[currentIndex];
   const hasNext = currentIndex < detections.length - 1;
   const hasPrevious = currentIndex > 0;
 
-  const handleVerify = (id: string) => {
-    setDetections(prev => prev.filter(d => d.id !== id));
-    
-    // Adjust current index if needed
-    if (currentIndex >= detections.length - 1 && currentIndex > 0) {
-      setCurrentIndex(prev => prev - 1);
-    }
-    
-    toast({
-      title: t('detectionVerified'),
-      description: t('verificationSuccess'),
-      variant: "default"
-    });
+  const load = async () => {
+    const { data } = await supabase
+      .from('images')
+      .select('id, file_name, storage_path, gps_latitude, gps_longitude, uploaded_at, detections(id,label,confidence,x,y,width,height,source)')
+      .eq('status', 'processed')
+      .eq('review_status', 'pending')
+      .order('uploaded_at', { ascending: false })
+      .limit(50);
+    const items: Detection[] = await Promise.all((data ?? []).map(async (img: any) => {
+      const { data: signed } = await supabase.storage.from('images').createSignedUrl(img.storage_path, 3600);
+      return {
+        id: img.id,
+        lat: Number(img.gps_latitude ?? 0),
+        lng: Number(img.gps_longitude ?? 0),
+        confidence: (img.detections ?? []).reduce((m: number, d: any) => Math.max(m, Number(d.confidence)), 0),
+        imageUrl: signed?.signedUrl ?? '/placeholder.svg',
+        detectedAt: new Date(img.uploaded_at),
+        description: `${img.file_name} — ${(img.detections ?? []).length} detección(es)`,
+        verified: false,
+        boundingBoxes: (img.detections ?? []).map((d: any) => ({
+          id: d.id, x: Number(d.x) * 100, y: Number(d.y) * 100,
+          width: Number(d.width) * 100, height: Number(d.height) * 100,
+          confidence: Number(d.confidence), label: d.label,
+        })),
+      };
+    }));
+    setDetections(items);
+    setCurrentIndex(0);
   };
 
-  const handleReject = (id: string) => {
+  useEffect(() => { load(); }, []);
+
+  const handleVerify = async (id: string) => {
+    await supabase.from('images').update({ review_status: 'accepted' }).eq('id', id);
     setDetections(prev => prev.filter(d => d.id !== id));
-    
-    // Adjust current index if needed
-    if (currentIndex >= detections.length - 1 && currentIndex > 0) {
-      setCurrentIndex(prev => prev - 1);
-    }
-    
-    toast({
-      title: t('detectionRejected'),
-      description: t('rejectionSuccess'),
-      variant: "default"
-    });
+    if (currentIndex >= detections.length - 1 && currentIndex > 0) setCurrentIndex(p => p - 1);
+    toast({ title: t('detectionVerified'), description: t('verificationSuccess') });
+  };
+
+  const handleReject = async (id: string) => {
+    await supabase.from('images').update({ review_status: 'rejected' }).eq('id', id);
+    setDetections(prev => prev.filter(d => d.id !== id));
+    if (currentIndex >= detections.length - 1 && currentIndex > 0) setCurrentIndex(p => p - 1);
+    toast({ title: t('detectionRejected'), description: t('rejectionSuccess') });
   };
 
   const handleDelete = (id: string) => {
     setDetections(prev => prev.filter(d => d.id !== id));
-    
+
     // Adjust current index if needed
     if (currentIndex >= detections.length - 1 && currentIndex > 0) {
       setCurrentIndex(prev => prev - 1);
     }
-    
+
     toast({
       title: t('detectionDeleted'),
       description: t('deletionSuccess'),
@@ -302,8 +161,7 @@ export default function Review() {
   }, [viewMode, detections, currentDetection, handleVerify, handleReject, nextDetection, previousDetection]);
 
   const resetQueue = () => {
-    setDetections(unverifiedDetections);
-    setCurrentIndex(0);
+    load();
     toast({
       title: t('queueReset'),
       description: t('queueResetDescription'),
@@ -320,7 +178,7 @@ export default function Review() {
             {t('resetQueue')}
           </Button>
         </div>
-        
+
         <Card className="text-center py-12">
           <CardContent>
             <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
@@ -347,8 +205,8 @@ export default function Review() {
             <Clock className="h-4 w-4 mr-1" />
             {detections.length} {t('pending')}
           </Badge>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             onClick={() => setViewMode(viewMode === 'single' ? 'grid' : 'single')}
           >
@@ -382,7 +240,7 @@ export default function Review() {
                 </span>
               </div>
               <div className="w-full bg-secondary rounded-full h-2">
-                <div 
+                <div
                   className="bg-primary h-2 rounded-full transition-all duration-300"
                   style={{ width: `${((currentIndex + 1) / detections.length) * 100}%` }}
                 />
@@ -401,17 +259,17 @@ export default function Review() {
                   </Badge>
                 </CardTitle>
                 <div className="flex items-center gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={previousDetection}
                     disabled={!hasPrevious}
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={nextDetection}
                     disabled={!hasNext}
                   >
@@ -432,10 +290,10 @@ export default function Review() {
                     showDirectly={true}
                     editable={true}
                   />
-                  
+
                   {/* Quick actions */}
                   <div className="flex items-center gap-2">
-                    <Button 
+                    <Button
                       onClick={() => handleVerify(currentDetection.id)}
                       className="flex-1"
                       variant="default"
@@ -443,7 +301,7 @@ export default function Review() {
                       <CheckCircle className="h-4 w-4 mr-2" />
                       {t('verify')}
                     </Button>
-                    <Button 
+                    <Button
                       onClick={() => handleReject(currentDetection.id)}
                       className="flex-1"
                       variant="destructive"
@@ -505,14 +363,14 @@ export default function Review() {
         // Grid view mode
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {detections.map((detection, index) => (
-            <Card 
-              key={detection.id} 
+            <Card
+              key={detection.id}
               className="cursor-pointer hover:shadow-lg transition-shadow"
               onClick={() => goToDetection(index)}
             >
               <CardContent className="p-4">
                 <div className="aspect-video mb-3 overflow-hidden rounded">
-                  <img 
+                  <img
                     src={detection.imageUrl}
                     alt={`Detection ${index + 1}`}
                     className="w-full h-full object-cover"
@@ -526,8 +384,8 @@ export default function Review() {
                 </Badge>
                   </div>
               <div className="flex gap-1">
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   className="flex-1 text-xs h-8"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -537,9 +395,9 @@ export default function Review() {
                   <CheckCircle className="h-3 w-3 mr-1" />
                   {t('verify')}
                 </Button>
-                <Button 
-                  size="sm" 
-                  variant="destructive" 
+                <Button
+                  size="sm"
+                  variant="destructive"
                   className="flex-1 text-xs h-8"
                   onClick={(e) => {
                     e.stopPropagation();
