@@ -39,4 +39,7 @@ describe('buildRedirectUrl', () => {
     expect(buildRedirectUrl('not a url')).toBeNull()
     expect(buildRedirectUrl(42)).toBeNull()
   })
+  it('strips any path and re-roots to origin + /accept-invite', () => {
+    expect(buildRedirectUrl('https://app.example.com/some/path')).toBe('https://app.example.com/accept-invite')
+  })
 })

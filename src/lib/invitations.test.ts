@@ -30,4 +30,10 @@ describe('validateNewPassword', () => {
   it('accepts a valid matching password', () => {
     expect(validateNewPassword('abcdef', 'abcdef')).toBeNull()
   })
+  it('rejects a 5-char password (boundary)', () => {
+    expect(validateNewPassword('12345', '12345')).toBe('passwordTooShort')
+  })
+  it('accepts a 6-char password (boundary)', () => {
+    expect(validateNewPassword('123456', '123456')).toBeNull()
+  })
 })
