@@ -29,10 +29,14 @@ export default function AcceptInvite() {
         setChecking(false)
       }
     })
-    supabase.auth.getSession().then(({ data }) => {
-      setHasSession(!!data.session)
-      setChecking(false)
-    })
+    supabase.auth.getSession()
+      .then(({ data }) => {
+        setHasSession(!!data.session)
+      })
+      .catch(() => {
+        // On error, leave hasSession false so the invalid/expired-link card renders.
+      })
+      .finally(() => setChecking(false))
     return () => sub.subscription.unsubscribe()
   }, [])
 
