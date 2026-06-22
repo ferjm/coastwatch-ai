@@ -67,6 +67,16 @@ const resources = {
       "inviteErrorExists": "Ese email ya tiene una cuenta.",
       "inviteErrorGeneric": "No se pudo enviar la invitación. Inténtalo de nuevo.",
 
+      // Accept invite
+      "acceptInviteTitle": "Establece tu contraseña",
+      "acceptInviteDescription": "Crea una contraseña para activar tu cuenta.",
+      "setPassword": "Establecer contraseña",
+      "settingPassword": "Guardando...",
+      "passwordTooShort": "La contraseña debe tener al menos 6 caracteres.",
+      "inviteLinkInvalid": "Este enlace de invitación no es válido o ha caducado.",
+      "inviteAccepted": "Cuenta activada",
+      "goToLogin": "Ir a iniciar sesión",
+
       // Marketing
       "heroTitle": "Detección Inteligente de Plásticos Costeros",
       "heroDescription": "Utilizamos inteligencia artificial y análisis de imágenes de dron para identificar y mapear residuos plásticos en zonas costeras con precisión.",
@@ -390,6 +400,16 @@ const resources = {
       "inviteErrorForbidden": "You do not have permission to invite users.",
       "inviteErrorExists": "That email already has an account.",
       "inviteErrorGeneric": "Could not send the invitation. Please try again.",
+
+      // Accept invite
+      "acceptInviteTitle": "Set your password",
+      "acceptInviteDescription": "Create a password to activate your account.",
+      "setPassword": "Set password",
+      "settingPassword": "Saving...",
+      "passwordTooShort": "The password must be at least 6 characters.",
+      "inviteLinkInvalid": "This invitation link is invalid or has expired.",
+      "inviteAccepted": "Account activated",
+      "goToLogin": "Go to sign in",
 
       // Marketing
       "heroTitle": "Smart Coastal Plastic Detection",

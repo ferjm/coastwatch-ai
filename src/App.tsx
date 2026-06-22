@@ -11,6 +11,7 @@ import { AppLayout } from "@/components/AppLayout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Auth from "./pages/Auth";
+import AcceptInvite from "./pages/AcceptInvite";
 import NotFound from "./pages/NotFound";
 import { RootRedirect } from "./components/RootRedirect";
 
@@ -38,7 +39,8 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/auth" element={<Auth />} />
-            
+            <Route path="/accept-invite" element={<AcceptInvite />} />
+
             {/* Protected app routes */}
             <Route path="/app/*" element={
               <ProtectedRoute>
