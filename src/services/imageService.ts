@@ -31,20 +31,29 @@ export async function extractImageMetadata(file: File): Promise<ImageMetadata> {
     height: 0,
   };
 
-  // Extract EXIF data
+  // Extract EXIF data.
+  // OJO: `latitude`/`longitude` son propiedades COMPUTADAS de exifr, no tags EXIF crudos;
+  // incluirlas en `pick` impide que exifr las calcule. Por eso las fechas se obtienen con
+  // `pick` y el GPS con el método dedicado `exifr.gps()`.
   try {
     const exif = await exifr.parse(file, {
-      gps: true,
-      pick: ['DateTimeOriginal', 'CreateDate', 'latitude', 'longitude'],
+      pick: ['DateTimeOriginal', 'CreateDate'],
     });
-
     if (exif) {
-      metadata.latitude = exif.latitude;
-      metadata.longitude = exif.longitude;
       metadata.capturedAt = exif.DateTimeOriginal || exif.CreateDate;
     }
   } catch (error) {
-    console.warn('Failed to extract EXIF data:', error);
+    console.warn('Failed to extract EXIF dates:', error);
+  }
+
+  try {
+    const gps = await exifr.gps(file);
+    if (gps && typeof gps.latitude === 'number' && typeof gps.longitude === 'number') {
+      metadata.latitude = gps.latitude;
+      metadata.longitude = gps.longitude;
+    }
+  } catch (error) {
+    console.warn('Failed to extract EXIF GPS:', error);
   }
 
   // Get image dimensions
