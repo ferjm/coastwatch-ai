@@ -28,7 +28,9 @@ import {
   ZoomIn,
   ZoomOut,
   Maximize2,
-  MapPin
+  MapPin,
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
 
 export interface Detection {
@@ -642,28 +644,56 @@ export function InferenceResults({
                 ← → para navegar entre imágenes · rueda/+/− para zoom
               </p>
 
-              {/* Detection Summary */}
-              {selectedImage.status === 'completed' && selectedImage.detections.length > 0 && (
+              {/* Estado del procesado: indicador para imágenes que aún no están completas */}
+              {selectedImage.status !== 'completed' && (
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  {selectedImage.status === 'failed' ? (
+                    <>
+                      <AlertCircle className="h-4 w-4 text-destructive" />
+                      <span className="text-destructive">
+                        {selectedImage.error || t('processingFailed') || 'Error al procesar'}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                      <span className="text-muted-foreground">
+                        {selectedImage.status === 'processing'
+                          ? t('processing') || 'Procesando…'
+                          : t('queued') || 'En cola…'}
+                      </span>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* Detection Summary — cuenta y agrupa según la capa visible (Ambos/Edge/Cloud) */}
+              {selectedImage.status === 'completed' && (() => {
+                const visible = selectedImage.detections.filter(
+                  (d) => layer === 'both' || d.source === layer,
+                );
+                if (visible.length === 0) return null;
+                return (
                 <div className="space-y-3">
                   <h3 className="font-semibold flex items-center gap-2">
                     <Target className="h-4 w-4 text-green-600" />
-                    {selectedImage.detections.length} {t('detectionsFound')}
+                    {visible.length} {t('detectionsFound')}
                   </h3>
-                  
+
                   <div className="flex flex-wrap gap-2">
-                    {[...new Set(selectedImage.detections.map(d => d.class))].map((className, index) => {
+                    {[...new Set(visible.map(d => d.class))].map((className, index) => {
                       const colors = getDetectionClassColors();
                       const colorIndex = index % colors.length;
                       const color = colors[colorIndex];
-                      const classDetections = selectedImage.detections.filter(d => d.class === className);
+                      const classDetections = visible.filter(d => d.class === className);
                       const avgConfidence = classDetections.reduce((acc, d) => acc + d.confidence, 0) / classDetections.length;
-                      
+
                       return (
-                        <Badge 
+                        <Badge
                           key={className}
                           variant="outline"
-                          style={{ 
-                            borderColor: color, 
+                          style={{
+                            borderColor: color,
                             color: color,
                             backgroundColor: `${color}10`
                           }}
@@ -674,7 +704,8 @@ export function InferenceResults({
                     })}
                   </div>
                 </div>
-              )}
+                );
+              })()}
 
               {/* Actions */}
               <div className="flex justify-end gap-2 pt-4 border-t">

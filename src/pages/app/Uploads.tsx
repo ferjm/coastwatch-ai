@@ -1,12 +1,11 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { ImageUpload, UploadFile } from '@/components/ImageUpload';
 import { InferenceResults, ProcessedImage, Detection } from '@/components/InferenceResults';
 import { useToast } from '@/hooks/use-toast';
 import { useImageUpload } from '@/hooks/useImageUpload';
-import { updateImageStatus, saveDetections, saveCascadeMeta } from '@/services/imageService';
-import { runCascade } from '@/services/inference/cascadeService';
+import { updateImageStatus } from '@/services/imageService';
 
 export default function Uploads() {
   const { t } = useTranslation();
@@ -14,12 +13,15 @@ export default function Uploads() {
   const { uploads, uploadAndProcess, clearUploads } = useImageUpload();
   const [processedImages, setProcessedImages] = useState<ProcessedImage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  // Refleja si hay trabajo en curso, para que el poll de respaldo solo refresque cuando hace falta.
+  const hasPendingRef = useRef(false);
 
   // Load images from database
   useEffect(() => {
     loadImages();
-    
-    // Subscribe to real-time updates
+
+    // Realtime: refresca al instante cuando cambia el estado de una imagen.
+    // (Requiere que la tabla `images` esté en la publicación `supabase_realtime`.)
     const channel = supabase
       .channel('image-changes')
       .on(
@@ -35,7 +37,14 @@ export default function Uploads() {
       )
       .subscribe();
 
+    // Poll de respaldo: garantiza que la lista converja (pendiente → procesado) aunque
+    // realtime no esté habilitado en el proyecto. Solo refresca mientras haya trabajo en curso.
+    const poll = setInterval(() => {
+      if (hasPendingRef.current) loadImages();
+    }, 8000);
+
     return () => {
+      clearInterval(poll);
       supabase.removeChannel(channel);
     };
   }, []);
@@ -111,6 +120,9 @@ export default function Uploads() {
         });
 
         setProcessedImages(formattedImages);
+        hasPendingRef.current = formattedImages.some(
+          img => img.status === 'pending' || img.status === 'processing',
+        );
       }
     } catch (error) {
       console.error('Error loading images:', error);
@@ -145,8 +157,11 @@ export default function Uploads() {
     }));
     
     setProcessedImages(prev => [...pendingImages, ...prev]);
-    
+    hasPendingRef.current = true; // activa el poll de respaldo aunque realtime esté desactivado
+
     await uploadAndProcess(actualFiles);
+    // Tras encolar, refresca para reemplazar las entradas temporales por las reales de la BD.
+    loadImages();
   };
 
   const handleReprocess = async (imageId: string) => {
@@ -154,55 +169,14 @@ export default function Uploads() {
       const image = processedImages.find(img => img.id === imageId);
       if (!image) return;
 
-      // Reset status to queued
+      // Solo re-encola: el worker (useInferenceWorker) es el único dueño del procesado.
+      // Si además cascáramos aquí, el worker —despertado por este mismo cambio a 'queued'—
+      // procesaría en paralelo e insertaría las detecciones por duplicado.
       await updateImageStatus(imageId, 'queued');
 
       toast({
         title: "Reprocessing",
-        description: `Reprocessing ${image.fileName}...`,
-      });
-
-      // Update status to processing
-      await updateImageStatus(imageId, 'processing');
-
-      // Get the original file from storage
-      const { data: imageData } = await supabase
-        .from('images')
-        .select('storage_path')
-        .eq('id', imageId)
-        .single();
-
-      if (!imageData) throw new Error('Image not found');
-
-      // Download the file
-      const { data: fileData, error: downloadError } = await supabase.storage
-        .from('images')
-        .download(imageData.storage_path);
-
-      if (downloadError) throw downloadError;
-
-      // Convert blob to File
-      const file = new File([fileData], image.fileName, { type: fileData.type });
-
-      // Delete old detections
-      await supabase
-        .from('detections')
-        .delete()
-        .eq('image_id', imageId);
-
-      // Run cascade inference again (edge + cloud)
-      const cascade = await runCascade(file);
-
-      // Save new detections + cascade metadata
-      await saveDetections(imageId, cascade.detections);
-      await saveCascadeMeta(imageId, cascade);
-
-      // Update status to processed
-      await updateImageStatus(imageId, 'processed');
-
-      toast({
-        title: "Reprocessing Complete",
-        description: `${image.fileName}: ${cascade.edgeCount} edge + ${cascade.cloudCount} cloud.`,
+        description: `${image.fileName} en cola para reprocesar.`,
       });
     } catch (error) {
       console.error('Error reprocessing:', error);

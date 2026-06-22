@@ -29,13 +29,23 @@ export async function processQueuedImage(image: { id: string; file_name: string;
   }
 }
 
+// Tiempo tras el cual una imagen en 'processing' se considera huérfana. Debe superar
+// holgadamente la duración real de una cascada (~25 s observados) para NO re-encolar trabajo
+// en curso de OTRA pestaña. El trigger `update_images_updated_at` refresca `updated_at` en cada
+// UPDATE, así que sirve de heartbeat del lease sin necesidad de columna nueva.
+export const STALE_PROCESSING_MS = 3 * 60 * 1000;
+
 // Recupera imágenes huérfanas: quedaron en 'processing' por un proceso interrumpido
-// (refresco/cierre de pestaña, cuelgue). El worker procesa de una en una y serializado, así que
-// al iniciar un drenado no hay nada en curso → cualquier 'processing' es huérfana y se re-encola.
-// (Asume una sola pestaña activa procesando; en multi-pestaña podría re-encolar una en curso,
-//  pero el reproceso es idempotente.)
+// (refresco/cierre de pestaña, cuelgue). Solo re-encola las que llevan MÁS de STALE_PROCESSING_MS
+// sin tocarse: una imagen que otra pestaña está cascando ahora mismo tiene `updated_at` reciente
+// (la reclamó hace segundos) y NO se re-encola → evita el doble procesado/doble inserción.
 async function recoverOrphans(): Promise<void> {
-  await supabase.from('images').update({ status: 'queued' }).eq('status', 'processing');
+  const staleBefore = new Date(Date.now() - STALE_PROCESSING_MS).toISOString();
+  await supabase
+    .from('images')
+    .update({ status: 'queued' })
+    .eq('status', 'processing')
+    .lt('updated_at', staleBefore);
 }
 
 // Drena la cola: procesa secuencialmente las imágenes 'queued' (una a una; WASM no es paralelo).
