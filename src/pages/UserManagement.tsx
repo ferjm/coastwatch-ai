@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Search, UserPlus } from 'lucide-react';
 import { useAuthStore } from '@/stores/auth';
+import { InviteUserDialog } from '@/components/InviteUserDialog';
 
 interface UserWithRole {
   id: string;
@@ -160,11 +161,14 @@ export default function UserManagement() {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">{t('userManagement')}</h1>
-        <p className="text-muted-foreground">
-          {t('manageUsersDescription')}
-        </p>
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">{t('userManagement')}</h1>
+          <p className="text-muted-foreground">
+            {t('manageUsersDescription')}
+          </p>
+        </div>
+        <InviteUserDialog onInvited={fetchUsers} />
       </div>
 
       {/* Search and Filter Controls */}

@@ -52,7 +52,21 @@ const resources = {
       "registrationError": "Error de registro",
       "accountCreationError": "Error al crear la cuenta",
       "emailPlaceholder": "tu@email.com",
-      
+      // Invitations
+      "inviteUser": "Invitar usuario",
+      "inviteUserTitle": "Invitar nuevo usuario",
+      "inviteUserDescription": "Se enviará un correo de invitación para que la persona active su cuenta.",
+      "sendInvite": "Enviar invitación",
+      "sendingInvite": "Enviando...",
+      "inviteSuccess": "Invitación enviada",
+      "inviteSuccessDescription": "Se ha enviado un correo de invitación.",
+      "inviteWarningRoleNotSet": "Usuario invitado, pero el rol no se pudo asignar. Ajústalo manualmente.",
+      "inviteErrorInvalid": "Datos de invitación inválidos.",
+      "inviteErrorUnauthorized": "Tu sesión ha expirado. Vuelve a iniciar sesión.",
+      "inviteErrorForbidden": "No tienes permisos para invitar usuarios.",
+      "inviteErrorExists": "Ese email ya tiene una cuenta.",
+      "inviteErrorGeneric": "No se pudo enviar la invitación. Inténtalo de nuevo.",
+
       // Marketing
       "heroTitle": "Detección Inteligente de Plásticos Costeros",
       "heroDescription": "Utilizamos inteligencia artificial y análisis de imágenes de dron para identificar y mapear residuos plásticos en zonas costeras con precisión.",
@@ -362,7 +376,21 @@ const resources = {
       "registrationError": "Registration error",
       "accountCreationError": "Error creating account",
       "emailPlaceholder": "your@email.com",
-      
+      // Invitations
+      "inviteUser": "Invite user",
+      "inviteUserTitle": "Invite a new user",
+      "inviteUserDescription": "An invitation email will be sent so the person can activate their account.",
+      "sendInvite": "Send invitation",
+      "sendingInvite": "Sending...",
+      "inviteSuccess": "Invitation sent",
+      "inviteSuccessDescription": "An invitation email has been sent.",
+      "inviteWarningRoleNotSet": "User invited, but the role could not be set. Adjust it manually.",
+      "inviteErrorInvalid": "Invalid invitation data.",
+      "inviteErrorUnauthorized": "Your session has expired. Please sign in again.",
+      "inviteErrorForbidden": "You do not have permission to invite users.",
+      "inviteErrorExists": "That email already has an account.",
+      "inviteErrorGeneric": "Could not send the invitation. Please try again.",
+
       // Marketing
       "heroTitle": "Smart Coastal Plastic Detection",
       "heroDescription": "We use artificial intelligence and drone image analysis to identify and map plastic waste in coastal areas with precision.",
