@@ -27,7 +27,8 @@ import {
   ChevronRight,
   ZoomIn,
   ZoomOut,
-  Maximize2
+  Maximize2,
+  MapPin
 } from 'lucide-react';
 
 export interface Detection {
@@ -54,6 +55,9 @@ export interface ProcessedImage {
   storagePath?: string;
   processingTime?: number;
   resolution?: { width: number; height: number };
+  lat?: number | null;
+  lng?: number | null;
+  capturedAt?: string | null;
   detections: Detection[];
   edgeCount?: number;
   cloudCount?: number;
@@ -91,17 +95,27 @@ export function InferenceResults({
   const transformRef = useRef<ReactZoomPanPinchRef>(null);
   const itemsPerPage = 12;
 
-  // Atajos de teclado de zoom mientras el modal está abierto: +/=  -/_  0 (reset).
+  // Atajos de teclado con el modal abierto: zoom (+/=  -/_  0) y navegación (← →).
   useEffect(() => {
     if (!selectedImage) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === '+' || e.key === '=') { e.preventDefault(); transformRef.current?.zoomIn(); }
       else if (e.key === '-' || e.key === '_') { e.preventDefault(); transformRef.current?.zoomOut(); }
       else if (e.key === '0') { e.preventDefault(); transformRef.current?.resetTransform(); }
+      else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        const idx = images.findIndex((im) => im.id === selectedImage.id);
+        if (idx === -1) return;
+        const nextIdx = e.key === 'ArrowRight' ? idx + 1 : idx - 1;
+        if (nextIdx >= 0 && nextIdx < images.length) {
+          transformRef.current?.resetTransform();
+          setSelectedImage(images[nextIdx]);
+        }
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [selectedImage]);
+  }, [selectedImage, images]);
 
   // Al abrir el modal, carga la imagen original a resolución completa (URL firmada).
   // Mientras llega, se muestra la miniatura (imageUrl) como placeholder.
@@ -592,6 +606,12 @@ export function InferenceResults({
                     <span className="text-muted-foreground">Resolution:</span> {selectedImage.resolution.width}×{selectedImage.resolution.height}
                   </div>
                 )}
+                {selectedImage.capturedAt && (
+                  <div>
+                    <span className="text-muted-foreground">{t('captured') || 'Captura'}:</span>{' '}
+                    {new Date(selectedImage.capturedAt).toLocaleString()}
+                  </div>
+                )}
                 <div>
                   <span className="text-muted-foreground">Uploaded:</span> {new Date(selectedImage.uploadedAt).toLocaleString()}
                 </div>
@@ -600,7 +620,27 @@ export function InferenceResults({
                     <span className="text-muted-foreground">Processing time:</span> {formatProcessingTime(selectedImage.processingTime)}
                   </div>
                 )}
+                <div className="col-span-2">
+                  <span className="text-muted-foreground">{t('location') || 'Ubicación'}:</span>{' '}
+                  {typeof selectedImage.lat === 'number' && typeof selectedImage.lng === 'number' ? (
+                    <a
+                      href={`https://www.google.com/maps?q=${selectedImage.lat},${selectedImage.lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-primary hover:underline"
+                    >
+                      <MapPin className="h-3.5 w-3.5" />
+                      {selectedImage.lat.toFixed(5)}, {selectedImage.lng.toFixed(5)}
+                    </a>
+                  ) : (
+                    <span className="text-muted-foreground italic">sin coordenadas GPS</span>
+                  )}
+                </div>
               </div>
+
+              <p className="text-xs text-muted-foreground">
+                ← → para navegar entre imágenes · rueda/+/− para zoom
+              </p>
 
               {/* Detection Summary */}
               {selectedImage.status === 'completed' && selectedImage.detections.length > 0 && (
