@@ -624,7 +624,7 @@ export function InferenceResults({
                   <span className="text-muted-foreground">{t('location') || 'Ubicación'}:</span>{' '}
                   {typeof selectedImage.lat === 'number' && typeof selectedImage.lng === 'number' ? (
                     <a
-                      href={`https://www.google.com/maps?q=${selectedImage.lat},${selectedImage.lng}`}
+                      href={`https://www.google.com/maps/search/?api=1&query=${selectedImage.lat},${selectedImage.lng}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-primary hover:underline"
