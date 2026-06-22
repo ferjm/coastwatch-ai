@@ -251,9 +251,15 @@ export async function saveDetections(imageId: string, detections: TieredDetectio
 
   const detectionsToInsert = buildDetectionRows(imageId, detections);
 
+  // upsert + ignoreDuplicates: si la misma imagen se procesara dos veces (varias pestañas/worker),
+  // las filas duplicadas chocan con el índice único `detections_unique_per_image` y se ignoran
+  // en silencio en vez de duplicarse o reventar. Un procesado único normal no genera conflicto.
   const { error } = await supabase
     .from('detections')
-    .insert(detectionsToInsert);
+    .upsert(detectionsToInsert, {
+      onConflict: 'image_id,source,label,x,y,width,height',
+      ignoreDuplicates: true,
+    });
 
   if (error) {
     throw new Error(`Failed to save detections: ${error.message}`);
