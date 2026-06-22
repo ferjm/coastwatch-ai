@@ -29,8 +29,18 @@ export async function processQueuedImage(image: { id: string; file_name: string;
   }
 }
 
+// Recupera imágenes huérfanas: quedaron en 'processing' por un proceso interrumpido
+// (refresco/cierre de pestaña, cuelgue). El worker procesa de una en una y serializado, así que
+// al iniciar un drenado no hay nada en curso → cualquier 'processing' es huérfana y se re-encola.
+// (Asume una sola pestaña activa procesando; en multi-pestaña podría re-encolar una en curso,
+//  pero el reproceso es idempotente.)
+async function recoverOrphans(): Promise<void> {
+  await supabase.from('images').update({ status: 'queued' }).eq('status', 'processing');
+}
+
 // Drena la cola: procesa secuencialmente las imágenes 'queued' (una a una; WASM no es paralelo).
 export async function drainQueue(): Promise<void> {
+  await recoverOrphans();
   const { data, error } = await supabase
     .from('images')
     .select('id, file_name, storage_path')
