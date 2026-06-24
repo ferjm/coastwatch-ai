@@ -154,8 +154,21 @@ function MapComponent({
     };
     clearCircles();
 
-    if (showHeatmap) {
-      const maxWeight = detections.reduce((m, d) => Math.max(m, d.count ?? 1), 1);
+    if (!showHeatmap) return clearCircles;
+
+    const maxWeight = detections.reduce((m, d) => Math.max(m, d.count ?? 1), 1);
+    const TARGET_PX = 45; // radio aparente en píxeles (como el radio en px del HeatmapLayer retirado)
+
+    // El radio de google.maps.Circle es en METROS, no en píxeles: a zoom bajo (vista de toda
+    // la costa) un radio fijo en metros es sub-píxel e invisible. Lo recalculamos según el
+    // zoom/latitud para que el círculo mida ~TARGET_PX en pantalla, y redibujamos al hacer zoom.
+    const draw = () => {
+      clearCircles();
+      const zoom = map.getZoom() ?? 7;
+      const center = map.getCenter();
+      const lat = center ? center.lat() : 0;
+      const metersPerPixel = (156543.03392 * Math.cos((lat * Math.PI) / 180)) / Math.pow(2, zoom);
+      const radius = Math.max(10, TARGET_PX * metersPerPixel);
       heatmapCirclesRef.current = detections.map(detection => {
         const weight = detection.count ?? 1;
         // Opacidad por peso (saturada) + composición alfa al solapar → densidad.
@@ -163,7 +176,7 @@ function MapComponent({
         return new google.maps.Circle({
           map,
           center: { lat: detection.lat, lng: detection.lng },
-          radius: 60, // metros; el solape entre puntos cercanos crea el degradado de densidad
+          radius,
           strokeWeight: 0,
           fillColor: '#FF3D00',
           fillOpacity,
@@ -171,9 +184,14 @@ function MapComponent({
           zIndex: 1,
         });
       });
-    }
+    };
 
-    return clearCircles;
+    draw();
+    const zoomListener = map.addListener('zoom_changed', draw);
+    return () => {
+      google.maps.event.removeListener(zoomListener);
+      clearCircles();
+    };
   }, [map, showHeatmap, detections]);
 
   const zoomToDetections = () => {
