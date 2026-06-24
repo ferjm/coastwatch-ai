@@ -234,6 +234,11 @@ export default function Uploads() {
           .catch(err => console.error('Error deleting thumbnail from storage:', err));
       }
 
+      // Refresca la lista al instante (no depende solo de realtime). Las estadísticas
+      // (dashboard, mapa, contadores) se recalculan en vivo desde la BD, así que el
+      // borrado de la fila + sus detecciones las actualiza automáticamente al recargar.
+      await loadImages();
+
       toast({
         title: "Deleted",
         description: "Image deleted successfully",

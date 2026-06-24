@@ -53,7 +53,10 @@ function MapComponent({
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [mapType, setMapType] = useState<string>('roadmap');
-  const [heatmapLayer, setHeatmapLayer] = useState<google.maps.visualization.HeatmapLayer | null>(null);
+  // Heatmap propio a base de círculos translúcidos superpuestos (la API de Google retiró
+  // google.maps.visualization.HeatmapLayer en la v3.65). Donde se solapan, el compositing
+  // alfa oscurece el área → efecto de densidad sin depender de la librería `visualization`.
+  const heatmapCirclesRef = useRef<google.maps.Circle[]>([]);
   const mapRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
@@ -76,9 +79,8 @@ function MapComponent({
     return () => {
       // Cleanup
       markersRef.current.forEach(marker => marker.setMap(null));
-      if (heatmapLayer) {
-        heatmapLayer.setMap(null);
-      }
+      heatmapCirclesRef.current.forEach(c => c.setMap(null));
+      heatmapCirclesRef.current = [];
     };
   }, []);
 
@@ -141,36 +143,37 @@ function MapComponent({
     });
   }, [map, detections, t, onDetectionClick]);
 
-  // Handle heatmap toggle
+  // Handle heatmap toggle (círculos translúcidos; ver nota en heatmapCirclesRef)
   useEffect(() => {
     if (!map) return;
 
+    // Limpia los círculos previos antes de redibujar o al desactivar.
+    const clearCircles = () => {
+      heatmapCirclesRef.current.forEach(c => c.setMap(null));
+      heatmapCirclesRef.current = [];
+    };
+    clearCircles();
+
     if (showHeatmap) {
-      const heatmapData = detections.map(detection => ({
-        location: new google.maps.LatLng(detection.lat, detection.lng),
-        weight: detection.count ?? 1
-      }));
-
-      const newHeatmapLayer = new google.maps.visualization.HeatmapLayer({
-        data: heatmapData,
-        map: map,
-        radius: 50,
-        opacity: 0.6
+      const maxWeight = detections.reduce((m, d) => Math.max(m, d.count ?? 1), 1);
+      heatmapCirclesRef.current = detections.map(detection => {
+        const weight = detection.count ?? 1;
+        // Opacidad por peso (saturada) + composición alfa al solapar → densidad.
+        const fillOpacity = 0.18 + 0.32 * Math.min(1, weight / maxWeight);
+        return new google.maps.Circle({
+          map,
+          center: { lat: detection.lat, lng: detection.lng },
+          radius: 60, // metros; el solape entre puntos cercanos crea el degradado de densidad
+          strokeWeight: 0,
+          fillColor: '#FF3D00',
+          fillOpacity,
+          clickable: false,
+          zIndex: 1,
+        });
       });
-
-      setHeatmapLayer(newHeatmapLayer);
-    } else {
-      if (heatmapLayer) {
-        heatmapLayer.setMap(null);
-        setHeatmapLayer(null);
-      }
     }
 
-    return () => {
-      if (heatmapLayer) {
-        heatmapLayer.setMap(null);
-      }
-    };
+    return clearCircles;
   }, [map, showHeatmap, detections]);
 
   const zoomToDetections = () => {
@@ -362,7 +365,6 @@ export function PlasticDetectionMap({
     <Wrapper
       apiKey={apiKey}
       render={render}
-      libraries={['visualization']}
     >
       <MapComponent
         detections={detections}
