@@ -109,18 +109,14 @@ export default function Settings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <SlidersHorizontal className="h-5 w-5" />
-            Cascada — criba edge
+            {t('cascadeSettingsTitle')}
           </CardTitle>
-          <CardDescription>
-            Umbral de confianza con el que FOMO (nivel edge) considera que hay un candidato y la imagen
-            "se habría escalado" al nivel cloud. Más bajo = criba más sensible (más recall, menos ahorro
-            de banda). Afecta a las próximas inferencias (subir o reprocesar).
-          </CardDescription>
+          <CardDescription>{t('cascadeSettingsDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label htmlFor="edge-threshold">Umbral de criba edge</Label>
+              <Label htmlFor="edge-threshold">{t('edgeThresholdLabel')}</Label>
               <span className="text-sm font-medium tabular-nums">
                 {Math.round(edgeScreenThreshold * 100)}%
               </span>
@@ -133,10 +129,7 @@ export default function Settings() {
               max={0.5}
               step={0.01}
             />
-            <p className="text-xs text-muted-foreground">
-              Por defecto {Math.round(DEFAULT_EDGE_SCREEN_THRESHOLD * 100)}%. Valores muy bajos pueden
-              hacer que FOMO dispare sobre ruido (sobre-escala de negativos).
-            </p>
+            <p className="text-xs text-muted-foreground">{t('edgeThresholdHint', { pct: Math.round(DEFAULT_EDGE_SCREEN_THRESHOLD * 100) })}</p>
           </div>
         </CardContent>
       </Card>

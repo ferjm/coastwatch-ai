@@ -38,7 +38,7 @@ export default function Dashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Imágenes con plástico</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('imagesWithPlastic')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-success-600">{stats?.imagesWithPlastic ?? '—'}</div>
@@ -47,7 +47,7 @@ export default function Dashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tasa de escalado (criba)</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('escalationRateLabel')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-warning-600">
@@ -61,7 +61,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Latencia media · Nivel 1 (edge FOMO)</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('avgLatencyEdge')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold" style={{ color: '#EC4899' }}>
@@ -72,7 +72,7 @@ export default function Dashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Latencia media · Nivel 2 (nube Roboflow)</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('avgLatencyCloud')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold" style={{ color: '#06B6D4' }}>
@@ -87,7 +87,7 @@ export default function Dashboard() {
         {/* Detections by source */}
         <Card>
           <CardHeader>
-            <CardTitle>Detecciones por nivel</CardTitle>
+            <CardTitle>{t('detectionsByLevel')}</CardTitle>
             <CardDescription>Edge vs Cloud</CardDescription>
           </CardHeader>
           <CardContent>
@@ -131,7 +131,7 @@ export default function Dashboard() {
       <Card>
         <CardHeader>
           <CardTitle>Edge vs Cloud</CardTitle>
-          <CardDescription>Distribución de detecciones por nivel</CardDescription>
+          <CardDescription>{t('detectionsByLevelDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>

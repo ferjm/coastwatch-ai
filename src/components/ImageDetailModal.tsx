@@ -141,7 +141,7 @@ export function ImageDetailModal({
                     onClick={() => setLayer(l)}
                     className={`px-2 py-1 text-xs transition-colors ${layer === l ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'}`}
                   >
-                    {l === 'both' ? 'Ambos' : l === 'edge' ? 'Edge' : 'Cloud'}
+                    {l === 'both' ? t('layerBoth') : l === 'edge' ? 'Edge' : 'Cloud'}
                   </button>
                 ))}
               </div>
@@ -218,7 +218,7 @@ export function ImageDetailModal({
           {/* Detalles de la imagen */}
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <span className="text-muted-foreground">Niveles:</span>{' '}
+              <span className="text-muted-foreground">{t('levelsLabel')}:</span>{' '}
               <Badge variant="outline" style={{ borderColor: SOURCE_COLORS.edge, color: SOURCE_COLORS.edge }}>
                 {image.edgeCount ?? 0} edge
               </Badge>{' '}
@@ -228,18 +228,18 @@ export function ImageDetailModal({
             </div>
             {image.screeningWouldEscalate != null && (
               <div>
-                <span className="text-muted-foreground">Criba (H8):</span>{' '}
+                <span className="text-muted-foreground">{t('screeningH8')}:</span>{' '}
                 <Badge variant={image.screeningWouldEscalate ? 'default' : 'secondary'}>
                   {image.screeningWouldEscalate
-                    ? 'El edge la habría escalado'
-                    : 'El edge no vió nada (ahorro / posible falso negativo)'}
+                    ? t('screeningEscalate')
+                    : t('screeningNothing')}
                 </Badge>
               </div>
             )}
             {(image.edgeMs != null || image.cloudMs != null) && (
               <div className="flex items-center gap-2">
                 <Zap className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-muted-foreground">Latencia:</span>{' '}
+                <span className="text-muted-foreground">{t('latencyLabel')}:</span>{' '}
                 {image.edgeMs != null && (
                   <Badge variant="outline" style={{ borderColor: SOURCE_COLORS.edge, color: SOURCE_COLORS.edge }}>
                     edge {image.edgeMs} ms
@@ -253,29 +253,29 @@ export function ImageDetailModal({
               </div>
             )}
             <div>
-              <span className="text-muted-foreground">Size:</span> {formatFileSize(image.fileSize)}
+              <span className="text-muted-foreground">{t('sizeLabel')}:</span> {formatFileSize(image.fileSize)}
             </div>
             {image.resolution && (
               <div>
-                <span className="text-muted-foreground">Resolution:</span> {image.resolution.width}×{image.resolution.height}
+                <span className="text-muted-foreground">{t('resolutionLabel')}:</span> {image.resolution.width}×{image.resolution.height}
               </div>
             )}
             {image.capturedAt && (
               <div>
-                <span className="text-muted-foreground">{t('captured') || 'Captura'}:</span>{' '}
+                <span className="text-muted-foreground">{t('capturedLabel')}:</span>{' '}
                 {new Date(image.capturedAt).toLocaleString()}
               </div>
             )}
             <div>
-              <span className="text-muted-foreground">Uploaded:</span> {new Date(image.uploadedAt).toLocaleString()}
+              <span className="text-muted-foreground">{t('uploadedLabel')}:</span> {new Date(image.uploadedAt).toLocaleString()}
             </div>
             {image.processingTime && (
               <div>
-                <span className="text-muted-foreground">Processing time:</span> {formatProcessingTime(image.processingTime)}
+                <span className="text-muted-foreground">{t('processingTime')}:</span> {formatProcessingTime(image.processingTime)}
               </div>
             )}
             <div className="col-span-2">
-              <span className="text-muted-foreground">{t('location') || 'Ubicación'}:</span>{' '}
+              <span className="text-muted-foreground">{t('locationLabel')}:</span>{' '}
               {typeof image.lat === 'number' && typeof image.lng === 'number' ? (
                 <a
                   href={`https://www.google.com/maps/search/?api=1&query=${image.lat},${image.lng}`}
@@ -287,14 +287,14 @@ export function ImageDetailModal({
                   {image.lat.toFixed(5)}, {image.lng.toFixed(5)}
                 </a>
               ) : (
-                <span className="text-muted-foreground italic">sin coordenadas GPS</span>
+                <span className="text-muted-foreground italic">{t('noGpsCoords')}</span>
               )}
             </div>
           </div>
 
           {canNavigate && (
             <p className="text-xs text-muted-foreground">
-              ← → para navegar entre imágenes · rueda/+/− para zoom
+              {t('navHint')}
             </p>
           )}
 
@@ -305,7 +305,7 @@ export function ImageDetailModal({
                 <>
                   <AlertCircle className="h-4 w-4 text-destructive" />
                   <span className="text-destructive">
-                    {image.error || t('processingFailed') || 'Error al procesar'}
+                    {image.error || t('processingFailedMsg')}
                   </span>
                 </>
               ) : (
@@ -313,8 +313,8 @@ export function ImageDetailModal({
                   <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                   <span className="text-muted-foreground">
                     {image.status === 'processing'
-                      ? t('processing') || 'Procesando…'
-                      : t('queued') || 'En cola…'}
+                      ? t('processing')
+                      : t('queued')}
                   </span>
                 </>
               )}
@@ -368,7 +368,7 @@ export function ImageDetailModal({
                 onClick={() => { onReprocess(image.id); onClose(); }}
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
-                Reprocess
+                {t('reprocess')}
               </Button>
             )}
             {onDelete && (
@@ -378,7 +378,7 @@ export function ImageDetailModal({
                 className="text-red-600 hover:text-red-700"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                Delete
+                {t('delete')}
               </Button>
             )}
           </div>

@@ -56,7 +56,7 @@ export function DetectionImageViewer({
           width: 150,
           height: 100,
           confidence: detection.confidence,
-          label: 'Plástico'
+          label: t('plastic')
         },
         {
           id: 'default-2',
@@ -65,7 +65,7 @@ export function DetectionImageViewer({
           width: 120,
           height: 80,
           confidence: detection.confidence * 0.9,
-          label: 'Plástico'
+          label: t('plastic')
         }
       ];
       setBoundingBoxes(defaultBoxes);
@@ -114,9 +114,9 @@ export function DetectionImageViewer({
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
-            <span>Detección de Plástico</span>
+            <span>{t('detectionOfPlastic')}</span>
             <Badge variant={detection.verified ? 'default' : 'secondary'}>
-              {detection.verified ? t('verified') : 'Sin verificar'}
+              {detection.verified ? t('verified') : t('unverified')}
             </Badge>
           </DialogTitle>
         </DialogHeader>
@@ -125,7 +125,7 @@ export function DetectionImageViewer({
           {/* Controls */}
           <div className="flex items-center justify-between bg-muted p-2 rounded-lg">
             <div className="text-sm text-muted-foreground">
-              Edita las cajas de detección arrastrando y redimensionando
+              {t('editBoxesHint')}
             </div>
             
             <div className="flex items-center space-x-2">
@@ -145,20 +145,20 @@ export function DetectionImageViewer({
                 <AlertDialogTrigger asChild>
                   <Button variant="outline" size="sm">
                     <Trash2 className="h-4 w-4 mr-2 text-red-600" />
-                    Eliminar
+                    {t('delete')}
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>¿Eliminar detección?</AlertDialogTitle>
+                    <AlertDialogTitle>{t('deleteDetectionTitle')}</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Esta acción no se puede deshacer. La detección será eliminada permanentemente.
+                      {t('deleteDetectionDesc')}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                     <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-                      Eliminar
+                      {t('delete')}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>

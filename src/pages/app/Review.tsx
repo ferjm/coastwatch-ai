@@ -66,7 +66,7 @@ export default function Review() {
         confidence: (img.detections ?? []).reduce((m: number, d: any) => Math.max(m, Number(d.confidence)), 0),
         imageUrl: signed?.signedUrl ?? '/placeholder.svg',
         detectedAt: new Date(img.uploaded_at),
-        description: `${img.file_name} — ${(img.detections ?? []).length} detección(es)`,
+        description: `${img.file_name} — ${(img.detections ?? []).length}`,
         verified: false,
         boundingBoxes: (img.detections ?? []).map((d: any) => ({
           id: d.id, x: Number(d.x) * 100, y: Number(d.y) * 100,

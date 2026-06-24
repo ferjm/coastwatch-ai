@@ -30,7 +30,7 @@ export default function MapView() {
     .map((p) => ({
       id: p.id, lat: p.lat, lng: p.lng, confidence: 1, imageUrl: '/placeholder.svg',
       detectedAt: p.capturedAt ? new Date(p.capturedAt) : new Date(),
-      description: `${p.fileName} — ${p.count} detección(es) ${source}`,
+      description: `${p.fileName} — ${p.count} (${source})`,
       count: p.count, source,
     }));
 
@@ -101,7 +101,7 @@ export default function MapView() {
   const sourceLabels: Record<SourceFilter, string> = {
     edge: 'Edge',
     cloud: 'Cloud',
-    both: 'Ambos',
+    both: t('layerBoth'),
   };
 
   return (
@@ -116,7 +116,7 @@ export default function MapView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <MapPin className="h-4 w-4 text-primary" />
-              Imágenes con plástico
+              {t('imagesWithPlastic')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -128,7 +128,7 @@ export default function MapView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Cpu className="h-4 w-4" style={{ color: '#EC4899' }} />
-              Detecciones edge
+              {t('edgeDetectionsLabel')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -140,7 +140,7 @@ export default function MapView() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Cloud className="h-4 w-4" style={{ color: '#06B6D4' }} />
-              Detecciones cloud
+              {t('cloudDetectionsLabel')}
             </CardTitle>
           </CardHeader>
           <CardContent>

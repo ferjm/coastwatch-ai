@@ -103,7 +103,7 @@ function MapComponent({
       const marker = new google.maps.Marker({
         position: { lat: detection.lat, lng: detection.lng },
         map: map,
-        title: `Plástico - ${Math.round(detection.confidence * 100)}%`,
+        title: `${t('plasticDetectedTitle')} - ${Math.round(detection.confidence * 100)}%`,
         icon: {
           path: google.maps.SymbolPath.CIRCLE,
           scale: Math.min(20, 6 + (detection.count ?? 1)),
@@ -118,7 +118,7 @@ function MapComponent({
         if (infoWindowRef.current) {
           const content = `
             <div class="p-3 max-w-xs">
-              <div class="font-semibold text-lg mb-2">Plástico detectado</div>
+              <div class="font-semibold text-lg mb-2">${t('plasticDetectedTitle')}</div>
               <div class="text-sm text-gray-600 mb-2">
                 ${t('confidence')}: ${Math.round(detection.confidence * 100)}%
               </div>
@@ -288,7 +288,7 @@ function MapComponent({
           <div className="flex items-center justify-between p-3 border rounded-lg">
             <div className="flex items-center gap-2">
               <MapPin className="h-4 w-4 text-primary" />
-              <span className="font-medium">Imágenes con detecciones</span>
+              <span className="font-medium">{t('imagesWithDetections')}</span>
             </div>
             <div className="text-lg font-bold">
               {detections.length}

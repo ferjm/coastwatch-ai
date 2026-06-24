@@ -103,20 +103,20 @@ export default function Auth() {
             Proyecto ECOS
           </h1>
           <p className="text-lg text-primary-600 mb-8">
-            Sistema avanzado de detección y análisis de contaminación plástica marina
+            {t('authTagline')}
           </p>
           <div className="grid grid-cols-1 gap-4 text-left">
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 bg-primary-500 rounded-full"></div>
-              <span className="text-primary-700">Análisis con IA</span>
+              <span className="text-primary-700">{t('featAiAnalysis')}</span>
             </div>
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 bg-primary-500 rounded-full"></div>
-              <span className="text-primary-700">Mapas interactivos</span>
+              <span className="text-primary-700">{t('featInteractiveMaps')}</span>
             </div>
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 bg-primary-500 rounded-full"></div>
-              <span className="text-primary-700">Monitoreo en tiempo real</span>
+              <span className="text-primary-700">{t('featRealtimeMonitoring')}</span>
             </div>
           </div>
         </div>
