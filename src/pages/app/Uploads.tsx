@@ -111,6 +111,8 @@ export default function Uploads() {
             detections,
             edgeCount: img.edge_count ?? undefined,
             cloudCount: img.cloud_count ?? undefined,
+            edgeMs: img.edge_ms ?? undefined,
+            cloudMs: img.cloud_ms ?? undefined,
             screeningWouldEscalate: img.screening_would_escalate,
             error: img.error_message || undefined,
             processingTime: img.processed_at ? 

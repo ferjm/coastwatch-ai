@@ -271,7 +271,13 @@ export async function saveDetections(imageId: string, detections: TieredDetectio
  */
 export async function saveCascadeMeta(
   imageId: string,
-  meta: { edgeCount: number; cloudCount: number; screeningWouldEscalate: boolean },
+  meta: {
+    edgeCount: number;
+    cloudCount: number;
+    screeningWouldEscalate: boolean;
+    edgeMs?: number;
+    cloudMs?: number | null;
+  },
 ) {
   const { error } = await supabase
     .from('images')
@@ -279,6 +285,8 @@ export async function saveCascadeMeta(
       edge_count: meta.edgeCount,
       cloud_count: meta.cloudCount,
       screening_would_escalate: meta.screeningWouldEscalate,
+      edge_ms: meta.edgeMs ?? null,
+      cloud_ms: meta.cloudMs ?? null,
     })
     .eq('id', imageId);
 

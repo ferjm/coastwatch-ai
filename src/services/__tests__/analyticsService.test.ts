@@ -31,6 +31,18 @@ describe('aggregateDashboardStats', () => {
     expect(s.totalImages).toBe(0);
     expect(s.escalationRate).toBe(0);
     expect(s.timeline).toEqual([]);
+    expect(s.avgEdgeMs).toBeNull();
+    expect(s.avgCloudMs).toBeNull();
+  });
+
+  it('promedia las latencias por nivel sobre las imágenes con medición', () => {
+    const s = aggregateDashboardStats([
+      img({ edgeMs: 300, cloudMs: 3000 }),
+      img({ edgeMs: 200, cloudMs: 5000 }),
+      img({ edgeMs: undefined, cloudMs: null }), // sin medición: se ignora en la media
+    ]);
+    expect(s.avgEdgeMs).toBe(250);    // (300+200)/2
+    expect(s.avgCloudMs).toBe(4000);  // (3000+5000)/2
   });
 });
 

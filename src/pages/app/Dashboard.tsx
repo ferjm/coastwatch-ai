@@ -57,6 +57,31 @@ export default function Dashboard() {
         </Card>
       </div>
 
+      {/* Latencia observada por nivel (cascada de dos niveles) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Latencia media · Nivel 1 (edge FOMO)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold" style={{ color: '#EC4899' }}>
+              {stats?.avgEdgeMs != null ? `${stats.avgEdgeMs} ms` : '—'}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Latencia media · Nivel 2 (nube Roboflow)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold" style={{ color: '#06B6D4' }}>
+              {stats?.avgCloudMs != null ? `${(stats.avgCloudMs / 1000).toFixed(1)} s` : '—'}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Detections by source */}

@@ -63,6 +63,8 @@ export interface ProcessedImage {
   detections: Detection[];
   edgeCount?: number;
   cloudCount?: number;
+  edgeMs?: number;
+  cloudMs?: number | null;
   screeningWouldEscalate?: boolean | null;
   error?: string;
 }
@@ -598,6 +600,22 @@ export function InferenceResults({
                         ? 'El edge la habría escalado'
                         : 'El edge no vió nada (ahorro / posible falso negativo)'}
                     </Badge>
+                  </div>
+                )}
+                {(selectedImage.edgeMs != null || selectedImage.cloudMs != null) && (
+                  <div className="flex items-center gap-2">
+                    <Zap className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="text-muted-foreground">Latencia:</span>{' '}
+                    {selectedImage.edgeMs != null && (
+                      <Badge variant="outline" style={{ borderColor: SOURCE_COLORS.edge, color: SOURCE_COLORS.edge }}>
+                        edge {selectedImage.edgeMs} ms
+                      </Badge>
+                    )}{' '}
+                    {selectedImage.cloudMs != null && (
+                      <Badge variant="outline" style={{ borderColor: SOURCE_COLORS.cloud, color: SOURCE_COLORS.cloud }}>
+                        cloud {(selectedImage.cloudMs / 1000).toFixed(1)} s
+                      </Badge>
+                    )}
                   </div>
                 )}
                 <div>

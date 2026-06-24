@@ -20,6 +20,8 @@ export interface ImageAgg {
   edgeCount: number;
   cloudCount: number;
   screeningWouldEscalate: boolean | null;
+  edgeMs?: number | null;
+  cloudMs?: number | null;
 }
 
 export interface DashboardStats {
@@ -29,8 +31,16 @@ export interface DashboardStats {
   cloudDetections: number;
   imagesWithPlastic: number;
   escalationRate: number;
+  // Latencia media observada por nivel (ms), sobre las imágenes con medición. null si no hay datos.
+  avgEdgeMs: number | null;
+  avgCloudMs: number | null;
   bySource: { name: string; count: number; color: string }[];
   timeline: { date: string; detections: number }[];
+}
+
+function mean(values: number[]): number | null {
+  if (values.length === 0) return null;
+  return Math.round(values.reduce((a, v) => a + v, 0) / values.length);
 }
 
 export function pointCountForSource(p: { edgeCount: number; cloudCount: number }, source: SourceFilter): number {
@@ -48,6 +58,8 @@ export function aggregateDashboardStats(images: ImageAgg[]): DashboardStats {
   const withFlag = images.filter((i) => i.screeningWouldEscalate != null);
   const escalated = withFlag.filter((i) => i.screeningWouldEscalate === true).length;
   const escalationRate = withFlag.length ? Math.round((escalated / withFlag.length) * 100) : 0;
+  const avgEdgeMs = mean(images.map((i) => i.edgeMs).filter((v): v is number => v != null));
+  const avgCloudMs = mean(images.map((i) => i.cloudMs).filter((v): v is number => v != null));
 
   const byDay = new Map<string, number>();
   for (const i of images) {
@@ -60,6 +72,7 @@ export function aggregateDashboardStats(images: ImageAgg[]): DashboardStats {
 
   return {
     totalImages, processedImages, edgeDetections, cloudDetections, imagesWithPlastic, escalationRate,
+    avgEdgeMs, avgCloudMs,
     bySource: [
       { name: 'Edge', count: edgeDetections, color: SOURCE_COLORS.edge },
       { name: 'Cloud', count: cloudDetections, color: SOURCE_COLORS.cloud },
@@ -72,7 +85,7 @@ export async function loadDashboardStats(): Promise<DashboardStats> {
   const { supabase } = await import('@/integrations/supabase/client');
   const { data, error } = await supabase
     .from('images')
-    .select('status, captured_at, uploaded_at, edge_count, cloud_count, screening_would_escalate');
+    .select('status, captured_at, uploaded_at, edge_count, cloud_count, screening_would_escalate, edge_ms, cloud_ms');
   if (error) throw new Error(`loadDashboardStats: ${error.message}`);
   const images: ImageAgg[] = (data ?? []).map((i: any) => ({
     status: i.status,
@@ -81,6 +94,8 @@ export async function loadDashboardStats(): Promise<DashboardStats> {
     edgeCount: i.edge_count ?? 0,
     cloudCount: i.cloud_count ?? 0,
     screeningWouldEscalate: i.screening_would_escalate,
+    edgeMs: i.edge_ms ?? null,
+    cloudMs: i.cloud_ms ?? null,
   }));
   return aggregateDashboardStats(images);
 }

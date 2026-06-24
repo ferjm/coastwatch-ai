@@ -68,8 +68,10 @@ export type Database = {
         Row: {
           captured_at: string | null
           cloud_count: number | null
+          cloud_ms: number | null
           created_at: string
           edge_count: number | null
+          edge_ms: number | null
           error_message: string | null
           file_name: string
           file_size: number
@@ -92,8 +94,10 @@ export type Database = {
         Insert: {
           captured_at?: string | null
           cloud_count?: number | null
+          cloud_ms?: number | null
           created_at?: string
           edge_count?: number | null
+          edge_ms?: number | null
           error_message?: string | null
           file_name: string
           file_size: number
@@ -116,8 +120,10 @@ export type Database = {
         Update: {
           captured_at?: string | null
           cloud_count?: number | null
+          cloud_ms?: number | null
           created_at?: string
           edge_count?: number | null
+          edge_ms?: number | null
           error_message?: string | null
           file_name?: string
           file_size?: number
