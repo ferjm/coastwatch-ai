@@ -6,6 +6,9 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { MapPin, Cpu, Cloud } from 'lucide-react';
 import { loadMapPoints, pointCountForSource, type MapPoint, type SourceFilter } from '@/services/analyticsService';
+import { supabase } from '@/integrations/supabase/client';
+import { ImageDetailModal } from '@/components/ImageDetailModal';
+import type { ProcessedImage, Detection } from '@/components/InferenceResults';
 
 export default function MapView() {
   const { t } = useTranslation();
@@ -13,6 +16,7 @@ export default function MapView() {
 
   const [points, setPoints] = useState<MapPoint[]>([]);
   const [source, setSource] = useState<SourceFilter>('both');
+  const [selectedImage, setSelectedImage] = useState<ProcessedImage | null>(null);
 
   useEffect(() => {
     loadMapPoints()
@@ -30,11 +34,65 @@ export default function MapView() {
       count: p.count, source,
     }));
 
-  const handleDetectionClick = (detection: MapDetection) => {
-    toast({
-      title: 'Plástico detectado',
-      description: detection.description,
-    });
+  // Resuelve la URL firmada (1h) de la imagen original (bucket privado) para el visor.
+  const resolveFullImage = async (storagePath: string): Promise<string | null> => {
+    const { data, error } = await supabase.storage.from('images').createSignedUrl(storagePath, 3600);
+    if (error) { console.error('No se pudo firmar la URL:', error); return null; }
+    return data?.signedUrl ?? null;
+  };
+
+  // Al pulsar un pin, carga la imagen + sus detecciones y abre el MISMO modal de detalle
+  // que la página de Subidas (imagen con cajas por nivel, criba H8, latencias, etc.).
+  const handleDetectionClick = async (detection: MapDetection) => {
+    try {
+      const { data: img, error } = await supabase
+        .from('images')
+        .select('*, detections(*)')
+        .eq('id', detection.id)
+        .single();
+      if (error || !img) throw error ?? new Error('Imagen no encontrada');
+
+      const dets: Detection[] = (img.detections || []).map((d: any) => ({
+        id: d.id,
+        class: d.label,
+        confidence: parseFloat(d.confidence),
+        source: d.source,
+        bbox: { x: d.x * 100, y: d.y * 100, width: d.width * 100, height: d.height * 100 },
+      }));
+      const { data: thumb } = supabase.storage
+        .from('thumbnails')
+        .getPublicUrl(img.thumbnail_path || img.storage_path);
+      const status: ProcessedImage['status'] =
+        img.status === 'processed' ? 'completed'
+        : img.status === 'failed' ? 'failed'
+        : img.status === 'processing' ? 'processing' : 'pending';
+
+      setSelectedImage({
+        id: img.id,
+        fileName: img.file_name,
+        fileSize: img.file_size,
+        resolution: { width: img.width_px, height: img.height_px },
+        uploadedAt: new Date(img.uploaded_at),
+        status,
+        progress: status === 'completed' ? 100 : 0,
+        imageUrl: thumb?.publicUrl ?? '/placeholder.svg',
+        storagePath: img.storage_path,
+        lat: img.gps_latitude != null ? Number(img.gps_latitude) : null,
+        lng: img.gps_longitude != null ? Number(img.gps_longitude) : null,
+        capturedAt: img.captured_at ?? null,
+        detections: dets,
+        edgeCount: img.edge_count ?? undefined,
+        cloudCount: img.cloud_count ?? undefined,
+        edgeMs: img.edge_ms ?? undefined,
+        cloudMs: img.cloud_ms ?? undefined,
+        screeningWouldEscalate: img.screening_would_escalate,
+        processingTime: img.processed_at
+          ? Math.round((new Date(img.processed_at).getTime() - new Date(img.uploaded_at).getTime()) / 1000)
+          : undefined,
+      });
+    } catch (e) {
+      toast({ title: 'Error', description: e instanceof Error ? e.message : String(e), variant: 'destructive' });
+    }
   };
 
   const edgeTotal = points.reduce((a, p) => a + p.edgeCount, 0);
@@ -108,6 +166,13 @@ export default function MapView() {
       <PlasticDetectionMap
         detections={detections}
         onDetectionClick={handleDetectionClick}
+      />
+
+      {/* Detalle de la imagen del pin — mismo modal que en Subidas */}
+      <ImageDetailModal
+        image={selectedImage}
+        onClose={() => setSelectedImage(null)}
+        resolveFullImage={resolveFullImage}
       />
     </div>
   );
