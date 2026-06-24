@@ -185,8 +185,17 @@ export class MLService {
     // Convert image to raw features (RGB pixel array)
     console.log('Converting image to features...');
     const features = await this.imageToFeatures(imageFile, inputWidth, inputHeight);
-    console.log(`Features length: ${features.length} (expected: ${inputWidth * inputHeight * 3})`);
-    console.log('Feature value range:', Math.min(...features), '-', Math.max(...features));
+    console.log(`Features length: ${features.length} (expected: ${inputWidth * inputHeight})`);
+    // OJO: NO usar Math.min(...features)/spread aquí. Con FOMO-640 el array tiene
+    // 640*640 = 409.600 elementos y el spread como argumentos revienta el stack
+    // ("Maximum call stack size exceeded"). Min/máx por bucle (debug, O(n) sin spread).
+    let fMin = Infinity, fMax = -Infinity;
+    for (let i = 0; i < features.length; i++) {
+      const v = features[i];
+      if (v < fMin) fMin = v;
+      if (v > fMax) fMax = v;
+    }
+    console.log('Feature value range:', fMin, '-', fMax);
     console.log('First 50 features:', features.slice(0, 50).join(', '));
 
     // Run classification with error handling
