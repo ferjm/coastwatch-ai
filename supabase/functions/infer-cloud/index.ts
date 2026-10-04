@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { normalizeRoboflowResponse, type RoboflowResponse } from './normalize.ts'
+import { inferWithFallback } from './fallback.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -40,12 +41,14 @@ serve(async (req) => {
     const confidence = typeof body?.confidence === 'number' ? body.confidence : 0.4
     const overlap = typeof body?.overlap === 'number' ? body.overlap : 0.5
 
-    const url = `${ROBOFLOW_HOST}/${MODEL}?api_key=${apiKey}&confidence=${confidence}&overlap=${overlap}`
-    const rfResp = await fetch(url, {
+    const buildUrl = (host: string) =>
+      `${host}/${MODEL}?api_key=${apiKey}&confidence=${confidence}&overlap=${overlap}`
+    const { resp: rfResp, host, fellBack } = await inferWithFallback(ROBOFLOW_HOST, buildUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: image,
     })
+    if (fellBack) console.warn(`infer-cloud: ${ROBOFLOW_HOST} falló, usado fallback ${host}`)
 
     if (!rfResp.ok) {
       const text = await rfResp.text()
