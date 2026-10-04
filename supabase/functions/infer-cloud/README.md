@@ -12,6 +12,8 @@ esquina superior-izquierda, `source='cloud'`, `model='rfdetr-medium-v6'`) del mo
   `ROBOFLOW_INFERENCE_HOST=https://<tu-usuario>-<tu-space>.hf.space`. La ruta y el formato son
   idénticos, así que solo cambia esta variable. Ver `deploy/hf-space-inference/`.
 
+**Fallback:** si `ROBOFLOW_INFERENCE_HOST` apunta a un self-host y este falla (error de red, timeout de 25 s, 5xx o 429), la función reintenta una vez contra `serverless.roboflow.com`. Un 4xx no se reintenta. El workflow `.github/workflows/keep-hf-space-alive.yml` hace ping al Space cada 6 h para que no se pause.
+
 > Nota: la inferencia *serverless* consume créditos (puede dar `402 credit_cap_exceeded`).
 > La inferencia *self-hosted* del propio modelo NO consume créditos serverless (verificado 2026-06-21).
 

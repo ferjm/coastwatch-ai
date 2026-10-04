@@ -1,0 +1,30 @@
+# Mantiene despierto el Space de Hugging Face del Nivel 2 (los Spaces gratuitos se
+# pausan tras 48 h sin tráfico). Si el Space no responde, el job falla y GitHub avisa por email.
+name: keep-hf-space-alive
+
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+env:
+  SPACE_ID: ferjm/coastal-plastic-inference
+  SPACE_URL: https://ferjm-coastal-plastic-inference.hf.space/
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Estado del Space
+        run: |
+          curl -fsS --max-time 30 "https://huggingface.co/api/spaces/${SPACE_ID}/runtime" | tee runtime.json
+          echo
+      - name: Despertar el Space
+        run: curl -fsS --max-time 120 --retry 3 --retry-delay 20 --retry-all-errors -o /dev/null -w "HTTP %{http_code}\n" "${SPACE_URL}"
+      - name: Fallar si el Space no está en RUNNING
+        run: |
+          sleep 20
+          stage=$(curl -fsS --max-time 30 "https://huggingface.co/api/spaces/${SPACE_ID}/runtime" | jq -r .stage)
+          echo "stage=${stage}"
+          [ "${stage}" = "RUNNING" ]
