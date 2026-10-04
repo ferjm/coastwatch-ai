@@ -191,6 +191,22 @@ export default function Uploads() {
     }
   };
 
+  const handleReprocessMany = async (imageIds: string[]) => {
+    if (imageIds.length === 0) return;
+    // Solo re-encola; el worker procesa secuencialmente.
+    const { error } = await supabase
+      .from('images')
+      .update({ status: 'queued', error_message: null })
+      .in('id', imageIds);
+    if (error) {
+      toast({ title: "Reprocess Failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Reprocessing", description: `${imageIds.length} imágenes en cola para reprocesar.` });
+    hasPendingRef.current = true;
+    loadImages();
+  };
+
   const handleDelete = async (imageId: string) => {
     try {
       // Get image data to delete from storage
@@ -354,6 +370,7 @@ export default function Uploads() {
       <InferenceResults
         images={processedImages}
         onReprocess={handleReprocess}
+        onReprocessMany={handleReprocessMany}
         onDelete={handleDelete}
         onDownload={handleDownload}
         resolveFullImage={resolveFullImage}

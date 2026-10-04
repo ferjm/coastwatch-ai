@@ -30,8 +30,10 @@ import {
   Maximize2,
   MapPin,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  CheckSquare
 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { ImageDetailModal } from './ImageDetailModal';
 
 export interface Detection {
@@ -77,6 +79,7 @@ const sourceColor = (source?: 'edge' | 'cloud') => (source ? SOURCE_COLORS[sourc
 interface InferenceResultsProps {
   images: ProcessedImage[];
   onReprocess?: (imageId: string) => void;
+  onReprocessMany?: (imageIds: string[]) => void;
   onDelete?: (imageId: string) => void;
   onDownload?: (imageId: string) => void;
   /** Resuelve la URL (firmada) de la imagen original a resolución completa para el modal. */
@@ -86,6 +89,7 @@ interface InferenceResultsProps {
 export function InferenceResults({
   images,
   onReprocess,
+  onReprocessMany,
   onDelete,
   onDownload,
   resolveFullImage,
@@ -95,7 +99,22 @@ export function InferenceResults({
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedImage, setSelectedImage] = useState<ProcessedImage | null>(null);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const itemsPerPage = 12;
+
+  const selectableIds = images.filter(i => !i.id.startsWith('temp-')).map(i => i.id);
+  const allSelected = selectableIds.length > 0 && selectableIds.every(id => selectedIds.has(id));
+  const toggleSelected = (id: string) => {
+    if (id.startsWith('temp-')) return;
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const toggleSelectAll = () => setSelectedIds(allSelected ? new Set() : new Set(selectableIds));
+  const exitSelection = () => { setSelectionMode(false); setSelectedIds(new Set()); };
 
   const toggleBoundingBoxes = (imageId: string) => {
     setShowBoundingBoxes(prev => ({
@@ -190,7 +209,32 @@ export function InferenceResults({
               {images.length} {t('uploadedImages')}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            {onReprocessMany && (
+              selectionMode ? (
+                <>
+                  <span className="text-sm text-muted-foreground">{selectedIds.size} seleccionadas</span>
+                  <Button variant="outline" size="sm" onClick={toggleSelectAll}>
+                    {allSelected ? 'Ninguna' : 'Todas'}
+                  </Button>
+                  <Button
+                    size="sm"
+                    disabled={selectedIds.size === 0}
+                    onClick={() => {
+                      onReprocessMany(Array.from(selectedIds));
+                      exitSelection();
+                    }}
+                  >
+                    <RefreshCw className="h-4 w-4 mr-1" /> Reprocesar
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={exitSelection}>Cancelar</Button>
+                </>
+              ) : (
+                <Button variant="outline" size="sm" onClick={() => setSelectionMode(true)}>
+                  <CheckSquare className="h-4 w-4 mr-1" /> Seleccionar
+                </Button>
+              )
+            )}
             <Button
               variant={viewMode === 'grid' ? 'default' : 'outline'}
               size="sm"
@@ -217,11 +261,19 @@ export function InferenceResults({
               return (
                 <Card 
                   key={image.id} 
-                  className="hover:bg-accent/50 transition-colors cursor-pointer"
-                  onClick={() => setSelectedImage(image)}
+                  className={`hover:bg-accent/50 transition-colors cursor-pointer ${selectedIds.has(image.id) ? 'ring-2 ring-primary' : ''}`}
+                  onClick={() => (selectionMode ? toggleSelected(image.id) : setSelectedImage(image))}
                 >
                   <CardContent className="p-4">
                     <div className="flex items-center gap-4">
+                      {selectionMode && (
+                        <Checkbox
+                          checked={selectedIds.has(image.id)}
+                          onClick={(e) => e.stopPropagation()}
+                          onCheckedChange={() => toggleSelected(image.id)}
+                          aria-label={`Seleccionar ${image.fileName}`}
+                        />
+                      )}
                       {/* Thumbnail */}
                       <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-muted flex-shrink-0">
                         <img
@@ -344,11 +396,19 @@ export function InferenceResults({
               return (
                 <Card 
                   key={image.id} 
-                  className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-                  onClick={() => setSelectedImage(image)}
+                  className={`overflow-hidden hover:shadow-lg transition-shadow cursor-pointer ${selectedIds.has(image.id) ? 'ring-2 ring-primary' : ''}`}
+                  onClick={() => (selectionMode ? toggleSelected(image.id) : setSelectedImage(image))}
                 >
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between gap-2">
+                      {selectionMode && (
+                        <Checkbox
+                          checked={selectedIds.has(image.id)}
+                          onClick={(e) => e.stopPropagation()}
+                          onCheckedChange={() => toggleSelected(image.id)}
+                          aria-label={`Seleccionar ${image.fileName}`}
+                        />
+                      )}
                       <div className="flex-1 min-w-0">
                         <CardTitle className="text-sm truncate">
                           {image.fileName}
