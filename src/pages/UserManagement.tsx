@@ -7,7 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Search, UserPlus } from 'lucide-react';
+import { Search, UserPlus, Trash2 } from 'lucide-react';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { useAuthStore } from '@/stores/auth';
 import { InviteUserDialog } from '@/components/InviteUserDialog';
 
@@ -75,6 +79,20 @@ export default function UserManagement() {
         variant: 'destructive',
       });
     }
+  };
+
+  const deleteUser = async (userId: string) => {
+    const { data, error } = await supabase.functions.invoke('delete-user', { body: { userId } });
+    if (error || data?.error) {
+      toast({
+        title: t('error'),
+        description: t('errorDeletingUser') + ': ' + (data?.error || error?.message),
+        variant: 'destructive',
+      });
+      return;
+    }
+    toast({ title: t('userDeleted') });
+    setUsers(prev => prev.filter(u => u.id !== userId));
   };
 
   useEffect(() => {
