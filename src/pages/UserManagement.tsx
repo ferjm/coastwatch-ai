@@ -278,6 +278,33 @@ export default function UserManagement() {
                     {t('assign')}
                   </Button>
                 )}
+                {user.id !== session?.user?.id && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="ml-auto text-destructive">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        {t('deleteUser')}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>{t('deleteUserTitle')}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          {t('deleteUserDescription', { name: user.full_name || user.email })}
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                        <AlertDialogAction
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          onClick={() => deleteUser(user.id)}
+                        >
+                          {t('deleteUserConfirm')}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
               </div>
             </CardContent>
           </Card>
